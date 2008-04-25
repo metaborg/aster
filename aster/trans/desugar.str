@@ -1,0 +1,122 @@
+module desugar
+
+imports
+  Stratego-Attributes
+  stratego-rerag
+
+rules
+
+  desugar-all =
+    topdown(repeat(
+      desugar-attribute-ref + desugar-term-dots + desugar-attribute-def + desugar-rewrite-def
+    ));
+    all-stratego-defs(try(
+      astr-flatten-block-def
+    ))
+
+  desugar-attribute-def:
+    Attributes(def*) -> Rules(def*)
+
+  desugar-attribute-def:
+    AttributePDefTermNoWhere(child, attribute, term) ->
+    AttributePDefTerm(child, attribute, term, Id())
+     
+  desugar-attribute-def:
+    AttributePDefTerm(child, attribute, term, condition) ->
+    AttributePDefStrategy(child, attribute, strategy)
+    where strategy := Seq(Where(condition), Build(term))
+
+  desugar-attribute-def:
+    AttributeDefNoValue(child, attribute) ->
+    AttributeDefStrategy(child, attribute, Id())
+  
+  desugar-attribute-def:
+    AttributeDefTermNoWhere(child, attribute, term) ->
+    AttributeDefTerm(child, attribute, term, Id())
+     
+  desugar-attribute-def:
+    AttributeDefTerm(child, attribute, term, condition) ->
+    AttributeDefStrategy(child, attribute, strategy)
+    where strategy := Seq(Where(condition), Build(term))
+  
+  desugar-rewrite-def:
+    AnonymousRewriteRuleNoWhere(term1, term2) ->
+    AnonymousRewriteRule(term1, term2, Id())
+  
+  desugar-rewrite-def:
+    AnonymousRewriteRule(term1, term2, condition) ->
+    AnonymousRewriteStrategy(Seq(Match(term1), Seq(Where(condition), Build(term2))))
+  
+  desugar-rewrite-def:
+    BlockAnonymousRewriteRuleNoWhere(term) ->
+    BlockAnonymousRewriteRule(term, Id())
+
+  desugar-rewrite-def:
+    BlockAnonymousRewriteRule(term, condition) ->
+    BlockAnonymousRewriteStrategy(Seq(Where(condition), Build(term)))
+  
+  desugar-attribute-ref:
+    AttributeRefSelf(attribute) ->
+    AttributeRef(RootApp(Id()), attribute)
+
+  desugar-attribute-ref:
+    AttributeNoArgs(x) -> Attribute(x, [])
+  
+  desugar-attribute-ref:
+    AttributeTerm(x) -> RootApp(x)
+  
+  desugar-attribute-ref:
+    DotChild(x) -> Child(x)
+
+rules // desugar TermDots (...) construct  
+
+  // basic, unoptimized case
+  desugar-term-dots:
+    TermDots() -> Var(ListVar(<new>))
+
+  // optimized case: // ?Foo(...) -> <where(<get-constructor => "Foo">)>
+  desugar-term-dots =
+    at-match(
+      oncetd([TermDots()]);
+      not(oncetd(?RootApp(_)));
+      
+      alltd(
+        term-dots-to-constructor-check
+      );
+      !RootApp(Where(<id>))
+    )
+  
+  term-dots-to-constructor-check:
+    Op(name, [TermDots()]) ->
+    Term |[ <get-constructor => str_name>  ]|
+    where
+      str_name  := <conc-strings> ("\"", name, "\"")
+
+  at-match(s) =
+    Match(s) + NameDefBlock(s, id) + RuleNoCond(s, id) + Rule(s, id, id)
+
+  /*
+  desugar:
+    Op(name, terms) ->
+    Explode(Str(name'), NoAnnoList(List(terms')))
+    where
+      terms' := <map1(desugar)> terms;
+      name'  := <conc-strings> ("\"", name, "\"")
+  */
+      
+rules // flatten block definitions to individual definitions
+
+  astr-flatten-block-def =
+    ?NameDefBlock(pattern, <id>);
+    map(
+      \AttributeTypedDef(type, AttributeDefStrategy(_, _, _)) ->
+       AttributeDef(type, pattern, <id>)\
+    )
+
+  astr-flatten-block-def =
+    ?PatternDefBlock(type, attribute, <id>);
+    map(
+      \AttributePDefStrategy(pattern, child, s) ->
+       AttributeDef(type, pattern, AttributeDefStrategy(child, attribute, s))\
+    )
+  

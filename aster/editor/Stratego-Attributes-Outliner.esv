@@ -1,0 +1,13 @@
+module Stratego-Attributes-Outliner
+  
+  // Outliner rules take the form of <sort>.<pattern>, <sort>._, or _.<pattern>
+  
+  outliner Customized outliner
+    
+    Module
+
+    StrategyDef
+    
+    RuleDef
+    
+    Decl

@@ -1,0 +1,108 @@
+module Stratego-Attributes
+
+imports
+  Stratego-Sugar
+  StrategoMix[Plain]
+
+hiddens
+  context-free start-symbols Module
+
+exports
+  sorts
+    AttributeType
+    OptAttributeType
+    Attribute
+    AttributeDef
+    AttributeRef
+    BlockAttributeDef
+    AnonymousRewrite
+    AnonymousRewriteCall
+    ChildIdentifierDot
+    DotChildIdentifier
+    AttributePatternValue
+    AttributeNameValue
+    AttributeTypeNameValue
+  
+  context-free syntax %% attributes
+  
+    Id "(" { Term "," }+ ")" -> Attribute {cons("Attribute")}
+    Id                       -> Attribute {cons("AttributeNoArgs")}
+
+    Term "." Attribute -> AttributeRef {cons("AttributeRef")}
+    "id" "." Attribute -> AttributeRef {cons("AttributeRefSelf"), prefer}
+    
+    %% TODO: AttributeRefLHS?
+    
+    AttributeRef -> Strategy {prefer}
+    AttributeRef -> Term {cons("AttributeTerm")}
+ 
+  context-free syntax %% semantic rules
+  
+    %% TODO: Separate core syntax
+    %% TODO: "with" clause for propagation
+ 
+    "attributes" Def* -> Decl {cons("Attributes")}    
+    AttributeDef      -> Def
+    AttributeDefBlock -> Def
+
+    "@" OptAttributeType Term[[Plain]] "." AttributeNameValue -> AttributeDef {cons("AttributeDef")}
+    
+    %% Syntactic sugar for grouping attributes
+    "@" Term[[Plain]]                  ":" AttributeTypeNameValue* -> AttributeDefBlock {cons("NameDefBlock")}
+    "@" OptAttributeType "." Attribute ":" AttributePatternValue*  -> AttributeDefBlock {cons("PatternDefBlock")}
+    
+    OptAttributeType AttributeNameValue -> AttributeTypeNameValue {cons("AttributeTypedDef")}
+    
+    ChildIdentifierDot? Attribute               -> AttributeNameValue {cons("AttributeDefNoValue")}
+    ChildIdentifierDot? Attribute ":=" Term     -> AttributeNameValue {cons("AttributeDefTermNoWhere")}
+    ChildIdentifierDot? Attribute ":=" Term
+                     "where" Strategy        -> AttributeNameValue {cons("AttributeDefTerm")}
+    ChildIdentifierDot? Attribute "="  Strategy -> AttributeNameValue {cons("AttributeDefStrategy")}
+
+    Term[[Plain]] DotChildIdentifier? ":=" Term     -> AttributePatternValue {cons("AttributePDefTermNoWhere")}
+    Term[[Plain]] DotChildIdentifier? ":=" Term
+                  "where" Strategy               -> AttributePatternValue {cons("AttributePDefTerm")}
+    Term[[Plain]] DotChildIdentifier? "="  Strategy -> AttributePatternValue {cons("AttributePDefStrategy")}
+
+    Id "." -> ChildIdentifierDot {cons("Child")}
+    "." Id -> DotChildIdentifier {cons("DotChild")}
+    
+    "::" "->" Term[[Plain]]                  -> AttributeDef {cons("BlockAnonymousRewriteRuleNoWhere")}
+    "::" "->" Term[[Plain]] "where" Strategy -> AttributeDef {cons("BlockAnonymousRewriteRule")}
+    "::" "=" Strategy                        -> AttributeDef {cons("BlockAnonymousRewriteStrategy")}
+    
+    "syn"     -> AttributeType {cons("Syn")}
+    "inh"     -> AttributeType {cons("Inh")}
+    "chained" -> AttributeType {cons("Chained")}
+%%  "eq"      -> AttributeType {cons("Eq")}
+    AttributeType  -> OptAttributeType
+                   -> OptAttributeType {cons("Eq")}
+ 
+  context-free syntax %% Anonymous rewrites
+                 
+    "::" Term[[Plain]] "->" Term[[Plain]] -> AnonymousRewrite {cons("AnonymousRewriteRuleNoWhere")}  
+    "::" Term[[Plain]] "->" Term[[Plain]]
+                       "where" Strategy   -> AnonymousRewrite {cons("AnonymousRewriteRule")}
+  
+    "::" "=" Strategy                     -> AnonymousRewrite {cons("AnonymousRewriteStrategy")}
+  
+    "::" -> AnonymousRewriteCall {cons("AnonymousRewriteCall")}
+      
+    AnonymousRewrite     -> Def
+    AnonymousRewriteCall -> Strategy
+  
+  context-free syntax %% Misc.
+  
+    %% Common pattern in AGs: don't care about the children
+  
+    "..." -> Term {cons("TermDots")}
+    "..." -> Term[[Plain]] {cons("TermDots")}
+ 
+    %% Id "(" { Id "," }+ ")" -> TermPrototype
+    %% Id                     -> TermPrototype
+    %% 
+    %% "extend" TermPrototype ":" { TermPrototype }+ -> ExtendId
+    %%
+    %% "rewrite" RuleType { Attribute "+" }+ "->" AttributeRule
+    %% Term(...) -> 
+    

@@ -1,0 +1,27 @@
+module check
+
+imports
+  libstratego-lib
+  Stratego-Attributes
+
+rules
+
+  check-all =
+    topdown(try(check));
+    if HasError then
+      <xtc-exit> 1
+    end
+
+  check =
+    ?Attribute(_, _);
+    if not(attribute-type) then
+      attribute-signature;
+      err(|"Undefined attribute referenced");
+      rules(HasError : _)
+    end
+
+  // TODO: Check well-formedness of syn/inh defs
+  // Also:
+  // - reserved attribute names, like "parent"
+  // - declared but undefined attributes
+  // - check if topdown-depth succeeds for inh terms

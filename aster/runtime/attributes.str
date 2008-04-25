@@ -1,0 +1,13 @@
+module attributes
+
+imports
+  libstratego-lib
+
+strategies
+
+  get-cached-attribute(|attribute-cache) =
+    !attribute-cache;
+    hashtable-get(|<id>)
+
+  attribute-cache =
+    lookup-table(|"attribute-cache")

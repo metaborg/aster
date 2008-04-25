@@ -1,0 +1,158 @@
+module assimilate
+
+imports
+  Stratego-Attributes
+  stratego-rerag
+  util
+
+strategies
+
+rules
+
+  assimilate-all =
+    add-imports;
+    
+    all-stratego-defs(try(
+      assimilate-def
+    ));
+    topdown(try(
+      assimilate-expr-outside-ag
+    ))
+
+  add-imports:
+    Module(x, decl*) -> Module(x, [imports | decl*])
+    where
+      imports := |[ imports attributes parents rewrites ]|
+
+  // TODO: Add args to eval functions
+  // TODO: (Selective) caching indirection
+
+  assimilate-def:
+    AttributeDef(
+      _
+    , t_pattern
+    , AttributeDefStrategy(child, attr @ Attribute(name, args), s)
+    ) ->
+    Def* |[
+      x_eval(|a_parent*, x_all-parents, x_attr-cache) =
+        (fail < ?x_parent + id); // ensure x_parent is considered "bound"
+        s_pattern;
+        ?x_current;
+        s'
+      
+      /*
+      x_eval-dynamic(|x_name_param, a_parent*, x_all-parents, x_attr-cache) =
+        (fail < ?x_parent + id);
+        where(str_name := x_name_param);
+        s_pattern;
+        ?x_current;
+        s'
+      */
+    ]|
+    where
+      str_name       := <conc-strings> ("\"", name, "\"");
+      x_name_param   := <newname> "name";
+      x_parent       := <newname> "parent";
+      x_current      := <newname> "current";
+      x_all-parents  := <newname> "all-parents";
+      x_attr-cache   := <newname> "attr-cache";
+      
+      if None() := child then // Synthesized / chained attribute
+        x_eval         := <attribute-accessor-name(|"syn")> attr;
+        x_eval-dynamic := <attribute-accessor-name-dynamic(|"syn")> attr;
+        s_pattern      := |[ ?t_pattern ]|;
+        a_parent*      := [];
+        s_parent := |[
+          // strategy to get the current parent, using x_parent as a cache
+          ?x_current
+          < (!x_parent <+ get-parent(|x_all-parents) => x_parent)
+          + get-parent(|x_all-parents)
+        ]|
+      else // Inherited attribute
+        Some(Child(child')) := child;
+        x_eval              := <attribute-accessor-name(|"inh")> attr;
+        x_eval-dynamic      := <attribute-accessor-name-dynamic(|"inh")> attr;
+        s_pattern           := <ancestor-check(|t_pattern, child', x_parent, x_all-parents)>;
+        a_parent*           := Typedid* |[ x_parent ]|;
+        s_parent            := |[ ?x_current < !x_parent + get-parent(|x_all-parents) ]|
+      end;
+      
+      !s;
+      topdown(try(
+        assimilate-expr-inside-ag(|s_parent, x_current, x_all-parents, x_attr-cache)
+      )) => s'
+  
+  ancestor-check(|t_pattern, x_child, x_parent, x_all-parents) =
+    // TODO: Access the proper ancestor determined from the pattern/child
+    //       also, check the proper indices
+    depth := <topdown-depth(|Var(x_child))> t_pattern;
+
+    !|[ !x_parent ]|;
+    
+    while(
+      not(0)
+    , !|[ ~<id>; get-parent(|x_all-parents) ]|
+    )
+
+  attribute-accessor-name(|type):
+    Attribute(name, args) -> accessor
+    where
+      accessor  := <conc-strings> ("eval-", type, "-", name)
+
+  attribute-accessor-name-dynamic(|type):
+    Attribute(name, args) -> accessor
+    where
+      accessor := <conc-strings> ("eval-", type)
+
+rules
+
+  assimilate-expr-inside-ag(|s_parent, x_current, x_all-parents, x_attr-cache) =
+    assimilate-parent-ref(|s_parent, x_current)
+  <+
+    assimilate-attr-ref(|s_parent, x_current, x_all-parents, x_attr-cache)
+  
+  assimilate-parent-ref(|s_parent, x_current):
+    AttributeRef(t, "parent") -> Strat |[ s_parent ]|
+
+  assimilate-attr-ref(|s_parent, x_current, x_all-parents, x_attr-cache):
+    AttributeRef(t, attr @ Attribute(name, args)) ->
+    Strat |[ <s> t ]|
+    where
+      type   := <preferred-attribute-accessor-type> attr;
+      x_eval := <attribute-accessor-name(|type)> attr;
+      
+      if Inh() := <attribute-type> attr then
+        s := |[ x_eval(|<s_parent>, x_all-parents, x_attr-cache) ]|
+      else
+        s := |[ x_eval(|            x_all-parents, x_attr-cache) ]|
+      end
+  
+  preferred-attribute-accessor-type =
+    attribute-type => Inh();
+    !"inh"
+  <+
+    !"syn" // preferred for syn and chained attributes
+
+rules
+
+  assimilate-expr-outside-ag =
+    assimilate-parent-ref-outside-ag <+ assimilate-attr-ref-outside-ag
+
+  assimilate-attr-ref-outside-ag:
+    AttributeRef(t, attr @ Attribute(name, args)) ->
+    Strat |[
+      <s> t
+    ]|
+    where
+      type   := <preferred-attribute-accessor-type> attr;
+      x_eval := <attribute-accessor-name(|type)> attr;
+      
+      if Inh() := <attribute-type> attr then
+        s := |[ x_eval(|<parent>, <all-parents>, <attribute-cache>) ]|
+      else
+        s := |[ x_eval(|          <all-parents>, <attribute-cache>) ]|
+      end
+
+  assimilate-parent-ref-outside-ag:
+    AttributeRef(t, "parent") ->
+    Strat |[ <parent> t ]|

@@ -1,0 +1,22 @@
+module util
+
+imports
+  libstratego-lib
+
+strategies
+    
+  /**
+   * Get the depth of the given node relative to the input tree.
+   * @type Term -> Int
+   */
+  topdown-depth(|child) =
+    topdown-depth(|child, 0)
+  
+  topdown-depth(|child, initial) =
+    one(
+      topdown-depth(|child, <inc> initial) => result
+    );
+    !result
+  <+
+    ?child;
+    !initial

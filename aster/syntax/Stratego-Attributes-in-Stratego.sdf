@@ -1,0 +1,38 @@
+module Stratego-Attributes-in-Stratego
+imports
+  Stratego-Sugar-in-Stratego
+  Stratego-Attributes
+
+hiddens
+  context-free start-symbols StrategoModule
+
+exports
+
+  %% TODO: Move Stratego-Sugar-in-Stratego extensions
+
+  context-free syntax
+  
+
+    "Decl"     "|[" Decl  "]|" -> StrategoTerm {cons("ToTerm")}
+    "Decl*"    "|[" Decl* "]|" -> StrategoTerm {cons("ToTerm")}
+
+    "Def*"     "|[" Def* "]|" -> StrategoTerm {cons("ToTerm")}
+    
+    "Typedid*" "|[" { Typedid ","}* "]|" -> StrategoTerm {cons("ToTerm")}
+
+  variables
+    [xyzfglc] "_" [A-Za-z0-9\'\-\_]+     -> Id {prefer}
+    [xyzfglc] "_" [A-Za-z0-9\'\-\_]+ "*" -> Id* {prefer}
+
+    "t"       "_" [A-Za-z0-9\'\-\_]+     -> Term {prefer}
+    "t"       "_" [A-Za-z0-9\'\-\_]+ "*" -> {Term ","}* {prefer}
+
+    %% HACK: Work around Var -> Term has a {prefer} annotation in Stratego
+    "t"       "_" [A-Za-z0-9\'\-\_]+     -> Var {prefer}
+    "t"       "_" [A-Za-z0-9\'\-\_]+ "*" -> {Var ","}* {prefer}
+        
+    "s"       "_" [A-Za-z0-9\'\-\_]+     -> Strategy {prefer}
+    "s"       "_" [A-Za-z0-9\'\-\_]+ "*" -> {Strategy ","}* {prefer}
+    
+    "a"       "_" [A-Za-z0-9\'\-\_]+     -> Typedid {prefer}
+    "a"       "_" [A-Za-z0-9\'\-\_]+ "*" -> {Typedid ","}+ {prefer}

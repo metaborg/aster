@@ -1,0 +1,60 @@
+module Stratego-Attributes-Colorer
+  
+  colorer Extension
+  
+    StrategyDef: 0 64 128 bold
+    
+    RuleDef: bold
+    
+    _.Var: 0 128 64 italic
+  
+  colorer Default, token-based highlighting
+    keyword token:
+      127 0 85
+      _
+      bold
+
+    identifier token:
+      black
+      _
+
+    string token:
+      blue
+      _
+
+    number token:
+      dark
+      green
+      _
+
+    var token:
+      0 128 64
+      white
+      italic
+
+    operator token:
+      0 0 128
+      _
+
+    
+
+    // comments
+
+    layout token:
+      100 100 0
+      _
+      italic
+  colorer Standard IDE colors
+    "Keywords" = 127 0 85
+  colorer System colors
+    red = 255 0 0
+
+    green = 0 255 0
+
+    blue = 0 0 255
+
+    cyan = 0 255 255
+
+    magenta = 255 0 255
+
+    yellow = 255 255 0

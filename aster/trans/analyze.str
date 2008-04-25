@@ -1,0 +1,38 @@
+module analyze
+
+imports
+  libstratego-lib
+  Stratego-Attributes
+
+strategies
+
+  // TODO: Infer type of Eq() rules
+  // TODO: Check declared vs. inferred type consistency
+
+  analyze =
+    ?AttributeDef(type, _, AttributeDefStrategy(_, attribute, _));
+    where(
+      sig     := <attribute-signature> attribute;
+      oldtype := <!sig; AttributeType <+ !type>;
+      type'   := <unify-attribute-type> (type, oldtype);
+      rules(
+        AttributeType: sig -> type
+      )
+    )
+  
+  attribute-type =
+    attribute-signature;
+    AttributeType
+  
+  attribute-signature:
+    Attribute(name, args) -> Attribute(name, <length> args)
+  
+  unify-attribute-type =
+    \(t, t) -> t\
+  <+
+    \(t, Eq()) -> t\
+  <+
+    \(Eq(), t) -> t\
+  <+
+    !Chained()
+    

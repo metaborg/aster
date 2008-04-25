@@ -1,0 +1,63 @@
+STRCFLAGS = \
+	-la stratego-lib \
+	-la stratego-sglr \
+	-I syntax \
+	-I runtime \
+	-I ~/.nix-profile/share \
+	--format-check 0 \
+	`pkg-config --variable=strcxtcflags strategoxt`
+
+DEPS = \
+    trans/stratego-rerag.str \
+    $(wildcard trans/*.str) \
+    syntax/Stratego-Attributes-in-Stratego.tbl \
+    syntax/Stratego-Attributes-in-Stratego.tbl
+
+# I don't care much for nullary constructor warnings unless it's about lowercase ones, such as 'start'
+STRCSTFU=2>&1 | grep -vE 'warning ] Nullary constructor .*[A-Z]|warning ] multiple external| \[ExtSDef\(|stratego-trm|module-name-checked|module-name-checked"' \
+                 >&2
+
+all : syntax/Stratego-Attributes.tbl \
+      syntax/Stratego-Attributes.def \
+      syntax/Stratego-Attributes.str \
+      syntax/Stratego-Attributes-in-Stratego.tbl \
+      trans/stratego-rerag
+
+check : all
+	$(MAKE) -C tests check
+
+clean :
+	rm -f syntax/*.tbl trans/stratego-rerag trans/stratego-rerag-no-check
+	$(MAKE) -C tests clean
+
+% : %.str trans/check.str $(DEPS) $(wildcard runtime/*.str)
+	@rm -f $@.c
+	strc -i $< -o $@ -m main-`basename $*` $(STRCFLAGS) $(STRCSTFU)
+	@cp $@ $@.copy
+	@rm $@.c
+
+trans/stratego-rerag-no-check : $(DEPS)
+	[ -e trans/stratego-rerag.copy ] && cp trans/stratego-rerag.copy trans/stratego-rerag-no-check ||\
+	( rm -f $@.c && \
+	  echo 'module check strategies check-all = warn(|"Compiler checks are disabled.")' > trans/check.str && \
+	  strc -i $< -o $@ -m main-stratego-rerag $(STRCFLAGS) $(STRCSTFU) && \
+	  rm trans/check.str $@.c )
+
+trans/check.str : trans/check.astr trans/stratego-rerag-no-check
+	trans/stratego-rerag-no-check -i $< -o $@ || (rm trans/stratego-rerag.copy trans/stratego-rerag-no-check)
+
+%.rtg : %.def
+	sdf2rtg -i $< -m `basename $*` -o $@ --ignore-missing-cons
+
+%.str : %.rtg
+	rtg2sig -i $< -o $@	
+
+%.def : %.sdf
+	pack-sdf -i $< -o $@  -I syntax
+
+Mix-%.sdf : %.def
+	gen-sdf-mix -i $< --main `basename $*` --name Mix-`basename $*` -o $@
+
+%.tbl : %.def
+	sdf2table -m `basename $*` -i $< -o $@
+

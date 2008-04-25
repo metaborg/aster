@@ -1,0 +1,29 @@
+module repmin
+
+signature constructors
+  Fork : Leaf * Leaf -> Node
+  Leaf : Int         -> Node
+
+strategies
+
+  main-repmin =
+    !Fork(
+      Fork(
+        Leaf(70)
+      , Fork(
+          Leaf(212)
+        , Leaf(83)
+        )
+      )
+    , Leaf(42)
+    );
+    id.min => 42
+
+rules
+
+  // syn Fork.min
+
+  @Fork(t1, t2).min := <min> (t1.min, t2.min)
+
+  @Leaf(x).min      := x
+

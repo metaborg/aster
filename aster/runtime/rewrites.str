@@ -1,0 +1,41 @@
+module rewrites
+
+strategies
+
+/*  
+  get-remapped-term =
+    get-cached-attribute(|<all-remapped-terms>)
+
+  get-remapped-term(|all-remapped-terms) =
+    !attribute-cache;
+    hashtable-get(|<id>)
+  
+  all-remapped-terms =
+    lookup-table(|"all-remapped-terms")
+
+  remap-term(|to) =
+    remap-term(|to, <all-parents>, <all-remapped-terms>)
+
+  remap-term(|to, all-parents, all-remapped-terms):
+*/
+
+  rewrite-term(|all-parents, to):
+    from -> to
+    where
+      // For all ancestors, lazily rewrite subterms
+      repeat-until(
+        { parent, index:
+          get-parent(|all-parents) => (parent, index);
+          rules(
+            SagRewrite: parent -> <all(try(SagRewrite))> parent
+            where
+              rules(
+                SagRewrite :- parent
+              )
+          )
+        }
+      , NoParent
+      );
+      rules(
+        SagRewrite: from -> to
+      )

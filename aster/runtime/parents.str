@@ -1,0 +1,74 @@
+module parents
+
+imports
+  libstratego-lib
+
+signature constructors
+  Id : String -> TermId
+  NoParent     : TermId
+
+strategies
+
+  get-parent(|all-parents) =
+    !all-parents;
+    hashtable-get(|<id>)
+  
+  set-parent(|all-parents, value) =
+    ?key;
+    !all-parents;
+    hashtable-put(|key, value)
+
+  all-parents =
+    lookup-table(|"all-parents")
+    
+strategies // Initialization
+
+  // TODO: Warn if node is not initialized??
+  astr-initialize-node-lazy =
+    where(get-annos; getfirst(Id(id)))
+  <+
+    astr-initialize-node
+
+  astr-initialize-node =
+    astr-initialize-node(|<all-parents>, NoParent())
+  
+  astr-initialize-node(|all-parents, parent) =
+    // First add unique annos everywhere,
+    // then assign parent rules for the newly formed nodes
+    astr-disable-sharing;
+    where(
+      astr-add-parent-references(|all-parents, parent)
+    )
+
+  astr-disable-sharing:
+    t {a*} -> t' {b*}
+    where
+      t' := <all(astr-disable-sharing)> t;
+      if [] := a* then
+        b* := [<new>]
+      else
+        b* := [<new> | <filter(not(?Id(_)))>]
+      end
+
+  astr-add-parent-references(|all-parents, parent) =
+    ?node;
+    set-parent(|all-parents, parent);
+    all(
+      set-parent(|all-parents, node)
+    )
+  
+  /* UNDONE: Indexed parent references
+  astr-add-parent-references(|all-parents, parent, index) =
+    ?node;
+    set-parent(|all-parents, parent);
+    get-arguments;
+    astr-add-parent-references-to-subterms(|node, 0)
+
+  astr-add-parent-references-to-subterms(|parent, index) =
+    ?[hd | tl];
+    <astr-add-parent-references(|parent, index)> hd;
+    <astr-add-parent-references-to-subterms(|parent, <inc> index)> tl
+  <+
+    []
+  */
+    
