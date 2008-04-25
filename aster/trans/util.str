@@ -20,3 +20,6 @@ strategies
   <+
     ?child;
     !initial
+  
+  fold-seq =
+    foldr(!Id(), \(x,y) -> Seq(x,y)\)

@@ -1,0 +1,23 @@
+module default-attributes
+
+imports
+  Stratego-Attributes
+  stratego-rerag
+
+strategies
+
+  is-native-attribute = "parent" + "init"
+
+rules
+
+  assimilate-native-ref(|s_parent, x_all-parents, x_current):
+    AttributeRef(t, "parent") -> Strat |[ s_parent ]|
+  
+  assimilate-native-ref(|s_parent, x_all-parents, x_current):
+    AttributeRef(t, "init") -> Strat |[ <astr-initialize-node(|x_all-parents, NoParent())> t ]|
+
+  assimilate-native-ref-outside-ag:
+    AttributeRef(t, "parent") -> Strat |[ <parent <+ !NoParent()> t ]|
+  
+  assimilate-native-ref-outside-ag:
+    AttributeRef(t, "init") -> Strat |[ <astr-initialize-node> t ]|

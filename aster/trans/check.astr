@@ -3,6 +3,7 @@ module check
 imports
   libstratego-lib
   Stratego-Attributes
+  default-attributes
 
 rules
 
@@ -14,7 +15,7 @@ rules
 
   check =
     ?Attribute(_, _);
-    if not(attribute-type) then
+    if not(attribute-type + Attribute(is-native-attribute, id)) then
       attribute-signature;
       err(|"Undefined attribute referenced");
       rules(HasError : _)

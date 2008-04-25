@@ -1,4 +1,4 @@
-TESTS = empty repmin binary-numbers
+TESTS = empty find-minimum repmin binary-numbers
 RUN_TESTS = $(TESTS:=.run)
 STR_TESTS = $(TESTS:=.str)
 

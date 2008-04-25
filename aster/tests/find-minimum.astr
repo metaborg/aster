@@ -1,4 +1,4 @@
-module repmin
+module find-minimum
 
 signature constructors
   Fork : Leaf * Leaf -> Node
@@ -6,7 +6,7 @@ signature constructors
 
 strategies
 
-  main-repmin =
+  main-find-minimum =
     !Fork(
       Fork(
         Leaf(70)
@@ -17,21 +17,9 @@ strategies
       )
     , Leaf(42)
     );
-    
-    id.init;
-    
-    alltd(replace);
-    
-    debug;
-    
-    where(
-      collect-all(?Leaf(<id>));
-      map(42)
-    )
+    id.min => 42
 
 rules
-
-  replace : Leaf(x) -> Leaf(id.min)
 
   // syn Fork.min
 

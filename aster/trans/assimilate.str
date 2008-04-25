@@ -3,6 +3,7 @@ module assimilate
 imports
   Stratego-Attributes
   stratego-rerag
+  default-attributes
   util
 
 strategies
@@ -11,7 +12,6 @@ rules
 
   assimilate-all =
     add-imports;
-    
     all-stratego-defs(try(
       assimilate-def
     ));
@@ -78,21 +78,21 @@ rules
       end;
       
       !s;
+        tiny-debug(!1);
       topdown(try(
+        tiny-debug(!2);
         assimilate-expr-inside-ag(|s_parent, x_current, x_all-parents, x_attr-cache)
       )) => s'
+        ; tiny-debug(!3)
   
   ancestor-check(|t_pattern, x_child, x_parent, x_all-parents) =
-    // TODO: Access the proper ancestor determined from the pattern/child
-    //       also, check the proper indices
-    depth := <topdown-depth(|Var(x_child))> t_pattern;
+    depth          := <topdown-depth(|Var(x_child))> t_pattern;
+    s_traverse-up  := |[ get-parent(|x_all-parents) ]|;
+    s_traverse-up' := <copy; fold-seq> (depth, s_traverse-up);
 
-    !|[ !x_parent ]|;
-    
-    while(
-      not(0)
-    , !|[ ~<id>; get-parent(|x_all-parents) ]|
-    )
+    !|[ !x_parent;
+        s_traverse-up'
+    ]|
 
   attribute-accessor-name(|type):
     Attribute(name, args) -> accessor
@@ -107,14 +107,11 @@ rules
 rules
 
   assimilate-expr-inside-ag(|s_parent, x_current, x_all-parents, x_attr-cache) =
-    assimilate-parent-ref(|s_parent, x_current)
+    assimilate-native-ref(|s_parent, x_all-parents, x_current)
   <+
-    assimilate-attr-ref(|s_parent, x_current, x_all-parents, x_attr-cache)
-  
-  assimilate-parent-ref(|s_parent, x_current):
-    AttributeRef(t, "parent") -> Strat |[ s_parent ]|
+    assimilate-attr-ref(|s_parent, x_all-parents, x_current, x_attr-cache)
 
-  assimilate-attr-ref(|s_parent, x_current, x_all-parents, x_attr-cache):
+  assimilate-attr-ref(|s_parent, x_all-parents, x_current, x_attr-cache):
     AttributeRef(t, attr @ Attribute(name, args)) ->
     Strat |[ <s> t ]|
     where
@@ -136,11 +133,14 @@ rules
 rules
 
   assimilate-expr-outside-ag =
-    assimilate-parent-ref-outside-ag <+ assimilate-attr-ref-outside-ag
+    assimilate-native-ref-outside-ag
+  <+
+    assimilate-attr-ref-outside-ag
 
   assimilate-attr-ref-outside-ag:
     AttributeRef(t, attr @ Attribute(name, args)) ->
     Strat |[
+      astr-initialize-node-lazy;
       <s> t
     ]|
     where
@@ -152,7 +152,3 @@ rules
       else
         s := |[ x_eval(|          <all-parents>, <attribute-cache>) ]|
       end
-
-  assimilate-parent-ref-outside-ag:
-    AttributeRef(t, "parent") ->
-    Strat |[ <parent> t ]|

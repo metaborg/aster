@@ -1,0 +1,28 @@
+module io
+
+imports
+  libstratego-lib
+
+strategies
+  
+  input-stratego-file =
+    parse-xtc-file-report-errors(|<parse-table-stratego-attributes>, "Module")
+
+  output-stratego-file =
+    write-to;
+    xtc-transform(!"pp-stratego", !["--abstract" | <pass-verbose>])
+  <+
+    pp-format-checker-error(|"Internal error: generated AST is malformed", "Stratego-Sugar.rtg")
+
+   pp-format-checker-error(|msg, rtg) =
+      err-msg(|msg)
+    ; write-to => FILE(file)
+    ; try(<xtc-command(!"format-check")> ["--vis", "-i", file, "--rtg", <xtc-find> rtg])
+    ; log(|Critical(), "Fatal errors encountered in generated code")
+    ; <xtc-exit> 1
+  
+  parse-table-stratego-attributes =
+    CachedParseTableStrategoAttributes
+  <+
+    table := <open-parse-table> <import-term(Stratego-Attributes.tbl)>;
+    rules(CachedParseTableStrategoAttributes := table)

@@ -27,6 +27,14 @@ strategies // Initialization
   astr-initialize-node-lazy =
     where(get-annos; getfirst(Id(id)))
   <+
+    where(
+      warn(|"Evaluating attribute on uninitialized tree.");
+      prim("SSL_stacktrace_get_all_frame_names");
+      reverse;
+      try(\["astr-initialize-node-lazy" | tail] -> tail\);
+      map(<fprintnl> (stderr(), ["\t", <id>]))
+    );
+    
     astr-initialize-node
 
   astr-initialize-node =
