@@ -6,9 +6,6 @@ imports
 
 strategies
 
-  // TODO: Infer type of Eq() rules
-  // TODO: Check declared vs. inferred type consistency
-
   analyze =
     ?AttributeDef(type, _, AttributeDefStrategy(_, attribute, _));
     where(
@@ -25,14 +22,18 @@ strategies
     AttributeType
   
   attribute-signature:
-    Attribute(name, args) -> Attribute(name, <length> args)
+    Attribute(name, args) -> <strip-annos> Attribute(name, <length> args)
   
   unify-attribute-type =
     \(t, t) -> t\
   <+
-    \(t, Eq()) -> t\
+    \(Local(), _) -> Local()\
   <+
-    \(Eq(), t) -> t\
+    \(_, Local()) -> Local()\
+  <+
+    \(t, NoType()) -> t\
+  <+
+    \(NoType(), t) -> t\
   <+
     !Chained()
     

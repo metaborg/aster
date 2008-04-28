@@ -7,22 +7,71 @@ imports
 
 rules
 
+  init-check = id.init
+
   check-all =
-    topdown(try(check));
-    if HasError then
+    collect-all(where(id.error));
+    
+    if not([]) then
+      map(
+        id.pp;
+        err(|id.error)
+      );
       <xtc-exit> 1
     end
 
-  check =
-    ?Attribute(_, _);
-    if not(attribute-type + Attribute(is-native-attribute, id)) then
-      attribute-signature;
-      err(|"Undefined attribute referenced");
-      rules(HasError : _)
-    end
+attributes
+  
+  @local error:
+    Attribute(_, _) -> "Undefined attribute referenced"
+    where
+      not(attribute-type + Attribute(is-native-attribute, id))
+    
+    AttributeDef(_, _, _) -> "Attribute type not declared"
+    where
+      NoType() := id.def-type
+    
+    amb(_) -> "Internal error: ambiguity in input"
+    
+    AttributeDef(_, _, _) -> "Chained attributes not yet supported"
+    where
+      Chained() := id.def-type
+    
+    AttributeDef(_, pattern, AttributeDefStrategy(Some(Child(x)), _, _)).x -> "Child variable not defined by rule pattern"
+    where
+      not(<oncetd(?Var(x))> pattern)
+    
+    AttributeDef(type, pattern, s) -> "Chained attributes must specify type inh or syn for each definition."
+    where
+      Chained() := id.def-type;
+      <not(Chained + Inh + Syn)> type;
+      <not(RootApp(Fail()))> pattern
+    
+    AttributeDefStrategy(_, RootApp(Id()), _) -> "Rule should be inherited or local"
+    where
+      id.def-type-local => Syn() 
+    
+    AttributeDefStrategy(_, Attribute(<is-native-attribute>, _), _) -> "Cannot redefine a native attribute"
+    
+    // TODO: report error at the declaration site? (id.def-type.parent)
+    AttributeDef(not-Local, _, _) -> "Can only assign local definitions to local attribute"
+    where
+      <not(Local)> not-Local;
+      <Local> id.def-type
+    
+  // TODO: more checks
+  // - check if topdown-depth succeeds for child patterns
+  // - no child patterns in strat calls
+  // - @inh x(kid).foo = kid.foo should be synthesized or local 
 
-  // TODO: Check well-formedness of syn/inh defs
-  // Also:
-  // - reserved attribute names, like "parent"
-  // - declared but undefined attributes
-  // - check if topdown-depth succeeds for inh terms
+attributes
+  
+  @local pp = attribute-signature <+ id.uninit // TODO
+  
+  @inh def-type:
+    AttributeDef(_, _, AttributeDefStrategy(_, attr, _)) ->  <attribute-type> attr
+  
+  @inh def-type-local:
+    AttributeDef(type, _, _) ->  type
+  
+  // @inh root.has-root-def(|name) = oncetd(AttributeDef(...

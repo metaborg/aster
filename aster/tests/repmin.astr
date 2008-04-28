@@ -20,9 +20,11 @@ strategies
     
     id.init;
     
+    id.debug;
+    
     alltd(replace);
     
-    debug;
+    id.debug;
     
     where(
       collect-all(?Leaf(<id>));
@@ -31,11 +33,11 @@ strategies
 
 rules
 
-  replace : Leaf(x) -> Leaf(id.min)
+  replace: Leaf(x) -> Leaf(id.global-min)
+  
+  @inh root.global-min = id.min
+  
+  @syn Fork(t1, t2).min := <min> (t1.min, t2.min)
 
-  // syn Fork.min
-
-  @Fork(t1, t2).min := <min> (t1.min, t2.min)
-
-  @Leaf(x).min      := x
+  @syn Leaf(x).min      := x
 

@@ -1,0 +1,11 @@
+module check
+
+imports
+  libstratego-lib
+
+strategies
+
+  check-all = warn-msg(|"Compiler checks are disabled.")
+
+  init-check = id
+

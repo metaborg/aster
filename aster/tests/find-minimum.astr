@@ -17,13 +17,13 @@ strategies
       )
     , Leaf(42)
     );
-    id.min => 42
+    id.disable-warnings;
+    id.min => 42;
+    id.debug
 
 rules
 
-  // syn Fork.min
+  @syn Fork(t1, t2).min := <min> (t1.min, t2.min)
 
-  @Fork(t1, t2).min := <min> (t1.min, t2.min)
-
-  @Leaf(x).min      := x
+  @syn Leaf(x).min      := x
 

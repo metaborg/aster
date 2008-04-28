@@ -12,24 +12,30 @@ imports
   debug
   io
 
+signature constructors
+
+  Trace : OptionKey
+
 strategies
 
   stratego-rerag =
+    add-default-attributes;
     desugar-all;
     
-    {| AttributeType:
-      all-stratego-defs(try(analyze));
-      check-all;      
-      assimilate-all
-    |}
+    // init-check; // TODO: init-check, when working w/ dyn. rules...
+    all-stratego-defs(try(analyze));
+    where(check-all);
+    assimilate-all
   
   all-stratego-defs(s) =
-    Module(id, map(all(map(s); flatten-list <+ debug(!"uh oh"); fail)))
+    Module(id, map(all(map(s); flatten-list <+ not(is-list))))
 
 strategies // I/O
 
   main-stratego-rerag =
     xtc-io-wrap(
+      stratego-rerag-options
+    ,
       input-stratego-file;
       stratego-rerag;
       output-stratego-file
@@ -38,4 +44,11 @@ strategies // I/O
       report-failure; // TODO: This exits without the xtc-exit cleanup
       
       xtc-exit
+    )
+  
+  stratego-rerag-options =
+    Option( // defined in dryad as loose-option; pass-loose
+      "--trace"
+    , <set-config> (Trace(), <id>)
+    , !"--trace          Enable tracing messages (for debugging support)"
     )

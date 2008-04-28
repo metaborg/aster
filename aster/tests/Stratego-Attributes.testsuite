@@ -1,0 +1,22 @@
+testsuite Stratego-Attributes
+topsort Module
+
+test Rules block
+   "module foo rules" -> Module("foo",[Rules([])])
+
+test Assignment in pattern definition block
+  "module foo
+   rules
+    @attribute:
+      Pattern(x) -> 2 where Foo() :=  x"
+-> Module("foo",[Rules([PatternDefBlock(NoType,AttributeNoArgs("attribute"),[AttributePDefTerm(NoAnnoList(Op("Pattern",[Var("x")])),None,NoAnnoList(Int("2")),WhereClause(Assign(NoAnnoList(Op("Foo",[])),Var("x"))))])])])
+  
+test Rule definition vs. attribute pattern definition block
+  "module foo
+   rules @foo: 1 -> 2 @ bar : 3 -> 4"
+-> Module("foo",[Rules([PatternDefBlock(NoType,AttributeNoArgs("foo"),[AttributePDefTermNoWhere(NoAnnoList(Int("1")),None,NoAnnoList(Int("2")))]),PatternDefBlock(NoType,AttributeNoArgs("bar"),[AttributePDefTermNoWhere(NoAnnoList(Int("3")),None,NoAnnoList(Int("4")))])])])
+
+test Rule definition vs. attribute pattern definition block (2)
+  "module foo
+   rules @foo: 1 -> 2 @ syn bar : 3 -> 4"
+-> Module("foo",[Rules([PatternDefBlock(NoType,AttributeNoArgs("foo"),[AttributePDefTermNoWhere(NoAnnoList(Int("1")),None,NoAnnoList(Int("2")))]),PatternDefBlock(Syn,AttributeNoArgs("bar"),[AttributePDefTermNoWhere(NoAnnoList(Int("3")),None,NoAnnoList(Int("4")))])])])

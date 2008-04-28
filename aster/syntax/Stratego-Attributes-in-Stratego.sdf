@@ -11,7 +11,6 @@ exports
   %% TODO: Move Stratego-Sugar-in-Stratego extensions
 
   context-free syntax
-  
 
     "Decl"     "|[" Decl  "]|" -> StrategoTerm {cons("ToTerm")}
     "Decl*"    "|[" Decl* "]|" -> StrategoTerm {cons("ToTerm")}
@@ -20,7 +19,10 @@ exports
     
     "Typedid*" "|[" { Typedid ","}* "]|" -> StrategoTerm {cons("ToTerm")}
 
+    "~*" StrategoTerm -> {Term ","}+ {cons("FromTerm")}
+
   variables
+  
     [xyzfglc] "_" [A-Za-z0-9\'\-\_]+     -> Id {prefer}
     [xyzfglc] "_" [A-Za-z0-9\'\-\_]+ "*" -> Id* {prefer}
 
@@ -29,7 +31,10 @@ exports
 
     %% HACK: Work around Var -> Term has a {prefer} annotation in Stratego
     "t"       "_" [A-Za-z0-9\'\-\_]+     -> Var {prefer}
-    "t"       "_" [A-Za-z0-9\'\-\_]+ "*" -> {Var ","}* {prefer}
+%%  "t"       "_" [A-Za-z0-9\'\-\_]+ "*" -> {Var ","}* {prefer}
+    "t"[0-9\']*                          -> Var {prefer}
+%%  "t"[0-9\']*   "*"                    -> {Var ","}* {prefer}
+%%  "ts"[0-9\']*                         -> {Var ","}* {prefer}  
         
     "s"       "_" [A-Za-z0-9\'\-\_]+     -> Strategy {prefer}
     "s"       "_" [A-Za-z0-9\'\-\_]+ "*" -> {Strategy ","}* {prefer}

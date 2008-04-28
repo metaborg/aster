@@ -1,0 +1,124 @@
+module rule-merging
+
+imports
+  libstratego-lib
+  util
+
+overlays
+  DEFAULT_RULE_INDEX = -1
+  ROOT_RULE_INDEX    = 100000
+  HAS_CHILD_INDEX    = 10000
+
+strategies
+  
+  // TODO: caching (of selected attrs?)
+  // TODO: Fail if EvalFailed()
+  // TODO2: Optimize - inline rule defs in ordered rule defs?
+  
+  add-merged-rules:
+    Module(x, decl*) -> Module(x, [Rules(ordered) | decl*])
+    where
+      bagof-AllRules;
+      map(add-merged-rule) => ordered
+  
+  add-merged-rule:
+    def @ (x_eval, arity) ->
+    |[ x_eval(|a*) =
+         s_trace;
+         s;
+         not(EvalFailed);
+         astr-initialize-node-prefer(|x_all-parents, x_attr-cache)
+    ]|
+    where
+      a*      := <RuleArgs> def;
+      !a*     => Typedid* |[ x, x_all-parents, x_attr-cache, a_rest* ]|;
+      t*      := <map(param-to-term)> a*;
+      defs    := <sort-ordered-defs> <make-set> <bagof-OrderedRuleDefs> def;
+      s       := <fold-lchoice> <map(def-call(|t*))> defs;
+      s_trace := <add-trace-message(|x_eval, arity, <RuleAccessorType> def)>
+  
+  add-trace-message(|name, arity, type) =
+    if <get-config> Trace() then
+      arity'  := <0 < !"" + <conc-strings> ("/", <as-string>)> arity;
+      message := <conc-strings> ("\"", type, " ", name, arity', "\"");
+      !Strat |[ say(<conc-strings> ("[trace] ", ~str:message, " at ", <to-tiny-string>)) ]|
+    else
+      !Strat |[ id ]|
+    end
+
+  def-call(|args):
+    (x_eval, arity) -> |[ x_eval(|~*args) ]|
+
+  sort-ordered-defs =
+    map(!(<OrderedRuleIndex>, <id>));
+    qsort({
+      ?((index1, _), (index2, _));
+      <gt> (index1, index2)
+    });
+    map(Snd)
+
+strategies
+
+  make-merged-def(|attribute, pattern, child, accessor-type) =
+    where(
+      record-def(|attribute, accessor-type)
+    );
+    if Root() := pattern then
+      make-merged-def-root
+    else
+      make-merged-def(|pattern, <pattern-order-index(|child)> pattern)
+    end
+  
+  make-merged-def(|pattern, index):
+    |[ x_eval(|a*) = s ]| -> |[ x_eval'(|a*) = s ]|
+    where
+      x_eval' := <conc-strings> (x_eval, "-", <as-string> index);
+      arity   := <length> a*;
+      rules(        
+        OrderedRuleDefs  :+  (x_eval, arity) -> (x_eval', arity)
+        OrderedRuleIndex :   (x_eval', arity) -> index
+      )
+  
+  make-merged-def-root:
+    |[ x_eval(|a*) = s ]| -> |[ x_eval-root(|a*) = s ]|
+    where
+      x_eval-root := <conc-strings> (x_eval, "-root");
+      arity       := <length> a*;
+      rules(
+        OrderedRuleDefs  :+ (x_eval,      arity) -> (x_eval-root, arity)
+        OrderedRuleIndex :  (x_eval-root, arity) -> ROOT_RULE_INDEX()
+      )
+  
+  make-merged-def-default:
+    |[ x_eval(|a*) = s ]| -> |[ x_eval-default(|a*) = s ]|
+    where
+      x_eval-default := <conc-strings> (x_eval, "-default");
+      arity          := <length> a*;
+      rules(
+        OrderedRuleDefs  :+ (x_eval,         arity) -> (x_eval-default, arity)
+        OrderedRuleIndex :  (x_eval-default, arity) -> DEFAULT_RULE_INDEX()
+      )
+
+  record-def(|attribute, accessor-type) =
+    ?|[ x_eval(|a*) = s ]|;
+    arity := <length> a*;
+    if not(<IsKnownRule> (x_eval, arity)) then
+      rules(
+        AllRules         :+= (x_eval, arity)
+        IsKnownRule      :   (x_eval, arity)
+        RuleArgs         :   (x_eval, arity) -> a*
+        RuleAttribute    :   (x_eval, arity) -> attribute
+        RuleAccessorType :   (x_eval, arity) -> accessor-type
+      )
+    end
+  
+  /**
+   * Determine a priority number for a given semantic rule pattern.
+   * (Rules with higher values are tried first.)
+   */
+  pattern-order-index(|child):
+    pattern -> <add> (ops, bonus)
+    where
+      ops   := <length> <collect-all(?AnnoList(_, _) + ?NoAnnoList(_))> pattern;
+      // vars  := <length> <collect-all(?Var(_))> pattern;
+      bonus := <!child => None() < !0 + !HAS_CHILD_INDEX()>

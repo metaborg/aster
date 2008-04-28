@@ -5,6 +5,8 @@ imports
   stratego-rerag
   default-attributes
   util
+  rule-merging
+  default-rules
 
 strategies
 
@@ -12,42 +14,39 @@ rules
 
   assimilate-all =
     add-imports;
+    
     all-stratego-defs(try(
       assimilate-def
     ));
+    
     topdown(try(
-      assimilate-expr-outside-ag
-    ))
+      assimilate-expr
+    ));
+    
+    add-default-rules;
+    add-merged-rules
 
   add-imports:
     Module(x, decl*) -> Module(x, [imports | decl*])
     where
-      imports := |[ imports attributes parents rewrites ]|
+      imports := |[ imports attributes parents rewrites debug ]|
 
   // TODO: Add args to eval functions
-  // TODO: (Selective) caching indirection
+  // TODO: Root() pattern (OrderedRuleIndex -1?) - use it for chain direction
+  // TODO: runtime check for annotated terms used for/by dynamic rules
 
   assimilate-def:
     AttributeDef(
-      _
+      type
     , t_pattern
     , AttributeDefStrategy(child, attr @ Attribute(name, args), s)
     ) ->
-    Def* |[
-      x_eval(|a_parent*, x_all-parents, x_attr-cache) =
-        (fail < ?x_parent + id); // ensure x_parent is considered "bound"
+    <make-merged-def(|attr, t_pattern, child, type')>
+    Def |[
+      x_eval(|x_parent, x_all-parents, x_attr-cache) =
         s_pattern;
         ?x_current;
         s'
-      
-      /*
-      x_eval-dynamic(|x_name_param, a_parent*, x_all-parents, x_attr-cache) =
-        (fail < ?x_parent + id);
-        where(str_name := x_name_param);
-        s_pattern;
-        ?x_current;
-        s'
-      */
     ]|
     where
       str_name       := <conc-strings> ("\"", name, "\"");
@@ -56,99 +55,127 @@ rules
       x_current      := <newname> "current";
       x_all-parents  := <newname> "all-parents";
       x_attr-cache   := <newname> "attr-cache";
+      type'          := <attribute-type-name(|type)> attr;
+      x_eval         := <attribute-accessor-name(|type')> attr;
       
-      if None() := child then // Synthesized / chained attribute
-        x_eval         := <attribute-accessor-name(|"syn")> attr;
-        x_eval-dynamic := <attribute-accessor-name-dynamic(|"syn")> attr;
-        s_pattern      := |[ ?t_pattern ]|;
-        a_parent*      := [];
-        s_parent := |[
-          // strategy to get the current parent, using x_parent as a cache
-          ?x_current
-          < (!x_parent <+ get-parent(|x_all-parents) => x_parent)
-          + get-parent(|x_all-parents)
-        ]|
+      // TODO2: Better solution for passing no parent?
+      s_parent         := |[ ?x_current; !x_parent; not(UnknownParent)
+                             <+ get-parent(|x_all-parents) <+ !UnknownParent() ]|;
+      s_parent-desired := |[ ?x_current < !x_parent + !UnknownParent() ]|;
+      
+      if None() := child then
+        if Root() := t_pattern then
+          s_pattern := |[ not(!x_parent; not(UnknownParent) <+ get-parent(|x_all-parents)) ]|
+        else
+          s_pattern := |[ ?t_pattern ]|
+        end
       else // Inherited attribute
         Some(Child(child')) := child;
-        x_eval              := <attribute-accessor-name(|"inh")> attr;
-        x_eval-dynamic      := <attribute-accessor-name-dynamic(|"inh")> attr;
-        s_pattern           := <ancestor-check(|t_pattern, child', x_parent, x_all-parents)>;
-        a_parent*           := Typedid* |[ x_parent ]|;
-        s_parent            := |[ ?x_current < !x_parent + get-parent(|x_all-parents) ]|
+        s_pattern           := <ancestor-check(|t_pattern, child', s_parent, x_all-parents)>
       end;
       
       !s;
-        tiny-debug(!1);
       topdown(try(
-        tiny-debug(!2);
-        assimilate-expr-inside-ag(|s_parent, x_current, x_all-parents, x_attr-cache)
-      )) => s'
-        ; tiny-debug(!3)
+        assimilate-expr-inside-ag(|s_parent, s_parent-desired, x_current, x_all-parents, x_attr-cache)
+      ));
+      add-eval-failed => s'
   
-  ancestor-check(|t_pattern, x_child, x_parent, x_all-parents) =
-    depth          := <topdown-depth(|Var(x_child))> t_pattern;
+  add-eval-failed:
+    Seq(WhereClause(s1), s2) -> |[ where(s1); (s2 <+ !EvalFailed()) ]|
+  
+  add-eval-failed:
+    s -> |[ s <+ !EvalFailed() ]|
+    where
+      not(?Seq(WhereClause(c), _))
+  
+  /**
+   * Match based on an ancestor (e.g., for @inh Foo(Bar(x)).x).
+   */
+  ancestor-check(|t_pattern, x_child, s_parent, x_all-parents) =
+    depth          := <term-depth(|Var(x_child))> t_pattern;
     s_traverse-up  := |[ get-parent(|x_all-parents) ]|;
     s_traverse-up' := <copy; fold-seq> (depth, s_traverse-up);
-
-    !|[ !x_parent;
-        s_traverse-up'
+    
+    // TODO2: Optimize - ancestor-check should use intermediate patterns
+    
+    !|[ s_parent;
+        s_traverse-up';
+        ?t_pattern
     ]|
+
+strategies // Attribute strategy naming
+
+  attribute-type-name(|local-type) =
+    if NoType() := local-type then
+      attribute-type // globally declared type
+    else
+      !local-type
+    end;
+    
+    switch id
+      case Inh():   !"inh"
+      case Local(): !"local"
+      otherwise:    !"syn"
+    end
 
   attribute-accessor-name(|type):
     Attribute(name, args) -> accessor
     where
       accessor  := <conc-strings> ("eval-", type, "-", name)
-
-  attribute-accessor-name-dynamic(|type):
-    Attribute(name, args) -> accessor
-    where
-      accessor := <conc-strings> ("eval-", type)
-
-rules
-
-  assimilate-expr-inside-ag(|s_parent, x_current, x_all-parents, x_attr-cache) =
-    assimilate-native-ref(|s_parent, x_all-parents, x_current)
+  
+  preferred-attribute-accessor-type =
+    // TODO: context-sensitive preffered attribute evaluator
+    //  - dynamic check: prefer inherited for x_current if type' == "inh"
+    //  - ...
+    fail
   <+
-    assimilate-attr-ref(|s_parent, x_all-parents, x_current, x_attr-cache)
+    attribute-type-name(|NoType())
 
-  assimilate-attr-ref(|s_parent, x_all-parents, x_current, x_attr-cache):
+rules // Evaluate attributes in AG context
+
+  assimilate-expr-inside-ag(|s_parent, s_parent-desired, x_current, x_all-parents, x_attr-cache) =
+    assimilate-native-ref-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache)
+  <+
+    assimilate-native-ref
+  <+
+    assimilate-attr-ref-inside-ag(|s_parent, s_parent-desired, x_all-parents, x_current, x_attr-cache)
+
+  assimilate-attr-ref-inside-ag(|s_parent, s_parent-desired, x_all-parents, x_current, x_attr-cache):
     AttributeRef(t, attr @ Attribute(name, args)) ->
     Strat |[ <s> t ]|
     where
       type   := <preferred-attribute-accessor-type> attr;
       x_eval := <attribute-accessor-name(|type)> attr;
-      
-      if Inh() := <attribute-type> attr then
-        s := |[ x_eval(|<s_parent>, x_all-parents, x_attr-cache) ]|
+      if "inh" := type then
+        s := |[ x_eval(|<s_parent>,         x_all-parents, x_attr-cache) ]|
       else
-        s := |[ x_eval(|            x_all-parents, x_attr-cache) ]|
+        // Pass current node as a parent, or pass UnknownParent
+        s := |[ x_eval(|<s_parent-desired>, x_all-parents, x_attr-cache) ]|
       end
-  
-  preferred-attribute-accessor-type =
-    attribute-type => Inh();
-    !"inh"
+
+rules // Evaluate attributes outside of AG context
+
+  // TODO: Don't eagerly get parent reference
+
+  assimilate-expr =
+    assimilate-native-ref
   <+
-    !"syn" // preferred for syn and chained attributes
+    assimilate-attr-ref
 
-rules
-
-  assimilate-expr-outside-ag =
-    assimilate-native-ref-outside-ag
-  <+
-    assimilate-attr-ref-outside-ag
-
-  assimilate-attr-ref-outside-ag:
+  assimilate-attr-ref:
     AttributeRef(t, attr @ Attribute(name, args)) ->
     Strat |[
-      astr-initialize-node-lazy;
+      astr-initialize-node-ensure(|<all-parents => x_all-parents>);
       <s> t
     ]|
     where
-      type   := <preferred-attribute-accessor-type> attr;
-      x_eval := <attribute-accessor-name(|type)> attr;
-      
-      if Inh() := <attribute-type> attr then
-        s := |[ x_eval(|<parent>, <all-parents>, <attribute-cache>) ]|
+      type           := <attribute-type-name(|NoType())> attr;
+      x_eval         := <attribute-accessor-name(|type)> attr;
+      x_all-parents  := <newname> "all-parents";
+      if "inh" := type then
+        s := Strat |[ <x_eval(|<get-parent(|x_all-parents)>, x_all-parents, <attribute-cache>)> t ]|
       else
-        s := |[ x_eval(|          <all-parents>, <attribute-cache>) ]|
+        s := Strat |[ <x_eval(|UnknownParent(),              x_all-parents, <attribute-cache>)> t ]|
       end
+        
+      

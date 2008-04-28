@@ -6,18 +6,52 @@ imports
 
 strategies
 
-  is-native-attribute = "parent" + "init"
+  // TODO2: Check for zero params
+  is-native-attribute = "parent" + "init" + "uninit" + "disable-warnings"
 
 rules
 
-  assimilate-native-ref(|s_parent, x_all-parents, x_current):
-    AttributeRef(t, "parent") -> Strat |[ s_parent ]|
-  
-  assimilate-native-ref(|s_parent, x_all-parents, x_current):
-    AttributeRef(t, "init") -> Strat |[ <astr-initialize-node(|x_all-parents, NoParent())> t ]|
+  add-default-attributes:
+    Module(name, decl*) -> Module(name, [attrs | decl*])
+    where
+      attrs := <default-attributes>
 
-  assimilate-native-ref-outside-ag:
-    AttributeRef(t, "parent") -> Strat |[ <parent <+ !NoParent()> t ]|
+  default-attributes = !|[
+    attributes
+      @local enable-warnings = rules(AstrWarningsEnabled : _)
+      
+      @local previous-sibling = get-previous-sibling(|id.parent)
+      
+      @local next-sibling = get-next-sibling(|id.parent)
+      
+      @local root = try(id.parent.root)
+      
+      @local debug = where(id.uninit; debug)
   
-  assimilate-native-ref-outside-ag:
-    AttributeRef(t, "init") -> Strat |[ <astr-initialize-node> t ]|
+      @inh path:
+        _          -> [id.parent | id.parent.path]
+        NoParent() -> []
+  ]|
+
+rules // Native attribute definitions
+    
+  assimilate-native-ref:
+    AttributeRef(t, Attribute("disable-warnings", [])) -> Strat |[ rules(AstrWarningsDisabled :- _) ]|
+
+  assimilate-native-ref:
+    AttributeRef(t, Attribute("parent", [])) -> Strat |[ <get-parent(|<all-parents>)> t ]|
+
+  assimilate-native-ref-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
+    AttributeRef(t, Attribute("parent", [])) -> Strat |[ s_parent ]|
+
+  assimilate-native-ref:
+    AttributeRef(t, Attribute("uninit", [])) -> Strat |[ astr-uninitialize-node(|<attribute-cache>) ]|
+
+  assimilate-native-ref-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
+    AttributeRef(t, Attribute("uninit", [])) -> Strat |[ astr-uninitialize-node(|x_attr-cache) ]|
+  
+  assimilate-native-ref:
+    AttributeRef(t, Attribute("init", [])) -> Strat |[ <astr-initialize-node(|<all-parents>)> t ]|
+  
+  assimilate-native-ref-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
+    AttributeRef(t, Attribute("init", [])) -> Strat |[ <astr-initialize-node(|x_all-parents)> t ]|

@@ -6,15 +6,21 @@ imports
 strategies
     
   /**
-   * Get the depth of the given node relative to the input tree.
+   * Get the depth of the given node relative to the input term.
    * @type Term -> Int
    */
-  topdown-depth(|child) =
-    topdown-depth(|child, 0)
+  term-depth(|child) =
+    term-depth(|child, 0)
   
-  topdown-depth(|child, initial) =
+  term-depth(|child, initial) =
+    ?Op(_, _);
     one(
-      topdown-depth(|child, <inc> initial) => result
+      term-depth(|child, <inc> initial) => result
+    );
+    !result
+  <+
+    one(
+      term-depth(|child, initial) => result
     );
     !result
   <+
@@ -23,3 +29,9 @@ strategies
   
   fold-seq =
     foldr(!Id(), \(x,y) -> Seq(x,y)\)
+  
+  fold-lchoice =
+    foldr(!Fail(), \(x,y) -> LChoice(x,y)\)
+
+  param-to-term:
+    DefaultVarDec(x) -> Var(x)

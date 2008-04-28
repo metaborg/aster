@@ -5,64 +5,108 @@ imports
 
 signature constructors
   Id : String -> TermId
-  NoParent     : TermId
+  NoParent      : Parent
+  UnknownParent : Parent
 
 strategies
 
   get-parent(|all-parents) =
-    !all-parents;
-    hashtable-get(|<id>)
-  
-  set-parent(|all-parents, value) =
     ?key;
     !all-parents;
-    hashtable-put(|key, value)
+    hashtable-get(|key)
+  
+  set-parent(|all-parents, value) =
+    where(
+      ?key;
+      !all-parents;
+      hashtable-put(|key, value)
+    )
+
+  get-previous-sibling(|parent) =
+    ?child;
+    <get-arguments> parent;
+    rec rec(
+      ?[<id>, child | _]
+    <+
+      ?[_ | <rec>]
+    )
+
+  get-next-sibling(|parent) =
+    (fail < ?found-previous + id); // found-previous is not unbound
+    one(
+      ?child; ?found-previous
+    <+
+      where(!found-previous)
+    )
 
   all-parents =
     lookup-table(|"all-parents")
     
 strategies // Initialization
 
-  // TODO: Warn if node is not initialized??
-  astr-initialize-node-lazy =
+  astr-initialize-node-prefer(|all-parents, attribute-cache) =
+    if not(get-cached-attribute(|attribute-cache, "$uninited")) then
+      astr-initialize-node-ensure(|all-parents)
+    end
+
+  astr-initialize-node-ensure(|all-parents) =
     where(get-annos; getfirst(Id(id)))
   <+
     where(
-      warn(|"Evaluating attribute on uninitialized tree.");
-      prim("SSL_stacktrace_get_all_frame_names");
-      reverse;
-      try(\["astr-initialize-node-lazy" | tail] -> tail\);
-      map(<fprintnl> (stderr(), ["\t", <id>]))
+      if AstrWarningsEnabled then
+        rules(AstrWarningsEnabled : _); // ensure rule is declared
+        
+        warn(|"Evaluating attribute on uninitialized tree.");
+
+        prim("SSL_stacktrace_get_all_frame_names");
+        reverse;
+        try(\["astr-initialize-node-ensure" | tail] -> tail\);
+        map(<fprintnl> (stderr(), ["\t", <id>]))
+      end
     );
     
-    astr-initialize-node
-
-  astr-initialize-node =
-    astr-initialize-node(|<all-parents>, NoParent())
+    astr-initialize-node(|all-parents)
   
-  astr-initialize-node(|all-parents, parent) =
+  astr-initialize-node(|all-parents) =
     // First add unique annos everywhere,
     // then assign parent rules for the newly formed nodes
     astr-disable-sharing;
     where(
-      astr-add-parent-references(|all-parents, parent)
+      ?root;
+      all(
+        astr-add-parent-references(|all-parents, root)
+      )
     )
+
+  // TODO: Make annotation just a string {"foo"}
+  //       and use the tables to determine whether such a string
+  //       was in fact an 'id' annotation
 
   astr-disable-sharing:
     t {a*} -> t' {b*}
     where
       t' := <all(astr-disable-sharing)> t;
       if [] := a* then
-        b* := [<new>]
+        b* := [Id(<new>)]
       else
-        b* := [<new> | <filter(not(?Id(_)))>]
+        b* := [Id(<new>) | <filter(not(?Id(_)))> a*]
       end
+  
+  astr-uninitialize-node(|attribute-cache) =
+    topdown(try(
+      \t {Id(_)} -> t {}\
+    <+
+      \t {a*} -> t {b*}
+       where
+         b* := <filter(not(?Id(_)))> a*\
+    ));
+    set-cached-attribute(|attribute-cache, "$uninited", ())
 
   astr-add-parent-references(|all-parents, parent) =
     ?node;
     set-parent(|all-parents, parent);
     all(
-      set-parent(|all-parents, node)
+      astr-add-parent-references(|all-parents, node)
     )
   
   /* UNDONE: Indexed parent references
@@ -79,4 +123,9 @@ strategies // Initialization
   <+
     []
   */
-    
+
+strategies
+
+  debug'(s) = where(strip-annos; debug(s))
+
+  debug' = where(strip-annos; debug)

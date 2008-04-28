@@ -23,7 +23,7 @@ strategies
     from -> to
     where
       // For all ancestors, lazily rewrite subterms
-      repeat-until(
+      repeat(
         { parent, index:
           get-parent(|all-parents) => (parent, index);
           rules(
@@ -34,7 +34,6 @@ strategies
               )
           )
         }
-      , NoParent
       );
       rules(
         SagRewrite: from -> to

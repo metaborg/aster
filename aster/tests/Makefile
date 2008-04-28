@@ -11,7 +11,7 @@ STRCFLAGS = \
 	--format-check 0 \
 	-Xcc -O0
 
-check : $(STR_TESTS) $(RUN_TESTS)
+check : Stratego-Attributes.runtestsuite $(STR_TESTS) $(RUN_TESTS)
 
 clean :
 	rm -f $(RUN_TESTS) $(STR_TESTS)
@@ -20,8 +20,10 @@ clean :
 	../trans/stratego-rerag -i $< -o $@
 
 %.run : %.str
-	strc -i $< -m main-`basename $*` $(STRCFLAGS)
+	strc -i $< -m main-$* $(STRCFLAGS)
 	@echo
 	@echo ==== `basename $@ .run` ====
 	@./`basename $@ .run`
-	
+
+%.runtestsuite : %.testsuite
+	parse-unit --no-heuristic-filters -i $< -p ../syntax/Stratego-Attributes.tbl

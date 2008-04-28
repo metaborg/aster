@@ -27,8 +27,11 @@ check : all
 	$(MAKE) -C tests check
 
 clean :
-	rm -f syntax/*.tbl trans/stratego-rerag trans/stratego-rerag-no-check
+	rm -f syntax/*.tbl trans/stratego-rerag trans/stratego-rerag-no-check trans/stratego-rerag.copy trans/check.str
 	$(MAKE) -C tests clean
+
+bootclean :
+	rm -f trans/stratego-rerag.copy trans/stratego-rerag-no-check
 
 % : %.str trans/check.str $(DEPS) $(wildcard runtime/*.str)
 	@rm -f $@.c
@@ -39,12 +42,12 @@ clean :
 trans/stratego-rerag-no-check : $(DEPS)
 	[ -e trans/stratego-rerag.copy ] && cp trans/stratego-rerag.copy trans/stratego-rerag-no-check ||\
 	( rm -f $@.c && \
-	  echo 'module check strategies check-all = warn(|"Compiler checks are disabled.")' > trans/check.str && \
-	  strc -i $< -o $@ -m main-stratego-rerag $(STRCFLAGS) $(STRCSTFU) && \
+	  cp trans/check.placeholder.str trans/check.str && \
+	  strc -i $< -o $@ -m main-stratego-rerag -Xcc -O0 $(STRCFLAGS) $(STRCSTFU) && \
 	  rm trans/check.str $@.c )
 
 trans/check.str : trans/check.astr trans/stratego-rerag-no-check
-	trans/stratego-rerag-no-check -i $< -o $@ || (rm trans/stratego-rerag.copy trans/stratego-rerag-no-check)
+	trans/stratego-rerag-no-check --verbose 2 -i $< -o $@ || $(MAKE) bootclean
 
 %.rtg : %.def
 	sdf2rtg -i $< -m `basename $*` -o $@ --ignore-missing-cons
@@ -52,7 +55,7 @@ trans/check.str : trans/check.astr trans/stratego-rerag-no-check
 %.str : %.rtg
 	rtg2sig -i $< -o $@	
 
-%.def : %.sdf
+%.def : %.sdf syntax/*.sdf
 	pack-sdf -i $< -o $@  -I syntax
 
 Mix-%.sdf : %.def

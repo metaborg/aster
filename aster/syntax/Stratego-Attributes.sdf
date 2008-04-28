@@ -11,10 +11,13 @@ exports
   sorts
     AttributeType
     OptAttributeType
+    Pattern
     Attribute
-    AttributeDef
     AttributeRef
-    BlockAttributeDef
+    AttributeDef
+    AttributeDefBlock
+    AttributeKeyword
+    AttributeName
     AnonymousRewrite
     AnonymousRewriteCall
     ChildIdentifierDot
@@ -22,67 +25,95 @@ exports
     AttributePatternValue
     AttributeNameValue
     AttributeTypeNameValue
+    Plain
+    Where
   
   context-free syntax %% attributes
-  
-    Id "(" { Term "," }+ ")" -> Attribute {cons("Attribute")}
-    Id                       -> Attribute {cons("AttributeNoArgs")}
+    
+    %% TODO: Strategy arguments
+    AttributeName "(" "|" { Term "," }+ ")" -> Attribute {cons("Attribute")}
+    AttributeName                       -> Attribute {cons("AttributeNoArgs")}
 
-    Term "." Attribute -> AttributeRef {cons("AttributeRef")}
-    "id" "." Attribute -> AttributeRef {cons("AttributeRefSelf"), prefer}
+    Id               -> AttributeName
+    AttributeKeyword -> AttributeName {reject}
+
+    Term   "." Attribute -> AttributeRef {cons("AttributeRef")}
+    "id"   "." Attribute -> AttributeRef {cons("AttributeRefSelf"), prefer}
     
     %% TODO: AttributeRefLHS?
     
     AttributeRef -> Strategy {prefer}
     AttributeRef -> Term {cons("AttributeTerm")}
+
+  context-free syntax %% Semantic rules: core syntax
+
+    %% TODO: Reintroduce declaration syntax, but avoid ambiguity with 'as' operator
+
+    "@" OptAttributeType Pattern "." AttributeNameValue -> AttributeDef {cons("AttributeDef")}
+
+    ChildIdentifierDot? Attribute "="  Strategy -> AttributeNameValue {cons("AttributeDefStrategy")}
  
-  context-free syntax %% semantic rules
+    "syn"     -> AttributeType {cons("Syn")}
+    "inh"     -> AttributeType {cons("Inh")}
+    "local"   -> AttributeType {cons("Local")}
+    "chained" -> AttributeType {cons("Chained")}
+%%  "eq"      -> AttributeType {cons("NoType")}
+
+    AttributeType  -> OptAttributeType
+                   -> OptAttributeType {cons("NoType")}
+                   
+    Id "."     -> ChildIdentifierDot {cons("Child")}
+    "." Id     -> DotChildIdentifier {cons("DotChild")}
+    "root" "." -> ChildIdentifierDot {reject}
+    "." "root" -> DotChildIdentifier {reject}
+
+    %% Patterns are terms without attribute references
+    Term[[Plain]]    -> Pattern
+    "root"           -> Pattern {cons("Root"), prefer}
+    AttributeKeyword -> Pattern {reject}
+    AttributeKeyword -> Var {reject} %% disambiguate
+    
+    "syn"     -> AttributeKeyword
+    "inh"     -> AttributeKeyword
+    "local"   -> AttributeKeyword
+    "chained" -> AttributeKeyword
+
+  context-free syntax %% semantic rules: syntactic sugar
   
-    %% TODO: Separate core syntax
-    %% TODO: "with" clause for propagation
+    %% TODO: += syntax for `bagof' like definitions (e.g., for errors)
  
     "attributes" Def* -> Decl {cons("Attributes")}    
     AttributeDef      -> Def
     AttributeDefBlock -> Def
 
-    "@" OptAttributeType Term[[Plain]] "." AttributeNameValue -> AttributeDef {cons("AttributeDef")}
+    "@" OptAttributeType AttributeNameValue -> AttributeDef {cons("AttributeDefNoPattern")}
     
-    %% Syntactic sugar for grouping attributes
-    "@" Term[[Plain]]                  ":" AttributeTypeNameValue* -> AttributeDefBlock {cons("NameDefBlock")}
-    "@" OptAttributeType "." Attribute ":" AttributePatternValue*  -> AttributeDefBlock {cons("PatternDefBlock")}
+    %% Grouping attributes
+    "@" Pattern                    ":" AttributeTypeNameValue* -> AttributeDefBlock {cons("NameDefBlock")}
+    "@" OptAttributeType Attribute ":" AttributePatternValue*  -> AttributeDefBlock {cons("PatternDefBlock")}
     
     OptAttributeType AttributeNameValue -> AttributeTypeNameValue {cons("AttributeTypedDef")}
     
-    ChildIdentifierDot? Attribute               -> AttributeNameValue {cons("AttributeDefNoValue")}
-    ChildIdentifierDot? Attribute ":=" Term     -> AttributeNameValue {cons("AttributeDefTermNoWhere")}
-    ChildIdentifierDot? Attribute ":=" Term
-                     "where" Strategy        -> AttributeNameValue {cons("AttributeDefTerm")}
-    ChildIdentifierDot? Attribute "="  Strategy -> AttributeNameValue {cons("AttributeDefStrategy")}
+    ChildIdentifierDot? Attribute ":=" Term       -> AttributeNameValue {cons("AttributeDefTermNoWhere")}
+    ChildIdentifierDot? Attribute ":=" Term Where -> AttributeNameValue {cons("AttributeDefTerm")}
 
-    Term[[Plain]] DotChildIdentifier? ":=" Term     -> AttributePatternValue {cons("AttributePDefTermNoWhere")}
-    Term[[Plain]] DotChildIdentifier? ":=" Term
-                  "where" Strategy               -> AttributePatternValue {cons("AttributePDefTerm")}
-    Term[[Plain]] DotChildIdentifier? "="  Strategy -> AttributePatternValue {cons("AttributePDefStrategy")}
+    Pattern DotChildIdentifier? "->" Term       -> AttributePatternValue {cons("AttributePDefTermNoWhere")}
+    Pattern DotChildIdentifier? "->" Term Where -> AttributePatternValue {cons("AttributePDefTerm")}
+    Pattern DotChildIdentifier? "="  Strategy   -> AttributePatternValue {cons("AttributePDefStrategy")}
 
-    Id "." -> ChildIdentifierDot {cons("Child")}
-    "." Id -> DotChildIdentifier {cons("DotChild")}
-    
-    "::" "->" Term[[Plain]]                  -> AttributeDef {cons("BlockAnonymousRewriteRuleNoWhere")}
-    "::" "->" Term[[Plain]] "where" Strategy -> AttributeDef {cons("BlockAnonymousRewriteRule")}
-    "::" "=" Strategy                        -> AttributeDef {cons("BlockAnonymousRewriteStrategy")}
-    
-    "syn"     -> AttributeType {cons("Syn")}
-    "inh"     -> AttributeType {cons("Inh")}
-    "chained" -> AttributeType {cons("Chained")}
-%%  "eq"      -> AttributeType {cons("Eq")}
-    AttributeType  -> OptAttributeType
-                   -> OptAttributeType {cons("Eq")}
- 
+    "where" Strategy                 -> Where {cons("WhereClause")}
+    "with" Strategy                  -> Where {cons("WithClause")}
+    "where" Strategy "with" Strategy -> Where {cons("WhereWithClause")}
+
   context-free syntax %% Anonymous rewrites
+    
+    "::" "->" Pattern                  -> AttributeDef {cons("BlockAnonymousRewriteRuleNoWhere")}
+    "::" "->" Pattern "where" Strategy -> AttributeDef {cons("BlockAnonymousRewriteRule")}
+    "::" "=" Strategy                  -> AttributeDef {cons("BlockAnonymousRewriteStrategy")}
                  
-    "::" Term[[Plain]] "->" Term[[Plain]] -> AnonymousRewrite {cons("AnonymousRewriteRuleNoWhere")}  
-    "::" Term[[Plain]] "->" Term[[Plain]]
-                       "where" Strategy   -> AnonymousRewrite {cons("AnonymousRewriteRule")}
+    "::" Pattern "->" Term -> AnonymousRewrite {cons("AnonymousRewriteRuleNoWhere")}  
+    "::" Pattern "->" Term
+         "where" Strategy  -> AnonymousRewrite {cons("AnonymousRewriteRule")}
   
     "::" "=" Strategy                     -> AnonymousRewrite {cons("AnonymousRewriteStrategy")}
   
@@ -92,11 +123,6 @@ exports
     AnonymousRewriteCall -> Strategy
   
   context-free syntax %% Misc.
-  
-    %% Common pattern in AGs: don't care about the children
-  
-    "..." -> Term {cons("TermDots")}
-    "..." -> Term[[Plain]] {cons("TermDots")}
  
     %% Id "(" { Id "," }+ ")" -> TermPrototype
     %% Id                     -> TermPrototype
@@ -105,4 +131,4 @@ exports
     %%
     %% "rewrite" RuleType { Attribute "+" }+ "->" AttributeRule
     %% Term(...) -> 
-    
+   

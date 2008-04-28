@@ -1,0 +1,60 @@
+module default-rules
+
+imports
+  libstratego-lib
+  util
+
+strategies
+
+  add-default-rules:
+    Module(x, decl*) -> Module(x, [Rules(defaults) | decl*])
+    where
+      bagof-AllRules;
+      map(default-rule <+ ![]);
+      flatten-list => defaults
+  
+  default-rule:
+    def @ (x_eval, arity) ->
+    <make-merged-def-default>
+    |[
+      x_eval(|a*) =
+        s_rule
+    ]|
+    where
+      type           := <attribute-type> <RuleAttribute> def;
+      accessor-type  := <RuleAccessorType> def;
+      a*             := <RuleArgs> def;
+      args           := <map(param-to-term)> a*;
+      s_call         := |[ x_eval(|~term*:args) ]|;
+      s_rule         := <default-rule(|s_call, accessor-type)> type
+
+rules // default semantic rules (or "copy rules")
+ 
+  default-rule(|s_call, accessor-type):
+    Inh() -> Strat |[ <s_call'> t_parent ]| // id.parent.attr
+    where
+      !s_call => |[ x_eval(|t_parent,                              t_all-parents, ~term*:args) ]|;
+      s_call' := |[ x_eval(|<get-parent(|t_all-parents) <+ !UnknownParent()> t_parent
+                          , t_all-parents, ~term*:args) ]|
+    
+  default-rule(|s_call, accessor-type):
+    Syn() -> Strat |[ one(s_call) ]|
+    
+  // TODO: Proper chained copy rules
+  // TODO2: Optimize - never use get-arguments
+  
+  default-rule(|s_call, accessor-type):
+    Chained() ->
+    |[ get-previous-sibling(|t_parent);
+        s_call // TODO: this should be a syn call
+      <+
+        <s_call> t_parent
+    ]|
+    where
+      "inh" := accessor-type;
+      !s_call => |[ x_eval(|t_parent, ~term*:_) ]|
+    
+  default-rule(|s_call, accessor-type):
+    Chained() -> |[ get-arguments; last; s_call ]|
+    where
+      "syn" := accessor-type

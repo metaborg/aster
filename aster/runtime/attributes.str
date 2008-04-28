@@ -3,11 +3,22 @@ module attributes
 imports
   libstratego-lib
 
+signature constructors
+  EvalFailed : Term
+
 strategies
 
-  get-cached-attribute(|attribute-cache) =
+  get-cached-attribute(|attribute-cache, name) =
+    key := (<id>, name);
     !attribute-cache;
-    hashtable-get(|<id>)
+    hashtable-get(|key)
+  
+  set-cached-attribute(|attribute-cache, name, value) =
+    where(
+      key := (<id>, name);
+      !attribute-cache;
+      hashtable-put(|key, value)
+    )
 
   attribute-cache =
     lookup-table(|"attribute-cache")
