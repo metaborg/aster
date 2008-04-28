@@ -3,6 +3,7 @@ module rule-merging
 imports
   libstratego-lib
   util
+  tracing
 
 overlays
   DEFAULT_RULE_INDEX = -1
@@ -35,16 +36,7 @@ strategies
       t*      := <map(param-to-term)> a*;
       defs    := <sort-ordered-defs> <make-set> <bagof-OrderedRuleDefs> def;
       s       := <fold-lchoice> <map(def-call(|t*))> defs;
-      s_trace := <add-trace-message(|x_eval, arity, <RuleAccessorType> def)>
-  
-  add-trace-message(|name, arity, type) =
-    if <get-config> Trace() then
-      arity'  := <0 < !"" + <conc-strings> ("/", <as-string>)> arity;
-      message := <conc-strings> ("\"", type, " ", name, arity', "\"");
-      !Strat |[ say(<conc-strings> ("[trace] ", ~str:message, " at ", <to-tiny-string>)) ]|
-    else
-      !Strat |[ id ]|
-    end
+      s_trace := <trace-application(|x_eval, arity, <RuleAccessorType> def)>
 
   def-call(|args):
     (x_eval, arity) -> |[ x_eval(|~*args) ]|

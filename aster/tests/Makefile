@@ -17,7 +17,7 @@ clean :
 	rm -f $(RUN_TESTS) $(STR_TESTS)
 
 %.str : %.astr ../trans/stratego-rerag
-	../trans/stratego-rerag -i $< -o $@
+	../trans/stratego-rerag -i $< -o $@ --trace
 
 %.run : %.str
 	strc -i $< -m main-$* $(STRCFLAGS)

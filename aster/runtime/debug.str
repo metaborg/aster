@@ -68,7 +68,7 @@ strategies
   <+
     ?name#(<id>);
     if [] + () then
-      <as-string> name
+      <strip-annos; as-string> name
     else
       map( // Simplify each subterm
          [id]; !"[_]"
@@ -76,7 +76,7 @@ strategies
       <+ Fst; !"(..)"
       <+ (); !"()"
       <+ []; !"[]"
-      <+ ?<as-string>#(_)
+      <+ strip-annos; ?<as-string>#(_)
       );
       
       separate-by(|",");      

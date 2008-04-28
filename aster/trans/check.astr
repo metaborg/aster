@@ -62,7 +62,8 @@ attributes
   // TODO: more checks
   // - check if topdown-depth succeeds for child patterns
   // - no child patterns in strat calls
-  // - @inh x(kid).foo = kid.foo should be synthesized or local 
+  // - @inh x(kid).foo = kid.foo should be synthesized or local
+  // - root has no child
 
 attributes
   

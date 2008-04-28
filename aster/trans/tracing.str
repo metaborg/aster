@@ -1,0 +1,26 @@
+module tracing
+
+imports
+  libstratego-lib
+
+strategies
+
+  // TODO: clean up trace messages
+  
+  trace-application(|name, arity, type) =
+    if <get-config> Trace() then
+      arity'  := <0 < !"" + <conc-strings> ("/", <as-string>)> arity;
+      message := <conc-strings> ("\"", type, " ", name, arity', "\"");
+      !Strat |[ say(<conc-strings> ("[trace] ", ~str:message, " for ", <to-tiny-string>)) ]|
+    else
+      !Strat |[ id ]|
+    end
+  
+  trace-default-rule(|name, arity, type) =
+    if <get-config> Trace() then
+      arity'  := <0 < !"" + <conc-strings> ("/", <as-string>)> arity;
+      message := <conc-strings> ("\"", type, " ", name, arity', "\"");
+      !Strat |[ say(<conc-strings> ("[trace] ", ~str:message, " for ", <to-tiny-string>, " (copy rule)")) ]|
+    else
+      !Strat |[ id ]|
+    end

@@ -100,6 +100,7 @@ rules
     
     !|[ s_parent;
         s_traverse-up';
+        not(UnknownParent);
         ?t_pattern
     ]|
 

@@ -3,6 +3,7 @@ module default-rules
 imports
   libstratego-lib
   util
+  tracing
 
 strategies
 
@@ -18,6 +19,7 @@ strategies
     <make-merged-def-default>
     |[
       x_eval(|a*) =
+        s_trace;
         s_rule
     ]|
     where
@@ -26,15 +28,19 @@ strategies
       a*             := <RuleArgs> def;
       args           := <map(param-to-term)> a*;
       s_call         := |[ x_eval(|~term*:args) ]|;
-      s_rule         := <default-rule(|s_call, accessor-type)> type
+      s_rule         := <default-rule(|s_call, accessor-type)> type;
+      s_trace        := <trace-default-rule(|x_eval, arity, accessor-type)>
 
 rules // default semantic rules (or "copy rules")
  
   default-rule(|s_call, accessor-type):
-    Inh() -> Strat |[ <s_call'> t_parent ]| // id.parent.attr
+    Inh() ->  // id.parent.attr
+    |[ (!t_parent; not(UnknownParent) <+ get-parent(|t_all-parents));
+       s_call'
+    ]|
     where
-      !s_call => |[ x_eval(|t_parent,                              t_all-parents, ~term*:args) ]|;
-      s_call' := |[ x_eval(|<get-parent(|t_all-parents) <+ !UnknownParent()> t_parent
+      !s_call => |[ x_eval(|t_parent, t_all-parents, ~term*:args) ]|;
+      s_call' := |[ x_eval(|<get-parent(|t_all-parents) <+ !UnknownParent()>
                           , t_all-parents, ~term*:args) ]|
     
   default-rule(|s_call, accessor-type):
