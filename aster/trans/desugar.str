@@ -8,12 +8,15 @@ rules
 
   desugar-all =
     topdown(repeat(
-      desugar-attribute-ref + desugar-attribute-def + desugar-rewrite-def
-    + desugar-where-with
+      desugar
     ));
-    all-stratego-defs(try(
+    try(all-stratego-defs(try(
       astr-flatten-block-def
-    ))
+    )))
+  
+  desugar =
+    desugar-attribute-ref + desugar-attribute-def + desugar-rewrite-def
+  + desugar-where-with + desugar-id-term
 
   desugar-attribute-def:
     Attributes(def*) -> Rules(def*)
@@ -82,6 +85,15 @@ rules
   
   desugar-attribute-ref:
     DotChild(x) -> Child(x)
+  
+  desugar-id-term = // match context
+    at-match(topdown(\IdTerm() -> Wld()\))
+  
+  desugar-id-term: // build context
+    IdTerm() -> RootApp(Id)
+
+  at-match(s) =
+    Match(s) + NameDefBlock(s, id) + RuleNoCond(s, id) + Rule(s, id, id)
      
 rules // flatten block definitions to individual definitions
 

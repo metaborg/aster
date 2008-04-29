@@ -12,8 +12,8 @@ overlays
 
 strategies
   
-  // TODO: caching (of selected attrs?)
-  // TODO: Fail if EvalFailed()
+  // TODO: Caching (of selected attrs?)
+  // TODO: Cheap circularity detection using counter argument?
   // TODO2: Optimize - inline rule defs in ordered rule defs?
   
   add-merged-rules:

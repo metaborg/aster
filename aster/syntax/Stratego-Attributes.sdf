@@ -31,8 +31,8 @@ exports
   context-free syntax %% attributes
     
     %% TODO: Strategy arguments
-    AttributeName "(" "|" { Term "," }+ ")" -> Attribute {cons("Attribute")}
-    AttributeName                       -> Attribute {cons("AttributeNoArgs")}
+    AttributeName "(" "|" { Term "," }* ")" -> Attribute {cons("Attribute")}
+    AttributeName                           -> Attribute {cons("AttributeNoArgs")}
 
     Id               -> AttributeName
     AttributeKeyword -> AttributeName {reject}
@@ -107,9 +107,9 @@ exports
 
   context-free syntax %% Anonymous rewrites
     
-    "::" "->" Pattern                  -> AttributeDef {cons("BlockAnonymousRewriteRuleNoWhere")}
-    "::" "->" Pattern "where" Strategy -> AttributeDef {cons("BlockAnonymousRewriteRule")}
-    "::" "=" Strategy                  -> AttributeDef {cons("BlockAnonymousRewriteStrategy")}
+    "::" "->" Term                  -> AttributeDef {cons("BlockAnonymousRewriteRuleNoWhere")}
+    "::" "->" Term "where" Strategy -> AttributeDef {cons("BlockAnonymousRewriteRule")}
+    "::" "=" Strategy               -> AttributeDef {cons("BlockAnonymousRewriteStrategy")}
                  
     "::" Pattern "->" Term -> AnonymousRewrite {cons("AnonymousRewriteRuleNoWhere")}  
     "::" Pattern "->" Term
@@ -123,6 +123,8 @@ exports
     AnonymousRewriteCall -> Strategy
   
   context-free syntax %% Misc.
+  
+    "id" -> Term {cons("IdTerm")}
  
     %% Id "(" { Id "," }+ ")" -> TermPrototype
     %% Id                     -> TermPrototype

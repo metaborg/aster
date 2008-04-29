@@ -30,6 +30,8 @@ exports
     "t"       "_" [A-Za-z0-9\'\-\_]+ "*" -> {Term ","}* {prefer}
 
     %% HACK: Work around Var -> Term has a {prefer} annotation in Stratego
+    %%       (note that this doesn't work for lists...)
+    
     "t"       "_" [A-Za-z0-9\'\-\_]+     -> Var {prefer}
 %%  "t"       "_" [A-Za-z0-9\'\-\_]+ "*" -> {Var ","}* {prefer}
     "t"[0-9\']*                          -> Var {prefer}

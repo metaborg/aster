@@ -31,9 +31,9 @@ rules
     where
       imports := |[ imports attributes parents rewrites debug ]|
 
-  // TODO: Add args to eval functions
-  // TODO: Root() pattern (OrderedRuleIndex -1?) - use it for chain direction
-  // TODO: runtime check for annotated terms used for/by dynamic rules
+  // TODO: Support args in eval functions
+  // TODO: Rewrite rules
+  // TODO2: runtime check for annotated terms used for/by dynamic rules
 
   assimilate-def:
     AttributeDef(
@@ -41,11 +41,11 @@ rules
     , t_pattern
     , AttributeDefStrategy(child, attr @ Attribute(name, args), s)
     ) ->
-    <make-merged-def(|attr, t_pattern, child, type')>
+    <make-merged-def(|attr, t_pattern, child, type-name)>
     Def |[
       x_eval(|x_parent, x_all-parents, x_attr-cache) =
-        s_pattern;
         ?x_current;
+        s_pattern;
         s'
     ]|
     where
@@ -55,28 +55,28 @@ rules
       x_current      := <newname> "current";
       x_all-parents  := <newname> "all-parents";
       x_attr-cache   := <newname> "attr-cache";
-      type'          := <attribute-type-name(|type)> attr;
-      x_eval         := <attribute-accessor-name(|type')> attr;
+      type-name      := <attribute-type-name(|type)> attr;
+      sig            := <attribute-signature> attr;
+      x_eval         := <attribute-accessor-name(|type-name)> attr;
       
       // TODO2: Better solution for passing no parent?
       s_parent         := |[ ?x_current; !x_parent; not(UnknownParent)
-                             <+ get-parent(|x_all-parents) <+ !UnknownParent() ]|;
+                             <+ get-parent(|x_all-parents) ]|;
       s_parent-desired := |[ ?x_current < !x_parent + !UnknownParent() ]|;
       
       if None() := child then
-        if Root() := t_pattern then
-          s_pattern := |[ not(!x_parent; not(UnknownParent) <+ get-parent(|x_all-parents)) ]|
-        else
-          s_pattern := |[ ?t_pattern ]|
-        end
+        Root() := t_pattern;
+        s_pattern := |[ not(!x_parent; not(UnknownParent) <+ get-parent(|x_all-parents)) ]|
+      <+
+        s_pattern := |[ ?t_pattern ]|
       else // Inherited attribute
         Some(Child(child')) := child;
-        s_pattern           := <ancestor-check(|t_pattern, child', s_parent, x_all-parents)>
+        s_pattern           := <ancestor-check(|t_pattern, child', x_parent, x_all-parents)>
       end;
       
       !s;
       topdown(try(
-        assimilate-expr-inside-ag(|s_parent, s_parent-desired, x_current, x_all-parents, x_attr-cache)
+        assimilate-expr-inside-ag(|sig, s_parent, s_parent-desired, x_current, x_all-parents, x_attr-cache)
       ));
       add-eval-failed => s'
   
@@ -91,17 +91,19 @@ rules
   /**
    * Match based on an ancestor (e.g., for @inh Foo(Bar(x)).x).
    */
-  ancestor-check(|t_pattern, x_child, s_parent, x_all-parents) =
-    depth          := <term-depth(|Var(x_child))> t_pattern;
+  ancestor-check(|t_pattern, x_child, x_parent, x_all-parents) =
+    depth          := <dec> <term-depth(|Var(x_child))> t_pattern;
     s_traverse-up  := |[ get-parent(|x_all-parents) ]|;
     s_traverse-up' := <copy; fold-seq> (depth, s_traverse-up);
     
     // TODO2: Optimize - ancestor-check should use intermediate patterns
     
-    !|[ s_parent;
-        s_traverse-up';
-        not(UnknownParent);
-        ?t_pattern
+    !|[ ?x_child;
+        where(
+          (!x_parent; not(UnknownParent) <+ s_traverse-up);
+          s_traverse-up';
+          ?t_pattern
+        )
     ]|
 
 strategies // Attribute strategy naming
@@ -125,22 +127,23 @@ strategies // Attribute strategy naming
       accessor  := <conc-strings> ("eval-", type, "-", name)
   
   preferred-attribute-accessor-type =
-    // TODO: context-sensitive preffered attribute evaluator
-    //  - dynamic check: prefer inherited for x_current if type' == "inh"
-    //  - ...
-    fail
-  <+
     attribute-type-name(|NoType())
 
 rules // Evaluate attributes in AG context
 
-  assimilate-expr-inside-ag(|s_parent, s_parent-desired, x_current, x_all-parents, x_attr-cache) =
+  // TODO2: Use dynamic rules to deal with with inside/outside ag rule variability
+
+  assimilate-expr-inside-ag(|sig, s_parent, s_parent-desired, x_current, x_all-parents, x_attr-cache) =
     assimilate-native-ref-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache)
   <+
     assimilate-native-ref
   <+
-    assimilate-attr-ref-inside-ag(|s_parent, s_parent-desired, x_all-parents, x_current, x_attr-cache)
-
+    ?AttributeRef(_, attr);
+    assimilate-attr-ref-inside-ag(|s_parent, s_parent-desired, x_all-parents, x_current, x_attr-cache);
+    try(
+      assimilate-attr-self-ref-inside-ag(|sig, attr, s_parent, x_current)
+    )
+   
   assimilate-attr-ref-inside-ag(|s_parent, s_parent-desired, x_all-parents, x_current, x_attr-cache):
     AttributeRef(t, attr @ Attribute(name, args)) ->
     Strat |[ <s> t ]|
@@ -153,6 +156,20 @@ rules // Evaluate attributes in AG context
         // Pass current node as a parent, or pass UnknownParent
         s := |[ x_eval(|<s_parent-desired>, x_all-parents, x_attr-cache) ]|
       end
+
+  /**
+   * Adjust references to attributes to avoid circular references
+   * (e.g., '@inh foo = id.foo' becomes '... = id.parent.foo').
+   */
+  assimilate-attr-self-ref-inside-ag(|sig, attr, s_parent, x_current):
+    s_eval ->
+    Strat |[
+      (?x_current < s_parent + id); // 
+      s_eval
+    ]|
+    where
+      <attribute-signature> attr => sig;
+      <attribute-type> attr => Inh()
 
 rules // Evaluate attributes outside of AG context
 

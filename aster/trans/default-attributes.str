@@ -24,13 +24,33 @@ rules
       
       @local next-sibling = get-next-sibling(|id.parent)
       
+      // TODO2: more first-child, last-child
+      
       @local root = try(id.parent.root)
       
       @local debug = where(id.uninit; debug)
   
-      @inh path:
-        _          -> [id.parent | id.parent.path]
-        NoParent() -> []
+      @local path-list:
+        _    -> [id.parent | id.parent.path-list]
+        root -> []
+  
+      @local path =
+         id.path-list;
+         reverse;
+         map(get-constructor);
+         separate-by(|".");
+         concat-strings
+      
+      @local path-short =
+        id.path;
+        if <gt> (<string-length>, 40) then
+          string-as-chars(
+            reverse;
+            take(|40);
+            reverse
+          );
+          <conc-strings> ("...", <id>)
+        end
   ]|
 
 rules // Native attribute definitions

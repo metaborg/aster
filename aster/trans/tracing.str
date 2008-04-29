@@ -4,23 +4,52 @@ imports
   libstratego-lib
 
 strategies
-
-  // TODO: clean up trace messages
   
   trace-application(|name, arity, type) =
-    if <get-config> Trace() then
-      arity'  := <0 < !"" + <conc-strings> ("/", <as-string>)> arity;
-      message := <conc-strings> ("\"", type, " ", name, arity', "\"");
-      !Strat |[ say(<conc-strings> ("[trace] ", ~str:message, " for ", <to-tiny-string>)) ]|
+    Attribute(name', _) := <RuleAttribute> (name, arity);
+    
+    if <get-config> Trace(); not(<ignore-trace-def> name') then
+      arity'              := <arity-to-string> arity;
+      message             := <conc-strings> ("\"", type, " ", name', arity', "\"");
+      s_path              := <trace-path>;
+      !Strat |[
+        say(<conc-strings> ("[trace] "
+           , ~str:message
+           , " @ "
+           , <s_path; (?"" <+ <conc-strings> (<id>, "."))>
+           , <to-tiny-string>
+        ))
+      ]|
     else
       !Strat |[ id ]|
     end
   
   trace-default-rule(|name, arity, type) =
     if <get-config> Trace() then
-      arity'  := <0 < !"" + <conc-strings> ("/", <as-string>)> arity;
-      message := <conc-strings> ("\"", type, " ", name, arity', "\"");
-      !Strat |[ say(<conc-strings> ("[trace] ", ~str:message, " for ", <to-tiny-string>, " (copy rule)")) ]|
+      arity'              := <arity-to-string> arity;
+      Attribute(name', _) := <RuleAttribute> (name, arity);
+      message             := <conc-strings> ("\"", type, " ", name', arity', "\"");
+      s_path              := <trace-path>;
+      !Strat |[
+        say(<conc-strings> ("[trace] "
+           , ~str:message
+           , " @ "
+           , <s_path; (?"" <+ <conc-strings> (<id>, "."))>
+           , <to-tiny-string>
+           , " (copy rule)"
+        ))
+      ]|
     else
       !Strat |[ id ]|
     end
+  
+  trace-path =
+    s_path := <assimilate-expr> <desugar-all> Strat |[ id.path-short ]|
+  
+  ignore-trace-def =
+    "path" + "path-list" + "path-short" + "debug" + "first-child" + "last-child"
+  + "next-sibling" + "previous-sibling" + "enable-warnings"
+  
+  arity-to-string =
+    <subt> (<id>, 3);
+    (0 < !"" + <conc-strings> ("/", <as-string>))

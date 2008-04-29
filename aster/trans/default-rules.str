@@ -39,12 +39,15 @@ rules // default semantic rules (or "copy rules")
        s_call'
     ]|
     where
-      !s_call => |[ x_eval(|t_parent, t_all-parents, ~term*:args) ]|;
-      s_call' := |[ x_eval(|<get-parent(|t_all-parents) <+ !UnknownParent()>
-                          , t_all-parents, ~term*:args) ]|
+      !s_call => |[ x_eval(|t_parent, t_all-parents, ~*args) ]|;
+      s_call' := |[ x_eval(|<get-parent(|t_all-parents) <+ !UnknownParent()>, t_all-parents, ~*args) ]|
     
   default-rule(|s_call, accessor-type):
-    Syn() -> Strat |[ one(s_call) ]|
+    Syn() -> Strat |[ ?x_current; one(s_call') ]|
+    where
+      x_current := <newname> "current";
+      !s_call   => |[ x_eval(|t_parent, ~*args) ]|;
+      s_call'   := |[ x_eval(|x_current, ~*args) ]|
     
   // TODO: Proper chained copy rules
   // TODO2: Optimize - never use get-arguments
@@ -57,8 +60,8 @@ rules // default semantic rules (or "copy rules")
         <s_call> t_parent
     ]|
     where
-      "inh" := accessor-type;
-      !s_call => |[ x_eval(|t_parent, ~term*:_) ]|
+      "inh"   := accessor-type;
+      !s_call => |[ x_eval(|t_parent, ~*_) ]|
     
   default-rule(|s_call, accessor-type):
     Chained() -> |[ get-arguments; last; s_call ]|
