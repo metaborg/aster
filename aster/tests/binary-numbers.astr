@@ -13,6 +13,9 @@ strategies
     
     id.value;
     
+    where(<lt> (<id>, 5.3));
+    where(<gt> (<id>, 5.2));
+    
     id.uninit
 
   pow =

@@ -43,9 +43,11 @@ rules // default semantic rules (or "copy rules")
       s_call' := |[ x_eval(|<get-parent(|t_all-parents) <+ !UnknownParent()>, t_all-parents, ~*args) ]|
     
   default-rule(|s_call, accessor-type):
-    Syn() -> Strat |[ ?x_current; one(s_call') ]|
+    Syn() ->
+    Strat |[ ?x_current; one(s_call' => x_value); !x_value ]|
     where
       x_current := <newname> "current";
+      x_value   := <newname> "value";
       !s_call   => |[ x_eval(|t_parent, ~*args) ]|;
       s_call'   := |[ x_eval(|x_current, ~*args) ]|
     
