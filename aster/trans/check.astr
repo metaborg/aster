@@ -10,22 +10,29 @@ rules
   init-check = id.init
 
   check-all =
-    collect-all(where(id.error));
+    id.init;
+    collect-all(where(id.error + id.warning));
     
-    if not([]) then
-      map(
-        id.pp;
-        err(|id.error)
-      );
+    list-loop({
+      where(context := <id.pp-context <+ !"">);
+      if id.error then
+        log(|Error(), <conc-strings> (id.error, context), id.pp)
+      else
+        where(as-string(id.warning); debug);
+        log(|Warning(), <conc-strings> (id.warning, context), id.pp)
+      end
+    });
+      
+    if one(id.error) then
       <xtc-exit> 1
     end
 
 attributes
   
-  @local error:
-    Attribute(_, _) -> "Undefined attribute referenced"
+  local error:
+    Attribute(_, _, _) -> "Undefined attribute referenced"
     where
-      not(attribute-type + Attribute(is-native-attribute, id))
+      not(attribute-type + is-native-attribute)
     
     AttributeDef(_, _, _) -> "Attribute type not declared"
     where
@@ -37,9 +44,17 @@ attributes
     where
       Chained() := id.def-type
     
-    AttributeDef(_, pattern, AttributeDefStrategy(Some(Child(x)), _, _)).x -> "Child variable not defined by rule pattern"
+    AttributeDefStrategy(Child(x), _, _, _) -> "Child variable not defined by rule pattern"
     where
-      not(<oncetd(?Var(x))> pattern)
+      not(id.is-pattern-var(|x))
+    
+    AttributeDefStrategy(_, Attribute(_, _, args), _, _) -> "Strategy applications not allowed in attribute argument patterns"
+    where
+      <oncetd(?RootApp(_))> args
+    
+    AttributeRef(_, _) -> "Illegal attribute reference in match pattern"
+    where
+      id.in-match
     
     AttributeDef(type, pattern, s) -> "Chained attributes must specify type inh or syn for each definition."
     where
@@ -47,11 +62,13 @@ attributes
       <not(Chained + Inh + Syn)> type;
       <not(RootApp(Fail()))> pattern
     
-    AttributeDefStrategy(_, RootApp(Id()), _) -> "Rule should be inherited or local"
+    AttributeDef(_, Root(), _) -> "Synthesized attribute cannot have a root definition"
     where
-      id.def-type-local => Syn() 
+      id.def-type-local => Syn()
     
-    AttributeDefStrategy(_, Attribute(<is-native-attribute>, _), _) -> "Cannot redefine a native attribute"
+    AttributeDef(_, Root(), AttributeDefStrategy(Some(_), _, _, _)) -> "Illegal child pattern on root node definition"
+    
+    AttributeDefStrategy(_, <is-native-attribute>,_ , _) -> "Cannot redefine a native attribute"
     
     // TODO: report error at the declaration site? (id.def-type.parent)
     AttributeDef(not-Local, _, _) -> "Can only assign local definitions to local attribute"
@@ -59,20 +76,56 @@ attributes
       <not(Local)> not-Local;
       <Local> id.def-type
     
+    AttributeDef(_, _, AttributeDefStrategy(_, Attribute([_ | _], _, _), Circular(_), _)) ->
+    "Circular attributes cannot have strategy arguments" 
+
+  local warning:
+    Var(x) -> "Performing match using annotated term"
+    where
+      id.in-match; (id.is-pattern-var(|x) + id.is-def-arg(|x));
+      <debug> id.in-match.parent
+    
   // TODO: more checks
   // - check if topdown-depth succeeds for child patterns
   // - no child patterns in strat calls
-  // - @inh x(kid).foo = kid.foo should be synthesized or local
-  // - root has no child
+  // - inh x(kid).foo = kid.foo should be synthesized or local
+  // - inh foo(x) = .... ?x -> Warning: should not use annotated terms in match?
 
 attributes
   
-  @local pp = attribute-signature <+ id.uninit // TODO
+  inh in-match:
+    Match(t).t         -> id
+    Assign(t, _).t     -> id
+    AM(_, t).t         -> id
+    As(t, _).t         -> id
+    Rule(t, _, _).t    -> id
+    RuleNoCond(t, _).t -> id
+    RootApp(s).s       -> fail
+    App(s, _).s        -> fail
+    NameDefBlock(_, t, _, _).t    -> id
+    AnonymousRewriteRule(s, _, _) -> id
+    AttributeDefStrategy(_, Attribute(_, _, t), _, _).t -> id
   
-  @inh def-type:
-    AttributeDef(_, _, AttributeDefStrategy(_, attr, _)) ->  <attribute-type> attr
+  inh is-pattern-var(|var):
+    AttributeDef(_, pattern, _) -> <oncetd(id.eq(|Var(var)))> pattern
   
-  @inh def-type-local:
+  inh is-def-arg(|var):
+    AttributeDef(_, _, args) -> <oncetd(id.eq(|Var(var)))> args
+  
+  // TODO2: Proper error pp
+  local pp =
+    try(attribute-signature);
+    id.uninit
+  
+  local pp-context =
+    id.ancestor(?AttributeDef(_, _, <id>));
+    ?AttributeDefStrategy(_, <id.pp>, _, _);
+    <conc-strings> (" in attribute ", <as-string>)
+  
+  inh def-type:
+    AttributeDef(_, _, AttributeDefStrategy(_, attr, _, _)) ->  <attribute-type> attr
+  
+  inh def-type-local:
     AttributeDef(type, _, _) ->  type
   
-  // @inh root.has-root-def(|name) = oncetd(AttributeDef(...
+  // inh root.has-root-def(|name) = oncetd(AttributeDef(...

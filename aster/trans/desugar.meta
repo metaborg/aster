@@ -1,4 +1,1 @@
-Meta([
-  Syntax("Stratego-Attributes-in-Stratego")
-, HeuristicFilters(Off())]
-)
+Meta([Syntax("Stratego-Attributes-in-Stratego")])

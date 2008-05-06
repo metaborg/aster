@@ -1,0 +1,28 @@
+module test-stratego-rerag
+
+imports
+  libstratego-lib
+  stratego-rerag
+  test-attributes
+
+strategies
+
+  main-test-stratego-rerag =
+    test-suite(
+      !"stratego-rerag tests"
+    ,
+      test-term-depth;
+      test-attributes
+    )
+  
+  test-term-depth =
+    apply-test(!"term-depth (1)", term-depth(|Var("v")), !Term |[ A(B(C(v))) ]|, !3);
+    apply-test(!"term-depth (2)", term-depth(|Var("v")), !Term |[ A(B(C(q, D(v)))) ]|, !4);
+    apply-test(!"term-depth (3)", term-depth(|Var("v")), !Term |[ (1,v) ]|, !1);
+    apply-test(!"term-depth (4)", term-depth(|Var("v")), !Term |[ v ]|, !0);
+    apply-test(!"term-depth (5)", term-depth(|Var("v")), !Term |[ [1,2,v,4] ]|, !3);
+    apply-test(!"term-depth (6)", term-depth(|Var("v")), !Term |[ [v | b] ]|, !1);
+    apply-test(!"term-depth (7)", term-depth(|Var("v")), !Term |[ [1 | v] ]|, !2);
+    apply-test(!"term-depth (8)", term-depth(|Var("v")), !Term |[ [1,2 | v] ]|, !3);
+    apply-test(!"term-depth (9)", term-depth(|Var("v")), !Term |[ [[v]] ]|, !2);
+    apply-test(!"term-depth (10)", term-depth(|Var("v")), !Term |[ [2{v}] ]|, !1)

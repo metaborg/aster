@@ -23,7 +23,7 @@ strategies
 
 rules
 
-  @syn Fork(t1, t2).min := <min> (t1.min, t2.min)
+  syn Fork(t1, t2).min := <min> (t1.min, t2.min)
 
-  @syn Leaf(x).min      := x
+  syn Leaf(x).min      := x
 

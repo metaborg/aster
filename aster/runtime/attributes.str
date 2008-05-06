@@ -8,14 +8,14 @@ signature constructors
 
 strategies
 
-  get-cached-attribute(|attribute-cache, name) =
-    key := (<id>, name);
+  get-cached-attribute(|attribute-cache, node, name) =
+    key := (node, name);
     !attribute-cache;
     hashtable-get(|key)
   
-  set-cached-attribute(|attribute-cache, name, value) =
+  set-cached-attribute(|attribute-cache, node, name, value) =
     where(
-      key := (<id>, name);
+      key := (node, name);
       !attribute-cache;
       hashtable-put(|key, value)
     )

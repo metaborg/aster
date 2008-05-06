@@ -7,16 +7,111 @@ test Rules block
 test Assignment in pattern definition block
   "module foo
    rules
-    @attribute:
+    eq attribute:
       Pattern(x) -> 2 where Foo() :=  x"
--> Module("foo",[Rules([PatternDefBlock(NoType,AttributeNoArgs("attribute"),[AttributePDefTerm(NoAnnoList(Op("Pattern",[Var("x")])),None,NoAnnoList(Int("2")),WhereClause(Assign(NoAnnoList(Op("Foo",[])),Var("x"))))])])])
+->  _
   
 test Rule definition vs. attribute pattern definition block
   "module foo
-   rules @foo: 1 -> 2 @ bar : 3 -> 4"
--> Module("foo",[Rules([PatternDefBlock(NoType,AttributeNoArgs("foo"),[AttributePDefTermNoWhere(NoAnnoList(Int("1")),None,NoAnnoList(Int("2")))]),PatternDefBlock(NoType,AttributeNoArgs("bar"),[AttributePDefTermNoWhere(NoAnnoList(Int("3")),None,NoAnnoList(Int("4")))])])])
+   rules eq foo: 1 -> 2 eq bar : 3 -> 4"
+-> _
 
 test Rule definition vs. attribute pattern definition block (2)
   "module foo
-   rules @foo: 1 -> 2 @ syn bar : 3 -> 4"
--> Module("foo",[Rules([PatternDefBlock(NoType,AttributeNoArgs("foo"),[AttributePDefTermNoWhere(NoAnnoList(Int("1")),None,NoAnnoList(Int("2")))]),PatternDefBlock(Syn,AttributeNoArgs("bar"),[AttributePDefTermNoWhere(NoAnnoList(Int("3")),None,NoAnnoList(Int("4")))])])])
+   rules eq foo: 1 -> 2 syn bar : 3 -> 4"
+-> _
+
+test Attribute pattern block with strategy definitions
+  "module foo
+   rules
+     eq Pattern(child):
+       child.bar = !1
+       id.baz = !2
+  "
+-> _
+
+test Empty pattern block and strategy definition
+  "module foo
+   rules
+     eq Pattern(child):
+     
+     bar = !1 // not to be confused with id.bar = !1
+  "
+fails
+
+test Non-empty pattern block and strategy definition
+  "module foo
+   rules
+     eq Pattern(child):
+       id.bar = !1
+     
+     baz = !1
+  "
+-> _
+
+test Custom rule type and circularity vs. 'as' operator
+  "module foo
+   rules
+     s = ?a 
+     
+     eq <custom> rule : 2 -> 3
+  " -> _
+  
+test Attribute definition block with variable pattern
+  "module foo
+   rules
+     local foo:
+       id.bar = id
+       id.baz = id
+  " -> _
+  
+test Attribute definition block with single strategy
+  "module foo
+   rules
+     local foo(s):
+       id.bar = s
+  " -> _
+  
+test Attribute reference in match
+  "module foo
+   rules
+     s = ?1.bar
+  " -> _
+  
+test Attribute defined on tuple
+  "module foo
+   rules
+     eq (1,2,3).foo = !1
+  " -> _
+
+test Attribute localfoo
+  "module foo
+   rules
+     local foo = !1
+  " -> _
+
+test Pattern rootfoo
+  "module foo
+   rules
+     eq rootfoo.bar = !1
+  " -> _
+
+test Attribute block defined on tuple
+  "module foo
+   rules
+     local (a,b):
+        a.x := 1
+  " -> _
+
+test Attribute on term 'eq'
+  "module foo
+   rules
+     eq eq = 1
+  " -> _
+
+test AttributeDecl and AttributeDefNoPattern  
+  "module foo rules
+     syn x
+     eq B(a): id.x = 1
+   " -> _
+

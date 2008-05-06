@@ -1,0 +1,26 @@
+module Stratego-With-Hack
+
+imports
+  Stratego-Sugar-in-Stratego
+
+exports
+
+  sorts
+    With2Strategy
+    WithInWhere
+
+  context-free syntax
+  
+      StrategoTerm "->" StrategoTerm "where" WithInWhere   -> StrategoRule {cons("Rule")}
+      StrategoTerm "->" StrategoTerm "with"  With2Strategy -> StrategoRule {cons("Rule")}
+  
+      StrategoStrategy "with" With2Strategy -> WithInWhere {ast("Seq(Where(<1>), <2>)")}
+      StrategoStrategy                      -> With2Strategy {ast("Call(SVar(\"with\"), [<1>])")}
+
+  context-free restrictions
+  
+    "with" -/- [a-zA-Z0-9\'\-\_]
+  
+  lexical syntax
+  
+    "with" -> Keyword

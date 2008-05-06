@@ -4,6 +4,10 @@ imports
   Stratego-Attributes
   stratego-rerag
 
+signature constructors
+  // used in intermediate syntax
+  AttributePDefStrategy : Pattern * OptDotChild * Strategy -> PatternDefBlockDef
+
 rules
 
   desugar-all =
@@ -15,99 +19,111 @@ rules
     )))
   
   desugar =
-    desugar-attribute-ref + desugar-attribute-def + desugar-rewrite-def
-  + desugar-where-with + desugar-id-term
+    desugar-attribute-ref + desugar-attribute-def
+  + desugar-where-with + desugar-id-term + desugar-fail-term
+  + desugar-attribute-child
+
+rules
 
   desugar-attribute-def:
     Attributes(def*) -> Rules(def*)
-
+  
   desugar-attribute-def:
-    AttributePDefTermNoWhere(child, attribute, term) ->
-    AttributePDefTerm(child, attribute, term, Id())
+    AttributeDeclNoPattern(type, attr, circular) ->
+    AttributeDecl(type, Id(), attr, circular)
      
   desugar-attribute-def:
-    AttributePDefTerm(child, attribute, term, condition) ->
-    AttributePDefStrategy(child, attribute, strategy)
+    AttributePDefTerm(pattern, child, term, condition) ->
+    AttributePDefStrategy(pattern, child, strategy)
     where strategy := Seq(condition, Build(term))
   
   desugar-attribute-def:
-    AttributeDefTermNoWhere(child, attribute, term) ->
-    AttributeDefTerm(child, attribute, term, Id())
-  
-  desugar-attribute-def:
-    AttributeDefTerm(child, attribute, term, condition) ->
-    AttributeDefStrategy(child, attribute, strategy)
+    AttributeDefTerm(child, attribute, circular, term, condition) ->
+    AttributeDefStrategy(child, attribute, circular, strategy)
     where strategy := Seq(condition, Build(term))
-  
-  // HACK: WhereClause is made a strategy in the core syntax
-  
-  desugar-where-with:
-    Seq(WithClause(s1), s2) -> |[ s1; s2 ]|
-  
-  desugar-where-with:
-    Seq(WhereWithClause(s1, s2), s3) -> Seq(WhereClause(s1), Seq(s2, s3))
-  
-// UNDONE: Attribute declaration
-//
-//desugar-attribute-def:
-//  AttributeDef(type, pattern, AttributeDefNoValue(_, attribute)) ->
-//  AttributeDef(type, RootApp(Fail()), AttributeDefStrategy(None(), attribute, Fail()))
   
   desugar-attribute-def:
     AttributeDefNoPattern(type, value) ->
     AttributeDef(type, Wld(), value)
-     
-  desugar-rewrite-def:
-    AnonymousRewriteRuleNoWhere(term1, term2) ->
-    AnonymousRewriteRule(term1, term2, Id())
-  
-  desugar-rewrite-def:
-    AnonymousRewriteRule(term1, term2, condition) ->
-    AnonymousRewriteStrategy(Seq(Match(term1), Seq(Where(condition), Build(term2))))
-  
-  desugar-rewrite-def:
-    BlockAnonymousRewriteRuleNoWhere(term) ->
-    BlockAnonymousRewriteRule(term, Id())
 
-  desugar-rewrite-def:
-    BlockAnonymousRewriteRule(term, condition) ->
-    BlockAnonymousRewriteStrategy(Seq(Where(condition), Build(term)))
+rules // where and with clause
+
+  // These are inlined as strategies above,
+  // but only the WhereClause remains in the core language
+  // for special treatment by the assimilation phase.
+  
+  desugar-where-with:
+    Seq(WithClause(s1), s2) -> |[ where(s1); s2 ]|
+  
+  desugar-where-with:
+    NoWhere() -> Id()
+  
+  desugar-where-with:
+    Seq(WhereWithClause(s1, s2), s3) -> Seq(WhereClause(s1), Seq(Where(s2), s3))
+  
+  desugar-where-with:
+    AnonymousRewriteRuleNoWhere(t1, t2) -> AnonymousRewriteRule(t1, t2, Id())
+
+rules
+
+  desugar-attribute-ref:
+    AttributeNoArgs(x) -> Attribute(x, [], [])
   
   desugar-attribute-ref:
-    AttributeRefSelf(attribute) ->
-    AttributeRef(RootApp(Id()), attribute)
-
-  desugar-attribute-ref:
-    AttributeNoArgs(x) -> Attribute(x, [])
+    AttributeNoTerms(x, s*) -> Attribute(x, s*, [])
   
   desugar-attribute-ref:
     AttributeTerm(x) -> RootApp(x)
   
-  desugar-attribute-ref:
+  desugar-attribute-child:
     DotChild(x) -> Child(x)
   
+  desugar-attribute-child:
+    DotIdChild() -> IdChild()
+  
+  desugar-attribute-child:
+    IdChild() -> NoChild()
+  
+  desugar-fail-term:
+    FailTerm() -> RootApp(Fail())
+  
   desugar-id-term = // match context
-    at-match(topdown(\IdTerm() -> Wld()\))
+    at-match-all(\IdTerm() -> Wld()\)
   
   desugar-id-term: // build context
     IdTerm() -> RootApp(Id)
 
+  at-match-all(s) =
+    ?before;
+    at-match(
+      rec rec(
+        s
+      <+
+        RootApp(id) <+ App(id, rec)
+      <+
+        all(rec)
+      )
+    );
+    not(?before)
+
   at-match(s) =
-    Match(s) + NameDefBlock(s, id) + RuleNoCond(s, id) + Rule(s, id, id)
+    Match(s) + NameDefBlock(id, s, id, id) + RuleNoCond(s, id) + Rule(s, id, id) + AM(id, s) + Assign(s, id)
+  + AttributeDefStrategy(id, Attribute(id, id, map(s)), id, id) + AnonymousRewriteRule(s, id, id)
      
 rules // flatten block definitions to individual definitions
 
   astr-flatten-block-def =
-    ?NameDefBlock(pattern, <id>);
+    ?NameDefBlock(type, pattern, circular1, <id>);
     map(
-      \AttributeTypedDef(type, AttributeDefStrategy(_, _, _)) ->
-       AttributeDef(type, pattern, <id>)\
-    )
-
-  astr-flatten-block-def =
-    ?PatternDefBlock(type, attribute, <id>);
-    map(
-      \AttributePDefStrategy(pattern, child, s) ->
-       AttributeDef(type, pattern, AttributeDefStrategy(child, attribute, s))\
+      \AttributeDefStrategy(child, attr, circular2, s) ->
+       AttributeDef(type, pattern, AttributeDefStrategy(child, attr, circular3, s))
+       with
+         circular3 := <if(NotCircular, !circular1)> circular2\
     )
   
+  astr-flatten-block-def =
+    ?PatternDefBlock(type, attribute, circular, <id>);
+    map(
+      \AttributePDefStrategy(pattern, child, s) ->
+       AttributeDef(type, pattern, AttributeDefStrategy(child, attribute, circular, s))\
+    )

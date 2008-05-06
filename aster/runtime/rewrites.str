@@ -2,30 +2,25 @@ module rewrites
 
 strategies
 
-/*  
-  get-remapped-term =
-    get-cached-attribute(|<all-remapped-terms>)
-
-  get-remapped-term(|all-remapped-terms) =
-    !attribute-cache;
-    hashtable-get(|<id>)
+  eval-anonymous-rewrite = id
   
-  all-remapped-terms =
-    lookup-table(|"all-remapped-terms")
-
-  remap-term(|to) =
-    remap-term(|to, <all-parents>, <all-remapped-terms>)
-
-  remap-term(|to, all-parents, all-remapped-terms):
-*/
-
-  rewrite-term(|all-parents, to):
-    from -> to
-    where
-      // For all ancestors, lazily rewrite subterms
+  eval-all-anonymous-rewrites =
+    repeat({
+      ?before;
+      bottomup(repeat(eval-anonymous-rewrite));
+      not(?before)
+    })
+  
+  /* TODO: set new x_parent, rewrite this
+  persist-anonymous-rewrite(|all-parents, x_parent, attr-cache, from, to) =
+    !from;
+    not(eq-ignore-annos(|to));
+    
+    with( // rewrite ancestors
       repeat(
-        { parent, index:
-          get-parent(|all-parents) => (parent, index);
+        { parent:
+          parent := <get-parent(|all-parents)>;
+          
           rules(
             SagRewrite: parent -> <all(try(SagRewrite))> parent
             where
@@ -38,3 +33,13 @@ strategies
       rules(
         SagRewrite: from -> to
       )
+    )
+  */
+
+  get-rewite-cached(|attr-cache, node) =
+    !attr-cache;
+    hashtable-get(|node)
+
+  set-rewrite-cached(|attr-cache, node, value) =
+    !attr-cache;
+    hashtable-put(|node, value)

@@ -1,0 +1,86 @@
+module rule-defaults
+
+imports
+  libstratego-lib
+  util
+  rule-tracing
+  assimilate
+
+strategies
+
+  add-default-rules:
+    Module(x, decl*) -> Module(x, [decl*, defaults*])
+    with
+      bagof-AllRules;
+      map(default-rule <+ ![]);
+      flatten-list;
+      defaults* := [Rules(<id>)]
+  
+  default-rule:
+    def @ Attribute(x_eval, sarity, tarity) ->
+    <make-merged-def-default>
+    |[
+      x_eval(as*|a*) =
+        s_trace;
+        s_rule
+    ]|
+    where
+      type          := <attribute-type> <RuleAttribute> def;
+      (as*,a*)      := <RuleArgs> def;
+      (s*,t*)       := <params-to-args> (as*,a*);
+      s_call        := |[ x_eval(s*|t*) ]|;
+      s_rule        := <default-rule(|s_call, def)> type
+    with
+      s_trace       := <trace-default-rule> def
+
+rules // default semantic rules (or "copy rules")
+ 
+  default-rule(|s_call, def):
+    Inh() ->  
+    |[ // id.parent.attr
+       (!x_parent; not(UnknownParent) <+ get-parent(|x_all-parents));
+       not(NoParent);
+       x_eval(s* |<get-parent(|x_all-parents) <+ !UnknownParent()>, x_all-parents, t*)
+    ]|
+    with
+      !s_call => |[ x_eval(s* |x_parent, x_all-parents, t*) ]|
+  
+  // TODO: Or should the syn copy rule consider all following children after "soft failure"?
+  
+  default-rule(|s_call, def):
+    Syn() ->
+    |[
+       ?x_node;
+       get-first-child(|x_node);
+       x_eval(s* |x_node, t*)
+    ]|
+    with
+      x_node  := <NodeVar>;
+      x_value := <newname> "value";
+      !s_call => |[ x_eval(s* |x_parent, t*) ]|
+  
+  default-rule(|s_call, def):
+    Chained() ->
+    |[ get-prev-sibling(|x_parent)
+       < x_eval-syn(s* |x_parent, t*)    // id.syn_attr
+       + !x_parent;
+         x_eval(s* |UnknownParent(), t*) // id.parent.inh_attr
+    ]|
+    where
+      "inh" := <RuleAccessorType> def // context is an inh rule def
+    with
+      !s_call     => |[ x_eval(s* |x_parent, t*) ]|;
+      x_eval-syn := <attribute-accessor-name(|"syn")> <RuleAttribute> def
+      
+  default-rule(|s_call, def):
+    Chained() ->
+    |[ ?x_node;
+       get-last-child(|<id>)
+       < x_eval(s* |x_node, t*)       // id.last-child.syn_attr
+       + x_eval-inh(s* |x_parent, t*) // id.inh_attr
+    ]|
+    where
+      "syn"      := <RuleAccessorType> def; // context is a syn rule def
+      !s_call    => |[ x_eval(s* |x_parent, t*) ]|;
+      x_node     := <NodeVar>;
+      x_eval-inh := <attribute-accessor-name(|"inh")> <RuleAttribute> def

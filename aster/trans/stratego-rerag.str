@@ -18,6 +18,8 @@ signature constructors
 
 strategies
 
+  // TODO: Add switch for run-time checks, e.g., for circularity and tree concistency
+  
   stratego-rerag =
     add-default-attributes;
     desugar-all;
@@ -39,11 +41,6 @@ strategies // I/O
       input-stratego-file;
       stratego-rerag;
       output-stratego-file
-    <+
-      prim("SSL_stacktrace_get_all_frame_names");
-      report-failure; // TODO: This exits without the xtc-exit cleanup
-      
-      xtc-exit
     )
   
   stratego-rerag-options =

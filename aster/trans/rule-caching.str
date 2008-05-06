@@ -1,0 +1,56 @@
+/**
+ * Rule caching.
+ *
+ * @author Lennart Kats <lennart add lclnet.nl>
+ */
+module rule-caching
+
+imports
+  libstratego-lib
+  util
+
+strategies
+
+  // TODO: Cached attributes should deal with term arguments
+  
+  add-cache-read(|sargs, targs) =
+    if [] := sargs then
+      add-cache-read'(|targs)
+    else
+      !Strat |[ fail ]|
+    end
+  
+  add-cache-write(|sargs, targs, x_node) =
+    if [] := sargs then
+      add-cache-write'(|targs, x_node)
+    else
+      !Strat |[ id ]|
+    end
+
+  add-cache-read'(|targs):
+    Attribute(name, sarity, tarity) ->
+    |[ get-cached-attribute(|x_attr-cache, <id>, t_key);
+       not(EvalFailed);
+       astr-initialize-node-prefer(|x_all-parents, x_attr-cache)
+    ]|
+    with
+      x_all-parents := <AllParentsVar>;
+      x_attr-cache  := <AttributeCacheVar>;
+      t_key         := <make-cache-key(|name, tarity, sarity, targs)>
+
+  add-cache-write'(|targs, x_node):
+    Attribute(name, sarity, tarity) ->
+    |[ set-cached-attribute(|x_attr-cache, x_node, t_key, <id>) ]|
+    with
+      x_attr-cache  := <AttributeCacheVar>;
+      t_key         := <make-cache-key(|name, tarity, sarity, targs)>
+
+  make-cache-key(|name, tarity, sarity, targs) =
+    arity' := <arity-to-string> (sarity, tarity);
+    name'  := <conc-strings> (name, arity');
+    targs' := <drop(|AG_STANDARD_ARGS())> targs;
+    
+    !NoAnnoList(Str(name'));
+    if not([] := targs') then
+      !NoAnnoList(Tuple([<id>, targs']))
+    end

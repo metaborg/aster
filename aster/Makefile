@@ -27,7 +27,7 @@ check : all
 	$(MAKE) -C tests check
 
 clean :
-	rm -f syntax/*.tbl trans/stratego-rerag trans/stratego-rerag-no-check trans/stratego-rerag.copy trans/check.str
+	rm -f syntax/*.tbl syntax/*.def syntax/*.dep trans/stratego-rerag trans/stratego-rerag-no-check trans/stratego-rerag.copy trans/check.str
 	$(MAKE) -C tests clean
 
 bootclean :

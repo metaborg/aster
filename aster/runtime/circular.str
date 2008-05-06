@@ -1,0 +1,50 @@
+/**
+ * Circular attribute evaluation run-time.
+ * Uses the attribute cache table to store a worklist.
+ *
+ * @internal
+ * @author Lennart Kats <lennart add lclnet.nl>
+ */
+module circular
+
+imports
+  libstratego-lib
+
+strategies
+
+  circular-attributes-fixpoint(|attr-cache) =
+    if get-circular-worklist => [_] then // worklist not executed elsewhere
+      while(
+        circular-worklist-dequeue(|attr-cache)
+      , once-EvalCircularAttribute
+      )
+    end
+  
+  internal-circular-rule-def =
+    rules(EvalCircularAttribute: _) // ensure this is always defined somewhere
+  
+  circular-worklist-enqueue(|attr-cache) =
+    where(
+      queue := <get-circular-worklist(|attr-cache)>
+    <+
+      queue := []
+    );
+    set-circular-worklist(|attr-cache, [<id> | queue])
+  
+  circular-worklist-dequeue(|attr-cache) =
+    where(
+      get-circular-worklist(|attr-cache);
+      (ticket, queue) := <split-last>
+    );
+    set-circular-worklist(|attr-cache, queue);
+    !ticket
+  
+  get-circular-worklist(|attr-cache) =
+    !attr-cache;
+    hashtable-get(|"$worklist")
+  
+  set-circular-worklist(|attr-cache, value) =
+    where(
+      !attr-cache;
+      hashtable-put(|"$worklist", value)
+    )

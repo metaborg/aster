@@ -1,14 +1,16 @@
 module Stratego-Attributes-in-Stratego
+
 imports
   Stratego-Sugar-in-Stratego
   Stratego-Attributes
+  Stratego-With-Hack
 
 hiddens
   context-free start-symbols StrategoModule
 
 exports
 
-  %% TODO: Move Stratego-Sugar-in-Stratego extensions
+  %% TODO: Move out Stratego-Sugar-in-Stratego extensions
 
   context-free syntax
 
@@ -28,18 +30,23 @@ exports
 
     "t"       "_" [A-Za-z0-9\'\-\_]+     -> Term {prefer}
     "t"       "_" [A-Za-z0-9\'\-\_]+ "*" -> {Term ","}* {prefer}
+    
+    "as"[0-9\']* "*"                     -> {Typedid ","}+ {prefer} 
+        
+    "s"       "_" [A-Za-z0-9\'\-\_]+     -> Strategy {prefer}
+    "s"       "_" [A-Za-z0-9\'\-\_]+ "*" -> {Strategy ","}* {prefer}
+
+  variables
 
     %% HACK: Work around Var -> Term has a {prefer} annotation in Stratego
-    %%       (note that this doesn't work for lists...)
+    %%       (although the heuristic files do a decent job at this,
+    %%       this avoid the problem, but it doesn't work for lists...)
     
     "t"       "_" [A-Za-z0-9\'\-\_]+     -> Var {prefer}
 %%  "t"       "_" [A-Za-z0-9\'\-\_]+ "*" -> {Var ","}* {prefer}
     "t"[0-9\']*                          -> Var {prefer}
 %%  "t"[0-9\']*   "*"                    -> {Var ","}* {prefer}
 %%  "ts"[0-9\']*                         -> {Var ","}* {prefer}  
-        
-    "s"       "_" [A-Za-z0-9\'\-\_]+     -> Strategy {prefer}
-    "s"       "_" [A-Za-z0-9\'\-\_]+ "*" -> {Strategy ","}* {prefer}
     
     "a"       "_" [A-Za-z0-9\'\-\_]+     -> Typedid {prefer}
     "a"       "_" [A-Za-z0-9\'\-\_]+ "*" -> {Typedid ","}+ {prefer}

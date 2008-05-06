@@ -3,7 +3,10 @@ module rule-merging
 imports
   libstratego-lib
   util
-  tracing
+  rule-tracing
+  rule-caching
+  rule-circularity
+  assimilate
 
 overlays
   DEFAULT_RULE_INDEX = -1
@@ -12,34 +15,54 @@ overlays
 
 strategies
   
-  // TODO: Caching (of selected attrs?)
   // TODO: Cheap circularity detection using counter argument?
   // TODO2: Optimize - inline rule defs in ordered rule defs?
   
   add-merged-rules:
-    Module(x, decl*) -> Module(x, [Rules(ordered) | decl*])
+    Module(x, decl*) -> Module(x, [decl*, ordered*])
     where
       bagof-AllRules;
-      map(add-merged-rule) => ordered
+      map({
+        ?def;
+        add-merged-rule;
+        try(make-circular-rule(|def))
+      });
+      ordered* := [Rules(<id>)]
+  
+  // TODO2: Optimize - don't cache the copy rules?
   
   add-merged-rule:
-    def @ (x_eval, arity) ->
-    |[ x_eval(|a*) =
+    def @ Attribute(x_eval, sarity, tarity) ->
+    |[ x_eval(as*|a*) =
+         s_cache-read
+       <+
          s_trace;
+         ?x_node;
          s;
-         not(EvalFailed);
-         astr-initialize-node-prefer(|x_all-parents, x_attr-cache)
+         s_cache-write;
+         if EvalFailed then
+           !x_node;
+           s_trace-failed;
+           fail
+         else
+           astr-initialize-node-prefer(|x_all-parents, x_attr-cache)
+         end
     ]|
-    where
-      a*      := <RuleArgs> def;
-      !a*     => Typedid* |[ x, x_all-parents, x_attr-cache, a_rest* ]|;
-      t*      := <map(param-to-term)> a*;
-      defs    := <sort-ordered-defs> <make-set> <bagof-OrderedRuleDefs> def;
-      s       := <fold-lchoice> <map(def-call(|t*))> defs;
-      s_trace := <trace-application(|x_eval, arity, <RuleAccessorType> def)>
+    with
+      (as*, a*)      := <RuleArgs> def;
+      (s*, t*)       := <params-to-args> (as*, a*);
+      x_all-parents  := <AllParentsVar>;
+      x_attr-cache   := <AttributeCacheVar>;
+      defs           := <sort-ordered-defs> <make-set> <bagof-OrderedRuleDefs> def;
+      s              := <fold-lchoice> <map(def-call(|s*, t*))> defs;
+      x_node         := <newname> "node";
+      s_trace        := <trace-rule> def;
+      s_trace-failed := <trace-failed-rule> def;
+      s_cache-read   := <add-cache-read(|s*, t*)> def;
+      s_cache-write  := <add-cache-write(|s*, t*, x_node)> def
 
-  def-call(|args):
-    (x_eval, arity) -> |[ x_eval(|~*args) ]|
+  def-call(|s*, t*):
+    Attribute(x_eval, _, _) -> |[ x_eval(s*|t*) ]|
 
   sort-ordered-defs =
     map(!(<OrderedRuleIndex>, <id>));
@@ -52,7 +75,7 @@ strategies
 strategies
 
   make-merged-def(|attribute, pattern, child, accessor-type) =
-    where(
+    with(
       record-def(|attribute, accessor-type)
     );
     if Root() := pattern then
@@ -62,45 +85,56 @@ strategies
     end
   
   make-merged-def(|pattern, index):
-    |[ x_eval(|a*) = s ]| -> |[ x_eval'(|a*) = s ]|
-    where
-      x_eval' := <conc-strings> (x_eval, "-", <as-string> index);
-      arity   := <length> a*;
+    |[ x_eval(as*|a*) = s ]| -> |[ x_eval'(as*|a*) = s ]|
+    with
+      sig     := <attribute-signature>;
+      name    := <pattern-to-name-suffix> pattern;
+      x_eval' := <conc-strings; newname> (x_eval, name, "-", <as-string> index);
+      sig'    := <rename-signature(|x_eval')> sig;
       rules(        
-        OrderedRuleDefs  :+  (x_eval, arity) -> (x_eval', arity)
-        OrderedRuleIndex :   (x_eval', arity) -> index
+        OrderedRuleDefs  :+  sig -> sig'
+        OrderedRuleIndex :   sig' -> index
       )
   
   make-merged-def-root:
-    |[ x_eval(|a*) = s ]| -> |[ x_eval-root(|a*) = s ]|
-    where
-      x_eval-root := <conc-strings> (x_eval, "-root");
-      arity       := <length> a*;
+    |[ x_eval(as*|a*) = s ]| -> |[ x_eval-root(as*|a*) = s ]|
+    with
+      sig         := <attribute-signature>;
+      x_eval-root := <conc-strings; newname> (x_eval, "-root");
+      sig'        := <rename-signature(|x_eval-root)> sig;
       rules(
-        OrderedRuleDefs  :+ (x_eval,      arity) -> (x_eval-root, arity)
-        OrderedRuleIndex :  (x_eval-root, arity) -> ROOT_RULE_INDEX()
+        OrderedRuleDefs  :+ sig -> sig'
+        OrderedRuleIndex :  sig' -> ROOT_RULE_INDEX()
       )
   
   make-merged-def-default:
-    |[ x_eval(|a*) = s ]| -> |[ x_eval-default(|a*) = s ]|
-    where
-      x_eval-default := <conc-strings> (x_eval, "-default");
-      arity          := <length> a*;
+    |[ x_eval(as*|a*) = s ]| -> |[ x_eval-default(as*|a*) = s ]|
+    with
+      sig            := <attribute-signature>;
+      x_eval-default := <conc-strings; newname> (x_eval, "-default");
+      sig'           := <rename-signature(|x_eval-default)> sig;
       rules(
-        OrderedRuleDefs  :+ (x_eval,         arity) -> (x_eval-default, arity)
-        OrderedRuleIndex :  (x_eval-default, arity) -> DEFAULT_RULE_INDEX()
+        OrderedRuleDefs  :+ sig -> sig'
+        OrderedRuleIndex :  sig' -> DEFAULT_RULE_INDEX()
       )
-
+  
+  pattern-to-name-suffix =
+    (?NoAnnoList(Op(<id>, _)) + ?AnnoList(Op(<id>, _), _));
+    <conc-strings> ("-", <id>)
+  <+
+    !""
+  
   record-def(|attribute, accessor-type) =
-    ?|[ x_eval(|a*) = s ]|;
-    arity := <length> a*;
-    if not(<IsKnownRule> (x_eval, arity)) then
+    ?|[ x_eval(as*|a*) = s ]|;
+    sig := <attribute-signature>;
+    
+    if not(IsKnownRule) then
       rules(
-        AllRules         :+= (x_eval, arity)
-        IsKnownRule      :   (x_eval, arity)
-        RuleArgs         :   (x_eval, arity) -> a*
-        RuleAttribute    :   (x_eval, arity) -> attribute
-        RuleAccessorType :   (x_eval, arity) -> accessor-type
+        AllRules         :+= sig
+        IsKnownRule      :   sig
+        RuleArgs         :   sig -> (as*, a*)
+        RuleAttribute    :   sig -> attribute
+        RuleAccessorType :   sig -> accessor-type
       )
     end
   
@@ -113,4 +147,4 @@ strategies
     where
       ops   := <length> <collect-all(?AnnoList(_, _) + ?NoAnnoList(_))> pattern;
       // vars  := <length> <collect-all(?Var(_))> pattern;
-      bonus := <!child => None() < !0 + !HAS_CHILD_INDEX()>
+      bonus := <!child => NoChild() < !0 + !HAS_CHILD_INDEX()>

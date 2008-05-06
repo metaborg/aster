@@ -1,0 +1,12 @@
+module cons-nil
+
+strategies
+
+  main-cons-nil =
+    ![1,2,3,4,5,6,7].init.debug.depth.uninit => 7
+  
+attributes
+
+  syn depth:
+    [a | as] -> <inc> as.depth
+    []       -> 0

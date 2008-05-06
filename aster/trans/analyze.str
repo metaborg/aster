@@ -3,17 +3,27 @@ module analyze
 imports
   libstratego-lib
   Stratego-Attributes
+  assimilate
 
 strategies
 
   analyze =
-    ?AttributeDef(type, _, AttributeDefStrategy(_, attribute, _));
-    where(
+    ( ?AttributeDef(type, _, AttributeDefStrategy(_, attribute, circular, s))
+    + ?AttributeDecl(type, _, attribute, circular)
+    );
+    with(
       sig     := <attribute-signature> attribute;
       oldtype := <!sig; AttributeType <+ !type>;
       type'   := <unify-attribute-type> (type, oldtype);
+
+      if Circular(value) := circular then
+        rules(
+          AttributeCircular: sig -> value
+        )
+      end;
+      
       rules(
-        AttributeType: sig -> type
+        AttributeType: sig -> type'
       )
     )
   
@@ -21,8 +31,22 @@ strategies
     attribute-signature;
     AttributeType
   
+  // TODO: attribute signature should be a tuple or something
   attribute-signature:
-    Attribute(name, args) -> <strip-annos> Attribute(name, <length> args)
+    Attribute(name, s*, a*) ->
+    <strip-annos>
+    (name, <length> s*, <length> a*)
+
+  attribute-signature:
+    |[ x_eval(as*|a*) = s ]| ->
+    Attribute(x_eval, sarity, tarity)
+    with
+      sarity := <length> as*;
+      tarity := <subt> (<length> a*, AG_STANDARD_ARGS())
+  
+  rename-signature(|name'):
+    Attribute(name,  s*, a*) ->
+    Attribute(name', s*, a*)
   
   unify-attribute-type =
     \(t, t) -> t\

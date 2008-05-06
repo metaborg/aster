@@ -13,6 +13,7 @@ strategies
     term-depth(|child, 0)
   
   term-depth(|child, initial) =
+    try(roll-out-list-terms + roll-out-tuple-terms);
     ?Op(_, _);
     one(
       term-depth(|child, <inc> initial) => result
@@ -27,11 +28,32 @@ strategies
     ?child;
     !initial
   
+  roll-out-list-terms:
+    List([t | t*]) -> Op("Cons", [t, List(t*)])
+  
+  roll-out-list-terms:
+    ListTail(l1, l2) -> <roll-out-list-terms> List(<conc> (l1, [l2]))
+  
+  roll-out-list-terms:
+    ListTail([], tail) -> <roll-out-list-terms> List(tail)
+
+  roll-out-tuple-terms:
+    Tuple(ts) -> Op("Tuple", ts)
+  
   fold-seq =
     foldr(!Id(), \(x,y) -> Seq(x,y)\)
   
   fold-lchoice =
     foldr(!Fail(), \(x,y) -> LChoice(x,y)\)
 
-  param-to-term:
+  param-to-arg:
     DefaultVarDec(x) -> Var(x)
+
+  params-to-args =
+    alltd(param-to-arg)
+    
+  arity-to-string =
+    (0, 0); !""
+  <+
+    ?(sarity, tarity);
+    <conc-strings> ("_", <as-string> sarity, "_", <as-string> tarity)

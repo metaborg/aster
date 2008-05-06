@@ -1,0 +1,20 @@
+module lists
+
+strategies
+
+  all-consnil(s) =
+    if ?[_ | _] then
+      [s | s]
+    else
+      all(s)
+    end
+
+  one-consnil(s) = 
+    if ?[_, _] then
+       [s | id] + [id | s]
+    else
+      one(s)
+    end
+
+  topdown-consnil(s) =
+    rec rec(s; all-consnil(rec))

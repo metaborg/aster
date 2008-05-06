@@ -5,7 +5,9 @@ imports
 
 strategies
 
-  check-all = warn-msg(|"Compiler checks are disabled.")
+  check-all =
+    alltd(?amb(_); fatal-err(|"Internal error: ambiguity in input"));
+    warn-msg(|"Compiler checks are disabled.")
 
   init-check = id
 

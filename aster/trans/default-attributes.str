@@ -4,74 +4,127 @@ imports
   Stratego-Attributes
   stratego-rerag
 
-strategies
-
-  // TODO2: Check for zero params
-  is-native-attribute = "parent" + "init" + "uninit" + "disable-warnings"
-
 rules
 
+  // TODO: Remove default attributes to /runtime/ dir
+
   add-default-attributes:
-    Module(name, decl*) -> Module(name, [attrs | decl*])
-    where
-      attrs := <default-attributes>
+    Module(name, decl*) -> Module(name, [decl*, attrs*])
+    with
+      attrs* := [<default-attributes>]
 
   default-attributes = !|[
     attributes
-      @local enable-warnings = rules(AstrWarningsEnabled : _)
+      local enable-warnings = rules(AstrWarningsDisabled :- _)
       
-      @local previous-sibling = get-previous-sibling(|id.parent)
+      local tree-access:
+        id.prev-sibling  = get-prev-sibling(|id.parent)
+        id.next-sibling  = get-next-sibling(|id.parent)
+        id.first-sibling = get-first-child(|id.parent)
+        id.last-sibling = get-last-child(|id.parent)
+        id.first-child = get-first-child(|id)
+        id.last-child = get-last-child(|id)
       
-      @local next-sibling = get-next-sibling(|id.parent)
-      
-      // TODO2: more first-child, last-child
-      
-      @local root = try(id.parent.root)
-      
-      @local debug = where(id.uninit; debug)
+      inh tree-access-ancestors:
+        id.root = try(id.root)
+        id.ancestor(p) = id.parent; p <+ id.ancestor(p)
   
-      @local path-list:
-        _    -> [id.parent | id.parent.path-list]
+      inh path-list:
+        id   -> [id.parent | id.path-list]
         root -> []
   
-      @local path =
+      local path =
          id.path-list;
          reverse;
-         map(get-constructor);
+         map(get-constructor; as-string);
          separate-by(|".");
          concat-strings
       
-      @local path-short =
+      local path-short =
         id.path;
-        if <gt> (<string-length>, 40) then
-          string-as-chars(
+        string-as-chars(
+          truncate-path-lists;
+          if <gt> (<string-length>, 40) then
             reverse;
             take(|40);
-            reverse
-          );
-          <conc-strings> ("...", <id>)
-        end
+            reverse;
+            !['.', '.', '.' | <id>]
+          end
+        )
+      
+      truncate-path-lists =
+        // "[].[].[]." becomes "[].."
+        ?['[', ']', '.' | <id>];
+        repeat1(?['[', ']', '.' | <id>] + \['[', ']'] -> []\);
+        !['[', ']', '.', '.' | <truncate-path-lists>]
+      <+
+        [id | truncate-path-lists]
+      <+
+        []
+      
+      local IndexedSet(_):
+        id.contains(|elem) = iset-contains(|<strip-annos> elem)
+        id.add(|elem)      = iset-add(|<strip-annos> elem)
+        id.elements        = iset-elements
   ]|
+  
+  ignore-trace-def =
+    "path" + "path-list" + "path-short" + "debug" + "first-child" + "last-child"
+  + "next-sibling" + "prev-sibling" + "first-sibling" + "last-sibling" + "enable-warnings"
+  + "root"
 
 rules // Native attribute definitions
+
+  // Native attributes may work on non-annotated terms, or perform
+  // special or optimized operations not directly supported by regular
+  // attributes.
+  
+  // TODO2: Remove all assimilate-native-ref-inside-ag rules, and perform the optimization elswehere
+  
+  is-native-attribute =
+    where(assimilate-native-attr)
+
+  assimilate-native-ref:
+    AttributeRef(t, attr) ->
+    |[ !t; s ]|
+    where
+      s := <assimilate-native-attr> attr
+  
+  assimilate-native-ref-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
+    AttributeRef(t, attr) ->
+    |[ !t; s ]|
+    where
+      s := <assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache)> attr
+   
+  assimilate-native-attr:
+    Attribute("eq", [], [t]) -> |[ eq-ignore-annos(|t) ]|
+
+  assimilate-native-attr:
+    Attribute("debug", [], []) -> |[ where(astr-uninitialize-node; debug) ]|
     
-  assimilate-native-ref:
-    AttributeRef(t, Attribute("disable-warnings", [])) -> Strat |[ rules(AstrWarningsDisabled :- _) ]|
+  assimilate-native-attr:
+    Attribute("disable-warnings", [], []) -> |[ rules(AstrWarningsDisabled: _) ]|
 
-  assimilate-native-ref:
-    AttributeRef(t, Attribute("parent", [])) -> Strat |[ <get-parent(|<all-parents>)> t ]|
+  assimilate-native-attr:
+    Attribute("parent", [], []) -> Strat |[ get-parent(|<all-parents>); not(NoParent) ]|
 
-  assimilate-native-ref-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
-    AttributeRef(t, Attribute("parent", [])) -> Strat |[ s_parent ]|
+  assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
+    Attribute("parent", [], []) -> Strat |[ s_parent; not(NoParent) ]|
 
-  assimilate-native-ref:
-    AttributeRef(t, Attribute("uninit", [])) -> Strat |[ astr-uninitialize-node(|<attribute-cache>) ]|
+  assimilate-native-attr:
+    Attribute("uninit", [], []) -> Strat |[ astr-uninitialize-node-persist(|<attribute-cache>) ]|
 
-  assimilate-native-ref-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
-    AttributeRef(t, Attribute("uninit", [])) -> Strat |[ astr-uninitialize-node(|x_attr-cache) ]|
+  assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
+    Attribute("uninit", [], []) -> Strat |[ astr-uninitialize-node-persist(|x_attr-cache) ]|
   
-  assimilate-native-ref:
-    AttributeRef(t, Attribute("init", [])) -> Strat |[ <astr-initialize-node(|<all-parents>)> t ]|
+  assimilate-native-attr:
+    Attribute("init", [], []) -> Strat |[ astr-initialize-node(|<all-parents>, <attribute-cache>) ]|
   
-  assimilate-native-ref-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
-    AttributeRef(t, Attribute("init", [])) -> Strat |[ <astr-initialize-node(|x_all-parents)> t ]|
+  assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
+    Attribute("init", [], []) -> Strat |[ astr-initialize-node(|x_all-parents, x_attr-cache) ]|
+  
+  assimilate-native-attr:
+    Attribute("reinit", [], []) -> Strat |[ astr-initialize-node-ensure(|<all-parents>, <attribute-cache>) ]|
+  
+  assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
+    Attribute("reinit", [], []) -> Strat |[ astr-initialize-node-ensure(|x_all-parents, x_attr-cache) ]|

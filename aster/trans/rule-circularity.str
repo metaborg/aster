@@ -1,0 +1,49 @@
+module rule-circularity
+
+imports
+  libstratego-lib
+  assimilate
+
+strategies
+
+  make-circular-rule(|def):
+    |[ x_eval(as*|a*) =
+        s_cache-read
+      <+
+        s_body
+    ]| ->
+    Def* |[
+      x_eval(as*|a*) =
+        s_cache-read
+      <+
+        x_old-value := t_initial;
+        s_cache-write;
+        !x_node;
+        x_eval-circular(s*|t*);
+        circular-attributes-fixpoint(|attr-cache)
+      
+      // Uncached evaluator for use in fixpoint loop
+      x_eval-circular(as*|x_old-value, a*) =
+        s_body; // does a cache write
+        ?x_new-value;
+        if not(?x_old-value) then
+          where(
+            ticket := <new>;
+            circular-worklist-enqueue(|attr-cache)
+          );
+          rules(
+            EvalCircularAttribute:
+              ticket -> <x_eval-circular(s*|x_new-value, t*)> x_node
+          )
+        end
+    ]|
+    where
+      t_initial       := <AttributeCircular> def
+    with
+      x_eval-circular := <conc-strings> (x_eval, "-circular");
+      x_node          := <NodeVar>;
+      x_attr-cache    := <AttributeCacheVar>;
+      x_old-value     := <newname> "old-value";
+      x_new-value     := <newname> "new-value";
+      (s*, t*)        := <params-to-args> (as*, a*);
+      s_cache-write   := <add-cache-write(|s*, t*, x_node)> def

@@ -1,29 +1,40 @@
-TESTS = empty find-minimum repmin binary-numbers
-RUN_TESTS = $(TESTS:=.run)
-STR_TESTS = $(TESTS:=.str)
-
 STRCFLAGS = \
 	-la stratego-lib \
-	-la stratego-sglr \
 	-I ../syntax \
+	-I ../trans \
 	-I ../runtime \
-	-I ~/.nix-profile/share \
 	--format-check 0 \
 	-Xcc -O0
 
-check : Stratego-Attributes.runtestsuite $(STR_TESTS) $(RUN_TESTS)
+TESTS = empty find-minimum repmin binary-numbers caching cons-nil
+RUN_TESTS = $(TESTS:=.run)
+STR_TESTS = $(TESTS:=.str)
+EXE_TESTS = $(TESTS:=)
+EXEEXT =
+
+check : Stratego-Attributes.runtestsuite \
+        test-stratego-rerag test-stratego-rerag.run test-stratego-rerag.str \
+        $(RUN_TESTS) $(STR_TESTS) $(EXE_TESTS)
 
 clean :
-	rm -f $(RUN_TESTS) $(STR_TESTS)
+	rm -f $(RUN_TESTS) $(STR_TESTS) test-stratego-rerag test-attributes.str
 
 %.str : %.astr ../trans/stratego-rerag
 	../trans/stratego-rerag -i $< -o $@ --trace
 
-%.run : %.str
-	strc -i $< -m main-$* $(STRCFLAGS)
+%$(EXEEXT) : %.str ../trans/stratego-rerag
+	strc -i $< -m main-`basename $*` $(STRCFLAGS) >/dev/null
+
+../trans/stratego-rerag :
+	$(MAKE) -C .. trans/stratego-rerag
+
+test-stratego-rerag : test-attributes.str
+
+%.run : %
 	@echo
 	@echo ==== `basename $@ .run` ====
-	@./`basename $@ .run`
+	@./$*
+	@echo
 
 %.runtestsuite : %.testsuite
 	parse-unit --no-heuristic-filters -i $< -p ../syntax/Stratego-Attributes.tbl
