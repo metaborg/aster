@@ -55,3 +55,22 @@ strategies
   
   trace-path =
     <assimilate-expr> <desugar-all> Strat |[ id.path-short ]|
+  
+  trace-rewrite =
+    if <get-config> Trace() then
+      with(
+        x_node := <NodeVar>;
+        s_path := <trace-path>
+      );
+      !Strat |[
+        say(<conc-strings> (
+          "  [rewrite] "
+        , <s_path; (?"" <+ <conc-strings> (<id>, "."))>
+        , <to-tiny-string> x_node
+        , " -> "
+        , <to-tiny-string>
+        ))
+      ]|
+    else
+      !Strat |[ id ]|
+    end

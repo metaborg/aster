@@ -11,6 +11,18 @@ imports
   libstratego-lib
 
 strategies
+  
+  get-circular-worklist(|attr-cache) =
+    !attr-cache;
+    hashtable-get(|"$worklist")
+  
+  set-circular-worklist(|attr-cache, value) =
+    where(
+      !attr-cache;
+      hashtable-put(|"$worklist", value)
+    )
+
+strategies
 
   circular-attributes-fixpoint(|attr-cache) =
     if get-circular-worklist => [_] then // worklist not executed elsewhere
@@ -38,13 +50,3 @@ strategies
     );
     set-circular-worklist(|attr-cache, queue);
     !ticket
-  
-  get-circular-worklist(|attr-cache) =
-    !attr-cache;
-    hashtable-get(|"$worklist")
-  
-  set-circular-worklist(|attr-cache, value) =
-    where(
-      !attr-cache;
-      hashtable-put(|"$worklist", value)
-    )

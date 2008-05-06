@@ -44,9 +44,6 @@ strategies // Node initialization
     get-keep-uninitialized(|attribute-cache, <id>)
   <+
     astr-initialize-node-ensure(|all-parents, attribute-cache)
-
-  // TODO2: Don't re-init subtrees that are already registered to be inited
-  //        (should use get-parent and needs NoParent)
   
   /**
    * Initialize a node if it was not yet initialized.

@@ -76,7 +76,6 @@ strategies
       x_eval             := <attribute-accessor-name(|type-name)> attr;
       (a'*, s_init-args) := <extract-arg-patterns> a*;
       
-      // TODO2: Better solution for passing no parent (NoParent)?
       s_parent         := |[ ?x_node; !x_parent; not(UnknownParent)
                              <+ get-parent(|x_all-parents) ]|;
       s_parent-desired := |[ ?x_node < !x_parent + !UnknownParent() ]|;
@@ -119,12 +118,11 @@ strategies
           where(s_where);
           !t_after;
           
-          persist-anonymous-rewrite(|x_all-parents, x_attr-cache, x_before, <id>)
+          s_trace
      ]|
      with
-       x_before      := <newname> "before";
-       x_all-parents := <AllParentsVar>;
-       x_attr-cache  := <AttributeCacheVar>
+       x_before       := <NodeVar>;
+       s_trace        := <trace-rewrite>
 
 rules // Argument patterns
   
@@ -258,7 +256,7 @@ rules // Evaluate attributes outside of AG context
       | <all-parents => x_all-parents>
       , <attribute-cache => x_attr-cache>
       );
-      x_eval(s* |UnknownParent(), x_all-parents, x_attr-cache, 0, t*)
+      x_eval(s* |UnknownParent(), x_all-parents, x_attr-cache, <get-rewrite-mode(|x_attr-cache)>, t*)
     ]|
     with
       type           := <attribute-type-name(|NoType())> attr;

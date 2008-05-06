@@ -7,6 +7,7 @@ imports
   rule-caching
   rule-circularity
   assimilate
+  analyze
 
 overlays
   DEFAULT_RULE_INDEX = -1
@@ -36,6 +37,7 @@ strategies
     |[ x_eval(as*|a*) =
          s_cache-read
        <+
+         s_rewrite;
          s_trace;
          ?x_node;
          s;
@@ -59,7 +61,21 @@ strategies
       s_trace        := <trace-rule> def;
       s_trace-failed := <trace-failed-rule> def;
       s_cache-read   := <add-cache-read(|s*, t*)> def;
-      s_cache-write  := <add-cache-write(|s*, t*, x_node)> def
+      s_cache-write  := <add-cache-write(|s*, t*, x_node)> def;
+      s_rewrite      := <add-rewrite(|x_all-parents, x_attr-cache)>
+
+  // TODO2: Move this
+  add-rewrite(|x_all-parents, x_attr-cache) =
+    if UsesAnonymousRewriteRules then
+      x_rewrite-mode := <RewriteModeVar>;
+      !Strat |[
+        if 1 := x_rewrite-mode then
+          eval-anonymous-rewrites-cached(|x_all-parents, x_attr-cache)
+        end
+      ]|
+    else
+      !Strat |[ id ]|
+    end
 
   def-call(|s*, t*):
     Attribute(x_eval, _, _) -> |[ x_eval(s*|t*) ]|

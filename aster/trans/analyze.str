@@ -27,6 +27,12 @@ strategies
       )
     )
   
+  analyze =
+    ?AnonymousRewriteRule(_, _, _);
+    rules(
+      UsesAnonymousRewriteRules: _
+    )
+  
   attribute-type =
     attribute-signature;
     AttributeType

@@ -18,3 +18,6 @@ strategies
 
   topdown-consnil(s) =
     rec rec(s; all-consnil(rec))
+
+  bottomup-consnil(s) =
+    rec rec(all-consnil(rec); s)

@@ -133,8 +133,8 @@ exports
 
   context-free syntax %% Misc.
     
-    "::" Pattern "->" Term "where" Strategy -> RuleDef {cons("AnonymousRewriteRule")}
-    "::" Pattern "->" Term                  -> RuleDef {cons("AnonymousRewriteRuleNoWhere")}
+    "eq" Pattern "->" Term "where" Strategy -> RuleDef {cons("AnonymousRewriteRule")}
+    "eq" Pattern "->" Term                  -> RuleDef {cons("AnonymousRewriteRuleNoWhere")}
   
     "id"   -> Term {cons("IdTerm")}
     "id"   -> Pattern {cons("IdTerm")}

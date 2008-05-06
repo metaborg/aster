@@ -2,6 +2,7 @@ module parents
 
 imports
   libstratego-lib
+  rewrites
 
 signature constructors
   Id : String -> TermId
@@ -9,18 +10,6 @@ signature constructors
   UnknownParent : Parent
 
 strategies
-
-  /*
-  get-parent(|attr-cache, all-parents, rewrite-mode) =
-    ?key;
-    !all-parents;
-    hashtable-get(|key);
-    if 1 := rewrite-mode then
-      try(
-        get-rewrite-cached(|attr-cache, <id>)
-      )
-    end
-  */
 
   /**
    * Get the parent of the current term, or NoParent() for the root of a tree.

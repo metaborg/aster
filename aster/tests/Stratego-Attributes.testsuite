@@ -109,7 +109,7 @@ test Attribute on term 'eq'
      eq eq = 1
   " -> _
 
-test AttributeDecl and AttributeDefNoPattern  
+test AttributeDecl and AttributeDefNoPattern
   "module foo rules
      syn x
      eq B(a): id.x = 1

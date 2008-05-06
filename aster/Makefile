@@ -42,7 +42,7 @@ bootclean :
 trans/stratego-rerag-no-check : $(DEPS)
 	[ -e trans/stratego-rerag.copy ] && cp trans/stratego-rerag.copy trans/stratego-rerag-no-check ||\
 	( rm -f $@.c && \
-	  cp trans/check.placeholder.str trans/check.str && \
+	  cp trans/check.bootstrap.str trans/check.str && \
 	  strc -i $< -o $@ -m main-stratego-rerag -Xcc -O0 $(STRCFLAGS) $(STRCSTFU) && \
 	  rm trans/check.str $@.c )
 

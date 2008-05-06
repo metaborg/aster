@@ -1,0 +1,812 @@
+module anonymous-rules
+
+imports
+  annotations
+  attributes
+  circular
+  parents
+  lists
+  rewrites
+  debug
+
+
+signature
+  constructors
+    Add : Expr * Expr -> Expr
+    Mul : Expr * Expr -> Expr
+
+
+strategies
+  main-anonymous-rules =
+    !<!<!Add(
+           Mul(7, 8)
+         , -7
+         )
+        ; astr-initialize-node-apply-rewrites(|<all-parents>, <attribute-cache>)>
+      ; where(astr-uninitialize-node ; debug)> => 42
+
+  eval-anonymous-rewrite =
+    ?node0
+    ; ?Add(x, y)
+    ; where(id)
+    ; !<add> (x, y)
+    ; say(
+        <conc-strings> ( "  [rewrite] "
+                       , <(!<id>
+                           ; astr-initialize-node-ensure(
+                               astr-initialize-node-warning(|"path-short")
+                             | <all-parents => all-parents1>
+                             , <attribute-cache => attr-cache1>
+                             )
+                           ; eval-local-path-short(
+                             | UnknownParent()
+                             , all-parents1
+                             , attr-cache1
+                             , <get-rewrite-mode(|attr-cache1)>
+                             ))
+                          ; (?""
+                             <+ <conc-strings> (<id>, "."))>
+                       , <to-tiny-string> node0
+                       , " -> "
+                       , <to-tiny-string>
+                       )
+      )
+
+  eval-anonymous-rewrite =
+    ?node0
+    ; ?Mul(x, y)
+    ; where(id)
+    ; !<mul> (x, y)
+    ; say(
+        <conc-strings> ( "  [rewrite] "
+                       , <(!<id>
+                           ; astr-initialize-node-ensure(
+                               astr-initialize-node-warning(|"path-short")
+                             | <all-parents => all-parents2>
+                             , <attribute-cache => attr-cache2>
+                             )
+                           ; eval-local-path-short(
+                             | UnknownParent()
+                             , all-parents2
+                             , attr-cache2
+                             , <get-rewrite-mode(|attr-cache2)>
+                             ))
+                          ; (?""
+                             <+ <conc-strings> (<id>, "."))>
+                       , <to-tiny-string> node0
+                       , " -> "
+                       , <to-tiny-string>
+                       )
+      )
+
+
+rules
+
+  eval-local-enable-warnings-00(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
+    ?node0
+    ; where(id)
+    ; ?_
+    ; (rules ( AstrWarningsDisabled :-
+                 _ ) <+ !EvalFailed())
+
+  eval-local-prev-sibling-00(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
+    ?node0
+    ; where(id)
+    ; ?tree-access
+    ; (get-prev-sibling(
+       | <!<id>
+          ; (?node0 ; !parent0 ; not(UnknownParent)
+             <+ get-parent(|all-parents0))
+          ; not(NoParent)>
+       )
+       <+ !EvalFailed())
+
+  eval-local-next-sibling-00(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
+    ?node0
+    ; where(id)
+    ; ?tree-access
+    ; (get-next-sibling(
+       | <!<id>
+          ; (?node0 ; !parent0 ; not(UnknownParent)
+             <+ get-parent(|all-parents0))
+          ; not(NoParent)>
+       )
+       <+ !EvalFailed())
+
+  eval-local-first-sibling-00(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
+    ?node0
+    ; where(id)
+    ; ?tree-access
+    ; (get-first-child(
+       | <!<id>
+          ; (?node0 ; !parent0 ; not(UnknownParent)
+             <+ get-parent(|all-parents0))
+          ; not(NoParent)>
+       )
+       <+ !EvalFailed())
+
+  eval-local-last-sibling-00(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
+    ?node0
+    ; where(id)
+    ; ?tree-access
+    ; (get-last-child(
+       | <!<id>
+          ; (?node0 ; !parent0 ; not(UnknownParent)
+             <+ get-parent(|all-parents0))
+          ; not(NoParent)>
+       )
+       <+ !EvalFailed())
+
+  eval-local-first-child-00(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
+    ?node0
+    ; where(id)
+    ; ?tree-access
+    ; (get-first-child(|<id>) <+ !EvalFailed())
+
+  eval-local-last-child-00(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
+    ?node0
+    ; where(id)
+    ; ?tree-access
+    ; (get-last-child(|<id>) <+ !EvalFailed())
+
+  eval-inh-root-00(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
+    ?node0
+    ; where(id)
+    ; ?tree-access-ancestors
+    ; (try(
+         (?node0
+          < (?node0 ; !parent0 ; not(UnknownParent)
+             <+ get-parent(|all-parents0))
+            ; not(NoParent)
+          + id)
+         ; <eval-inh-root(
+            | <?node0 ; !parent0 ; not(UnknownParent)
+               <+ get-parent(|all-parents0)>
+            , all-parents0
+            , attr-cache0
+            , rewrite-mode0
+            )> <id>
+       )
+       <+ !EvalFailed())
+
+  eval-inh-ancestor-00(p|parent0, all-parents0, attr-cache0, rewrite-mode0) =
+    ?node0
+    ; where(id)
+    ; ?tree-access-ancestors
+    ; (((!<id>
+         ; (?node0 ; !parent0 ; not(UnknownParent)
+            <+ get-parent(|all-parents0))
+         ; not(NoParent))
+        ; p
+        <+ (?node0
+            < (?node0 ; !parent0 ; not(UnknownParent)
+               <+ get-parent(|all-parents0))
+              ; not(NoParent)
+            + id)
+           ; <eval-inh-ancestor(
+                p
+              | <?node0 ; !parent0 ; not(UnknownParent)
+                 <+ get-parent(|all-parents0)>
+              , all-parents0
+              , attr-cache0
+              , rewrite-mode0
+              )> <id>)
+       <+ !EvalFailed())
+
+  eval-inh-path-list-00(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
+    ?node0
+    ; where(id)
+    ; ?<id>
+    ; (id
+       ; ![<!<id>
+            ; (?node0 ; !parent0 ; not(UnknownParent)
+               <+ get-parent(|all-parents0))
+            ; not(NoParent)>|<(?node0
+                               < (?node0 ; !parent0 ; not(UnknownParent)
+                                  <+ get-parent(|all-parents0))
+                                 ; not(NoParent)
+                               + id)
+                              ; <eval-inh-path-list(
+                                 | <?node0 ; !parent0 ; not(UnknownParent)
+                                    <+ get-parent(|all-parents0)>
+                                 , all-parents0
+                                 , attr-cache0
+                                 , rewrite-mode0
+                                 )> <id>>]
+       <+ !EvalFailed())
+
+  eval-inh-path-list-root0(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
+    ?node0
+    ; where(id)
+    ; where(UnknownParent() := parent0
+            < get-parent(|all-parents0) ; NoParent
+            + <NoParent> parent0)
+    ; (id ; ![] <+ !EvalFailed())
+
+  eval-local-path-00(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
+    ?node0
+    ; where(id)
+    ; ?_
+    ; (<eval-inh-path-list(
+        | <?node0 ; !parent0 ; not(UnknownParent)
+           <+ get-parent(|all-parents0)>
+        , all-parents0
+        , attr-cache0
+        , rewrite-mode0
+        )> <id>
+       ; reverse
+       ; map(get-constructor ; as-string)
+       ; separate-by(|".")
+       ; concat-strings
+       <+ !EvalFailed())
+
+  eval-local-path-short-00(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
+    ?node0
+    ; where(id)
+    ; ?_
+    ; (<eval-local-path(
+        | <?node0 < !parent0 + !UnknownParent()>
+        , all-parents0
+        , attr-cache0
+        , rewrite-mode0
+        )> <id>
+       ; string-as-chars(
+           truncate-path-lists
+           ; if <gt> (<string-length>, 40) then
+               reverse
+               ; take(|40)
+               ; reverse
+               ; !['.', '.', '.'|<id>]
+             end
+         )
+       <+ !EvalFailed())
+
+  truncate-path-lists =
+    ?['[', ']', '.'|<id>]
+    ; repeat1(
+        ?['[', ']', '.'|<id>]
+        + \ ['[', ']'] -> [] \
+      )
+    ; !['[', ']', '.', '.'|<truncate-path-lists>]
+    <+ [id|truncate-path-lists]
+    <+ []
+
+  eval-local-contains-IndexedSet-10(|parent0, all-parents0, attr-cache0, rewrite-mode0, arg0) =
+    ?node0
+    ; where(<(id < id + ?elem)
+             ; (?elem <+ eq-ignore-annos(|elem))> := arg0
+            ; id)
+    ; ?IndexedSet(_)
+    ; (iset-contains(|<strip-annos> elem)
+       <+ !EvalFailed())
+
+  eval-local-add-IndexedSet-10(|parent0, all-parents0, attr-cache0, rewrite-mode0, arg1) =
+    ?node0
+    ; where(<(id < id + ?elem)
+             ; (?elem <+ eq-ignore-annos(|elem))> := arg1
+            ; id)
+    ; ?IndexedSet(_)
+    ; (iset-add(|<strip-annos> elem)
+       <+ !EvalFailed())
+
+  eval-local-elements-IndexedSet-10(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
+    ?node0
+    ; where(id)
+    ; ?IndexedSet(_)
+    ; (iset-elements <+ !EvalFailed())
+
+
+rules
+
+  eval-inh-path-list-default0(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
+    id
+    ; (!parent0 ; not(UnknownParent)
+       <+ get-parent(|all-parents0))
+    ; not(NoParent)
+    ; eval-inh-path-list(
+      | <get-parent(|all-parents0) <+ !UnknownParent()>
+      , all-parents0
+      , attr-cache0
+      , rewrite-mode0
+      )
+
+  eval-inh-ancestor-default0(p|parent0, all-parents0, attr-cache0, rewrite-mode0) =
+    say(
+      <conc-strings> ( "  [trace] "
+                     , "inh ancestor_1_0"
+                     , " @ "
+                     , <(!<id>
+                         ; astr-initialize-node-ensure(
+                             astr-initialize-node-warning(|"path-short")
+                           | <all-parents => all-parents3>
+                           , <attribute-cache => attr-cache3>
+                           )
+                         ; eval-local-path-short(
+                           | UnknownParent()
+                           , all-parents3
+                           , attr-cache3
+                           , <get-rewrite-mode(|attr-cache3)>
+                           ))
+                        ; (?""
+                           <+ <conc-strings> (<id>, "."))>
+                     , <to-tiny-string>
+                     , " (copy rule)"
+                     )
+    )
+    ; (!parent0 ; not(UnknownParent)
+       <+ get-parent(|all-parents0))
+    ; not(NoParent)
+    ; eval-inh-ancestor(
+        p
+      | <get-parent(|all-parents0) <+ !UnknownParent()>
+      , all-parents0
+      , attr-cache0
+      , rewrite-mode0
+      )
+
+  eval-inh-root-default0(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
+    id
+    ; (!parent0 ; not(UnknownParent)
+       <+ get-parent(|all-parents0))
+    ; not(NoParent)
+    ; eval-inh-root(
+      | <get-parent(|all-parents0) <+ !UnknownParent()>
+      , all-parents0
+      , attr-cache0
+      , rewrite-mode0
+      )
+
+
+rules
+
+  eval-local-elements(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
+    get-cached-attribute(|attr-cache0, <id>, "eval-local-elements")
+    ; not(EvalFailed)
+    ; astr-initialize-node-prefer(|all-parents0, attr-cache0)
+    <+ if 1 := rewrite-mode0 then
+         eval-anonymous-rewrites-cached(|all-parents0, attr-cache0)
+       end
+       ; say(
+           <conc-strings> ( "  [trace] "
+                          , "local elements"
+                          , " @ "
+                          , <(!<id>
+                              ; astr-initialize-node-ensure(
+                                  astr-initialize-node-warning(|"path-short")
+                                | <all-parents => all-parents4>
+                                , <attribute-cache => attr-cache4>
+                                )
+                              ; eval-local-path-short(
+                                | UnknownParent()
+                                , all-parents4
+                                , attr-cache4
+                                , <get-rewrite-mode(|attr-cache4)>
+                                ))
+                             ; (?""
+                                <+ <conc-strings> (<id>, "."))>
+                          , <to-tiny-string>
+                          )
+         )
+       ; ?node1
+       ; (eval-local-elements-IndexedSet-10(|parent0, all-parents0, attr-cache0, rewrite-mode0) <+ fail)
+       ; set-cached-attribute(|attr-cache0, node1, "eval-local-elements", <id>)
+       ; if EvalFailed then
+           !node1
+           ; say(
+               <conc-strings> ( "  [trace] "
+                              , "local elements"
+                              , " @ "
+                              , <(!<id>
+                                  ; astr-initialize-node-ensure(
+                                      astr-initialize-node-warning(|"path-short")
+                                    | <all-parents => all-parents5>
+                                    , <attribute-cache => attr-cache5>
+                                    )
+                                  ; eval-local-path-short(
+                                    | UnknownParent()
+                                    , all-parents5
+                                    , attr-cache5
+                                    , <get-rewrite-mode(|attr-cache5)>
+                                    ))
+                                 ; (?""
+                                    <+ <conc-strings> (<id>, "."))>
+                              , <to-tiny-string>
+                              , " (failed)"
+                              )
+             )
+           ; fail
+         else
+           astr-initialize-node-prefer(|all-parents0, attr-cache0)
+         end
+
+  eval-local-add(|parent0, all-parents0, attr-cache0, rewrite-mode0, arg1) =
+    get-cached-attribute(
+    | attr-cache0
+    , <id>
+    , ("eval-local-add_0_1", arg1)
+    )
+    ; not(EvalFailed)
+    ; astr-initialize-node-prefer(|all-parents0, attr-cache0)
+    <+ if 1 := rewrite-mode0 then
+         eval-anonymous-rewrites-cached(|all-parents0, attr-cache0)
+       end
+       ; say(
+           <conc-strings> ( "  [trace] "
+                          , "local add_0_1"
+                          , " @ "
+                          , <(!<id>
+                              ; astr-initialize-node-ensure(
+                                  astr-initialize-node-warning(|"path-short")
+                                | <all-parents => all-parents6>
+                                , <attribute-cache => attr-cache6>
+                                )
+                              ; eval-local-path-short(
+                                | UnknownParent()
+                                , all-parents6
+                                , attr-cache6
+                                , <get-rewrite-mode(|attr-cache6)>
+                                ))
+                             ; (?""
+                                <+ <conc-strings> (<id>, "."))>
+                          , <to-tiny-string>
+                          )
+         )
+       ; ?node2
+       ; (eval-local-add-IndexedSet-10(|parent0, all-parents0, attr-cache0, rewrite-mode0, arg1)
+          <+ fail)
+       ; set-cached-attribute(
+         | attr-cache0
+         , node2
+         , ("eval-local-add_0_1", arg1)
+         , <id>
+         )
+       ; if EvalFailed then
+           !node2
+           ; say(
+               <conc-strings> ( "  [trace] "
+                              , "local add_0_1"
+                              , " @ "
+                              , <(!<id>
+                                  ; astr-initialize-node-ensure(
+                                      astr-initialize-node-warning(|"path-short")
+                                    | <all-parents => all-parents7>
+                                    , <attribute-cache => attr-cache7>
+                                    )
+                                  ; eval-local-path-short(
+                                    | UnknownParent()
+                                    , all-parents7
+                                    , attr-cache7
+                                    , <get-rewrite-mode(|attr-cache7)>
+                                    ))
+                                 ; (?""
+                                    <+ <conc-strings> (<id>, "."))>
+                              , <to-tiny-string>
+                              , " (failed)"
+                              )
+             )
+           ; fail
+         else
+           astr-initialize-node-prefer(|all-parents0, attr-cache0)
+         end
+
+  eval-local-contains(|parent0, all-parents0, attr-cache0, rewrite-mode0, arg0) =
+    get-cached-attribute(
+    | attr-cache0
+    , <id>
+    , ("eval-local-contains_0_1", arg0)
+    )
+    ; not(EvalFailed)
+    ; astr-initialize-node-prefer(|all-parents0, attr-cache0)
+    <+ if 1 := rewrite-mode0 then
+         eval-anonymous-rewrites-cached(|all-parents0, attr-cache0)
+       end
+       ; say(
+           <conc-strings> ( "  [trace] "
+                          , "local contains_0_1"
+                          , " @ "
+                          , <(!<id>
+                              ; astr-initialize-node-ensure(
+                                  astr-initialize-node-warning(|"path-short")
+                                | <all-parents => all-parents8>
+                                , <attribute-cache => attr-cache8>
+                                )
+                              ; eval-local-path-short(
+                                | UnknownParent()
+                                , all-parents8
+                                , attr-cache8
+                                , <get-rewrite-mode(|attr-cache8)>
+                                ))
+                             ; (?""
+                                <+ <conc-strings> (<id>, "."))>
+                          , <to-tiny-string>
+                          )
+         )
+       ; ?node3
+       ; (eval-local-contains-IndexedSet-10(|parent0, all-parents0, attr-cache0, rewrite-mode0, arg0)
+          <+ fail)
+       ; set-cached-attribute(
+         | attr-cache0
+         , node3
+         , ("eval-local-contains_0_1", arg0)
+         , <id>
+         )
+       ; if EvalFailed then
+           !node3
+           ; say(
+               <conc-strings> ( "  [trace] "
+                              , "local contains_0_1"
+                              , " @ "
+                              , <(!<id>
+                                  ; astr-initialize-node-ensure(
+                                      astr-initialize-node-warning(|"path-short")
+                                    | <all-parents => all-parents9>
+                                    , <attribute-cache => attr-cache9>
+                                    )
+                                  ; eval-local-path-short(
+                                    | UnknownParent()
+                                    , all-parents9
+                                    , attr-cache9
+                                    , <get-rewrite-mode(|attr-cache9)>
+                                    ))
+                                 ; (?""
+                                    <+ <conc-strings> (<id>, "."))>
+                              , <to-tiny-string>
+                              , " (failed)"
+                              )
+             )
+           ; fail
+         else
+           astr-initialize-node-prefer(|all-parents0, attr-cache0)
+         end
+
+  eval-local-path-short(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
+    get-cached-attribute(|attr-cache0, <id>, "eval-local-path-short")
+    ; not(EvalFailed)
+    ; astr-initialize-node-prefer(|all-parents0, attr-cache0)
+    <+ if 1 := rewrite-mode0 then
+         eval-anonymous-rewrites-cached(|all-parents0, attr-cache0)
+       end
+       ; id
+       ; ?node4
+       ; (eval-local-path-short-00(|parent0, all-parents0, attr-cache0, rewrite-mode0) <+ fail)
+       ; set-cached-attribute(|attr-cache0, node4, "eval-local-path-short", <id>)
+       ; if EvalFailed then
+           !node4 ; id ; fail
+         else
+           astr-initialize-node-prefer(|all-parents0, attr-cache0)
+         end
+
+  eval-local-path(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
+    get-cached-attribute(|attr-cache0, <id>, "eval-local-path")
+    ; not(EvalFailed)
+    ; astr-initialize-node-prefer(|all-parents0, attr-cache0)
+    <+ if 1 := rewrite-mode0 then
+         eval-anonymous-rewrites-cached(|all-parents0, attr-cache0)
+       end
+       ; id
+       ; ?node5
+       ; (eval-local-path-00(|parent0, all-parents0, attr-cache0, rewrite-mode0) <+ fail)
+       ; set-cached-attribute(|attr-cache0, node5, "eval-local-path", <id>)
+       ; if EvalFailed then
+           !node5 ; id ; fail
+         else
+           astr-initialize-node-prefer(|all-parents0, attr-cache0)
+         end
+
+  eval-inh-path-list(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
+    get-cached-attribute(|attr-cache0, <id>, "eval-inh-path-list")
+    ; not(EvalFailed)
+    ; astr-initialize-node-prefer(|all-parents0, attr-cache0)
+    <+ if 1 := rewrite-mode0 then
+         eval-anonymous-rewrites-cached(|all-parents0, attr-cache0)
+       end
+       ; id
+       ; ?node6
+       ; (eval-inh-path-list-root0(|parent0, all-parents0, attr-cache0, rewrite-mode0)
+          <+ eval-inh-path-list-00(|parent0, all-parents0, attr-cache0, rewrite-mode0)
+          <+ eval-inh-path-list-default0(|parent0, all-parents0, attr-cache0, rewrite-mode0)
+          <+ fail)
+       ; set-cached-attribute(|attr-cache0, node6, "eval-inh-path-list", <id>)
+       ; if EvalFailed then
+           !node6 ; id ; fail
+         else
+           astr-initialize-node-prefer(|all-parents0, attr-cache0)
+         end
+
+  eval-inh-ancestor(p|parent0, all-parents0, attr-cache0, rewrite-mode0) =
+    fail
+    <+ if 1 := rewrite-mode0 then
+         eval-anonymous-rewrites-cached(|all-parents0, attr-cache0)
+       end
+       ; say(
+           <conc-strings> ( "  [trace] "
+                          , "inh ancestor_1_0"
+                          , " @ "
+                          , <(!<id>
+                              ; astr-initialize-node-ensure(
+                                  astr-initialize-node-warning(|"path-short")
+                                | <all-parents => all-parents10>
+                                , <attribute-cache => attr-cache10>
+                                )
+                              ; eval-local-path-short(
+                                | UnknownParent()
+                                , all-parents10
+                                , attr-cache10
+                                , <get-rewrite-mode(|attr-cache10)>
+                                ))
+                             ; (?""
+                                <+ <conc-strings> (<id>, "."))>
+                          , <to-tiny-string>
+                          )
+         )
+       ; ?node7
+       ; (eval-inh-ancestor-00(p|parent0, all-parents0, attr-cache0, rewrite-mode0)
+          <+ eval-inh-ancestor-default0(p|parent0, all-parents0, attr-cache0, rewrite-mode0)
+          <+ fail)
+       ; id
+       ; if EvalFailed then
+           !node7
+           ; say(
+               <conc-strings> ( "  [trace] "
+                              , "inh ancestor_1_0"
+                              , " @ "
+                              , <(!<id>
+                                  ; astr-initialize-node-ensure(
+                                      astr-initialize-node-warning(|"path-short")
+                                    | <all-parents => all-parents11>
+                                    , <attribute-cache => attr-cache11>
+                                    )
+                                  ; eval-local-path-short(
+                                    | UnknownParent()
+                                    , all-parents11
+                                    , attr-cache11
+                                    , <get-rewrite-mode(|attr-cache11)>
+                                    ))
+                                 ; (?""
+                                    <+ <conc-strings> (<id>, "."))>
+                              , <to-tiny-string>
+                              , " (failed)"
+                              )
+             )
+           ; fail
+         else
+           astr-initialize-node-prefer(|all-parents0, attr-cache0)
+         end
+
+  eval-inh-root(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
+    get-cached-attribute(|attr-cache0, <id>, "eval-inh-root")
+    ; not(EvalFailed)
+    ; astr-initialize-node-prefer(|all-parents0, attr-cache0)
+    <+ if 1 := rewrite-mode0 then
+         eval-anonymous-rewrites-cached(|all-parents0, attr-cache0)
+       end
+       ; id
+       ; ?node8
+       ; (eval-inh-root-00(|parent0, all-parents0, attr-cache0, rewrite-mode0)
+          <+ eval-inh-root-default0(|parent0, all-parents0, attr-cache0, rewrite-mode0)
+          <+ fail)
+       ; set-cached-attribute(|attr-cache0, node8, "eval-inh-root", <id>)
+       ; if EvalFailed then
+           !node8 ; id ; fail
+         else
+           astr-initialize-node-prefer(|all-parents0, attr-cache0)
+         end
+
+  eval-local-last-child(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
+    get-cached-attribute(|attr-cache0, <id>, "eval-local-last-child")
+    ; not(EvalFailed)
+    ; astr-initialize-node-prefer(|all-parents0, attr-cache0)
+    <+ if 1 := rewrite-mode0 then
+         eval-anonymous-rewrites-cached(|all-parents0, attr-cache0)
+       end
+       ; id
+       ; ?node9
+       ; (eval-local-last-child-00(|parent0, all-parents0, attr-cache0, rewrite-mode0) <+ fail)
+       ; set-cached-attribute(|attr-cache0, node9, "eval-local-last-child", <id>)
+       ; if EvalFailed then
+           !node9 ; id ; fail
+         else
+           astr-initialize-node-prefer(|all-parents0, attr-cache0)
+         end
+
+  eval-local-first-child(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
+    get-cached-attribute(|attr-cache0, <id>, "eval-local-first-child")
+    ; not(EvalFailed)
+    ; astr-initialize-node-prefer(|all-parents0, attr-cache0)
+    <+ if 1 := rewrite-mode0 then
+         eval-anonymous-rewrites-cached(|all-parents0, attr-cache0)
+       end
+       ; id
+       ; ?node10
+       ; (eval-local-first-child-00(|parent0, all-parents0, attr-cache0, rewrite-mode0) <+ fail)
+       ; set-cached-attribute(|attr-cache0, node10, "eval-local-first-child", <id>)
+       ; if EvalFailed then
+           !node10 ; id ; fail
+         else
+           astr-initialize-node-prefer(|all-parents0, attr-cache0)
+         end
+
+  eval-local-last-sibling(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
+    get-cached-attribute(|attr-cache0, <id>, "eval-local-last-sibling")
+    ; not(EvalFailed)
+    ; astr-initialize-node-prefer(|all-parents0, attr-cache0)
+    <+ if 1 := rewrite-mode0 then
+         eval-anonymous-rewrites-cached(|all-parents0, attr-cache0)
+       end
+       ; id
+       ; ?node11
+       ; (eval-local-last-sibling-00(|parent0, all-parents0, attr-cache0, rewrite-mode0) <+ fail)
+       ; set-cached-attribute(|attr-cache0, node11, "eval-local-last-sibling", <id>)
+       ; if EvalFailed then
+           !node11 ; id ; fail
+         else
+           astr-initialize-node-prefer(|all-parents0, attr-cache0)
+         end
+
+  eval-local-first-sibling(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
+    get-cached-attribute(|attr-cache0, <id>, "eval-local-first-sibling")
+    ; not(EvalFailed)
+    ; astr-initialize-node-prefer(|all-parents0, attr-cache0)
+    <+ if 1 := rewrite-mode0 then
+         eval-anonymous-rewrites-cached(|all-parents0, attr-cache0)
+       end
+       ; id
+       ; ?node12
+       ; (eval-local-first-sibling-00(|parent0, all-parents0, attr-cache0, rewrite-mode0) <+ fail)
+       ; set-cached-attribute(|attr-cache0, node12, "eval-local-first-sibling", <id>)
+       ; if EvalFailed then
+           !node12 ; id ; fail
+         else
+           astr-initialize-node-prefer(|all-parents0, attr-cache0)
+         end
+
+  eval-local-next-sibling(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
+    get-cached-attribute(|attr-cache0, <id>, "eval-local-next-sibling")
+    ; not(EvalFailed)
+    ; astr-initialize-node-prefer(|all-parents0, attr-cache0)
+    <+ if 1 := rewrite-mode0 then
+         eval-anonymous-rewrites-cached(|all-parents0, attr-cache0)
+       end
+       ; id
+       ; ?node13
+       ; (eval-local-next-sibling-00(|parent0, all-parents0, attr-cache0, rewrite-mode0) <+ fail)
+       ; set-cached-attribute(|attr-cache0, node13, "eval-local-next-sibling", <id>)
+       ; if EvalFailed then
+           !node13 ; id ; fail
+         else
+           astr-initialize-node-prefer(|all-parents0, attr-cache0)
+         end
+
+  eval-local-prev-sibling(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
+    get-cached-attribute(|attr-cache0, <id>, "eval-local-prev-sibling")
+    ; not(EvalFailed)
+    ; astr-initialize-node-prefer(|all-parents0, attr-cache0)
+    <+ if 1 := rewrite-mode0 then
+         eval-anonymous-rewrites-cached(|all-parents0, attr-cache0)
+       end
+       ; id
+       ; ?node14
+       ; (eval-local-prev-sibling-00(|parent0, all-parents0, attr-cache0, rewrite-mode0) <+ fail)
+       ; set-cached-attribute(|attr-cache0, node14, "eval-local-prev-sibling", <id>)
+       ; if EvalFailed then
+           !node14 ; id ; fail
+         else
+           astr-initialize-node-prefer(|all-parents0, attr-cache0)
+         end
+
+  eval-local-enable-warnings(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
+    get-cached-attribute(|attr-cache0, <id>, "eval-local-enable-warnings")
+    ; not(EvalFailed)
+    ; astr-initialize-node-prefer(|all-parents0, attr-cache0)
+    <+ if 1 := rewrite-mode0 then
+         eval-anonymous-rewrites-cached(|all-parents0, attr-cache0)
+       end
+       ; id
+       ; ?node15
+       ; (eval-local-enable-warnings-00(|parent0, all-parents0, attr-cache0, rewrite-mode0) <+ fail)
+       ; set-cached-attribute(|attr-cache0, node15, "eval-local-enable-warnings", <id>)
+       ; if EvalFailed then
+           !node15 ; id ; fail
+         else
+           astr-initialize-node-prefer(|all-parents0, attr-cache0)
+         end
