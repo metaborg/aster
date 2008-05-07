@@ -30,10 +30,6 @@ rules
         id.root = try(id.root)
         id.ancestor(p) = id.parent; p <+ id.ancestor(p)
   
-      inh path-list:
-        id   -> [id.parent | id.path-list]
-        root -> []
-  
       local path =
          id.path-list;
          reverse;
@@ -111,6 +107,12 @@ rules // Native attribute definitions
 
   assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
     Attribute("parent", [], []) -> Strat |[ s_parent; not(NoParent) ]|
+  
+  assimilate-native-attr:
+    Attribute("path-list", [], []) -> |[ get-ancestor-list(|<all-parents>) ]|
+
+  assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
+    Attribute("path-list", [], []) -> |[ get-ancestor-list(|x_all-parents) ]|
 
   assimilate-native-attr:
     Attribute("uninit", [], []) -> Strat |[ astr-uninitialize-node-persist(|<attribute-cache>) ]|

@@ -23,27 +23,32 @@ strategies
     hashtable-get(|node)
 
   set-rewrite-cached(|attr-cache, node, value) =
-    !attr-cache;
-    hashtable-put(|node, value)
+    where(
+      !attr-cache;
+      hashtable-put(|node, value)
+    )
 
 strategies
 
-  eval-anonymous-rewrite = id // this is a generated strategy
+  eval-anonymous-rewrite = fail // this is a generated strategy
   
   eval-anonymous-rewrites-cached(|all-parents, attr-cache) =
     get-rewrite-cached(|attr-cache, <id>)
   <+
-    eval-anonymous-rewrites-set-cached(|all-parents, attr-cache, <id>)
+    set-rewrite-cached(|attr-cache, <id>, <id>);
+    eval-anonymous-rewrites-set-cached(|all-parents, attr-cache)
   
-  eval-anonymous-rewrites-set-cached(|all-parents, attr-cache, before) =
-    persist-anonymous-rewrite(|all-parents, attr-cache, before, <id>);
-    
-    if ?before'; eval-anonymous-rewrite then
-      eval-anonymous-rewrites-set-cached(|all-parents, attr-cache, before')
-    end
+  eval-anonymous-rewrites-set-cached(|all-parents, attr-cache) =
+    repeat(
+      { before: ?before;
+        eval-anonymous-rewrite;
+        persist-anonymous-rewrite(|all-parents, attr-cache, before, <id>)
+      }
+    )
 
 strategies
   
+  // TODO: Optimize - don't reinitialize nodes if no attrs evaluated
   astr-initialize-node-apply-rewrites(|all-parents, attr-cache) =
     set-rewrite-mode(|attr-cache, 1);
     do-while(
@@ -51,9 +56,12 @@ strategies
     ,
       { before:
         ?before;
-        bottomup-consnil(
-          try(get-rewrite-cached(|attr-cache, <id>));
-          eval-anonymous-rewrites-set-cached(|all-parents, attr-cache, <id>)
+        bottomup-consnil( // TODO: something like innermost-consnil?
+          ( get-rewrite-cached(|attr-cache, <id>)
+          <+
+            set-rewrite-cached(|attr-cache, <id>, <id>)
+          );
+          eval-anonymous-rewrites-set-cached(|all-parents, attr-cache)
         );
         not(?before)
       }
@@ -65,26 +73,25 @@ strategies
    * Also performs this operation for all ancestor nodes.
    */
   persist-anonymous-rewrite(|all-parents, attr-cache, from, to) =
-    <not(eq-ignore-annos(|to))> from;
-    
     with(
       to'         := <astr-initialize-node(|all-parents, attr-cache)> to;
       from-parent := <get-parent(|all-parents)> from;
       to-parent   := <persist-anonymous-rewrite-upwards(|all-parents, attr-cache, from, to')>;
-      set-rewrite-cached(|attr-cache, from, to')
-    )
+      <set-parent(|all-parents, to-parent)> to'
+    );
+    !to'
   
-  persist-anonymous-rewrite-upwards(|all-parents, attr-cache, from-child, to-child) =
-    if not(NoParent) then
-      ?node;
-      node'       := <one(\from-child -> to-child\)> node;
-      from-parent := <get-parent(|all-parents)> node;
-      to-parent   := <persist-anonymous-rewrite-upwards(|all-parents, attr-cache, node, node')>;
-      
-      set-rewrite-cached(|attr-cache, from-parent, to-parent);
-      <set-parent(|all-parents, to-parent)> node;
-      
-      !node'
-    end;
-    
-    set-parent(|all-parents, to-child)
+  persist-anonymous-rewrite-upwards(|all-parents, attr-cache, from-child, to-child):
+    node -> node'
+    where
+      if NoParent then
+        node' := node
+      else
+        node'       := <one((from-child -> to-child))> node;
+        from-parent := <get-parent(|all-parents)> node;
+        to-parent   := <persist-anonymous-rewrite-upwards(|all-parents, attr-cache, node, node')>;
+        
+        set-rewrite-cached(|attr-cache, from-parent, to-parent);
+        <all(set-parent(|all-parents, to-parent))> to-parent;
+        <set-parent(|all-parents, to-parent)> node'
+      end

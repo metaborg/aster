@@ -21,3 +21,6 @@ strategies
 
   bottomup-consnil(s) =
     rec rec(all-consnil(rec); s)
+
+  innermost-consnil(s) =
+    bottomup-consnil(try(s; innermost-consnil(s)))

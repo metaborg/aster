@@ -107,7 +107,7 @@ strategies
          )
      ]|
    
-   // TODO: Apply anonymous rewrite rules
+   // TODO2: Apply partial ordering to anon. rewr. rules?
    
    assimilate-def:
      AnonymousRewriteRule(t_pattern, t_after, s_where) ->
@@ -118,6 +118,7 @@ strategies
           where(s_where);
           !t_after;
           
+          not(eq-ignore-annos(|x_before));
           s_trace
      ]|
      with

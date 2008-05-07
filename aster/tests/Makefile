@@ -6,7 +6,7 @@ STRCFLAGS = \
 	--format-check 0 \
 	-Xcc -O0
 
-TESTS = empty find-minimum repmin binary-numbers caching cons-nil
+TESTS = empty find-minimum repmin binary-numbers caching cons-nil anonymous-rules
 RUN_TESTS = $(TESTS:=.run)
 STR_TESTS = $(TESTS:=.str)
 EXE_TESTS = $(TESTS:=)
@@ -33,7 +33,7 @@ test-stratego-rerag : test-attributes.str
 %.run : %
 	@echo
 	@echo ==== `basename $@ .run` ====
-	@./$*
+	@./$* --verbose 2
 	@echo
 
 %.runtestsuite : %.testsuite

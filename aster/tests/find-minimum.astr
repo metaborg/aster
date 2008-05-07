@@ -7,19 +7,23 @@ signature constructors
 strategies
 
   main-find-minimum =
-    !Fork(
-      Fork(
-        Leaf(70)
-      , Fork(
-          Leaf(212)
-        , Leaf(83)
+    option-wrap(
+      verbose-option
+    ,
+      !Fork(
+        Fork(
+          Leaf(70)
+        , Fork(
+            Leaf(212)
+          , Leaf(83)
+          )
         )
-      )
-    , Leaf(42)
-    );
-    id.disable-warnings;
-    id.min => 42;
-    id.debug
+      , Leaf(42)
+      );
+      id.disable-warnings;
+      id.min => 42;
+      id.debug
+    )
 
 rules
 

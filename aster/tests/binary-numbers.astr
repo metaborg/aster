@@ -9,14 +9,18 @@ signature constructors
 strategies
   
   main-binary-numbers =
-    !Number(List(List(List(1), 0), 1), List(List(0), 1));
-    
-    id.init.value;
-    
-    where(<lt> (<id>, 5.3));
-    where(<gt> (<id>, 5.2));
-    
-    id.uninit
+    option-wrap(
+      verbose-option
+    ,
+      !Number(List(List(List(1), 0), 1), List(List(0), 1));
+      
+      id.init.value;
+      
+      where(<lt> (<id>, 5.3));
+      where(<gt> (<id>, 5.2));
+      
+      id.uninit
+    )
 
   pow =
     Swap;

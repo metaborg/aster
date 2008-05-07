@@ -20,6 +20,12 @@ strategies
     !all-parents;
     hashtable-get(|key)
   
+  get-ancestor-list(|all-parents) =
+    parent := <get-parent(|all-parents); not(NoParent)>;
+    ![ parent | <get-ancestor-list(|all-parents)>]
+  <+
+    ![]
+  
   set-parent(|all-parents, value) =
     where(
       ?key;

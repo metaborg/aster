@@ -65,7 +65,7 @@ strategies
       !Strat |[
         say(<conc-strings> (
           "  [rewrite] "
-        , <s_path; (?"" <+ <conc-strings> (<id>, "."))>
+        , <s_path; (?"" <+ <conc-strings> (<id>, "."))> x_node
         , <to-tiny-string> x_node
         , " -> "
         , <to-tiny-string>

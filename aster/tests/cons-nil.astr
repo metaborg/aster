@@ -3,7 +3,11 @@ module cons-nil
 strategies
 
   main-cons-nil =
-    ![1,2,3,4,5,6,7].init.debug.depth.uninit => 7
+    option-wrap(
+      verbose-option
+    ,
+      ![1,2,3,4,5,6,7].init.debug.depth.uninit => 7
+    )
   
 attributes
 

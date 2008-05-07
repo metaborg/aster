@@ -56,8 +56,7 @@ strategies
   <+
     log(|Critical(), <as-string(message)>, <id>);
     prim("SSL_stacktrace_get_all_frame_names");
-    report-failure;
-    <exit> 1
+    report-failure
 
   verify(s,m1,m2) =
     verify(s, <conc-strings> (<as-string(m1)>, " ", <as-string(m2)>))

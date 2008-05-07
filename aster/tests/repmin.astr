@@ -7,28 +7,32 @@ signature constructors
 strategies
 
   main-repmin =
-    !Fork(
-      Fork(
-        Leaf(70)
-      , Fork(
-          Leaf(212)
-        , Leaf(83)
+    option-wrap(
+      verbose-option
+    ,
+      !Fork(
+        Fork(
+          Leaf(70)
+        , Fork(
+            Leaf(212)
+          , Leaf(83)
+          )
         )
+      , Leaf(42)
+      );
+      
+      id.init;
+      
+      id.debug;
+      
+      alltd(replace);
+      
+      id.debug;
+      
+      where(
+        collect-all(?Leaf(<id>));
+        map(42)
       )
-    , Leaf(42)
-    );
-    
-    id.init;
-    
-    id.debug;
-    
-    alltd(replace);
-    
-    id.debug;
-    
-    where(
-      collect-all(?Leaf(<id>));
-      map(42)
     )
 
 rules

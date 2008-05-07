@@ -17,10 +17,11 @@ strategies // Util
   eq-ignore-annos(|term) =
     ?term
   <+
-    if <eq> (<get-constructor>, <get-constructor> term) then
-      where(term' := <strip-annos> term);
-      (?term' <+ strip-annos => term')
-    end
+    where(
+      <eq> (<get-constructor>, <get-constructor> term);
+      term' := <strip-annos> term
+    );
+    (?term' <+ strip-annos => term')
   
   astr-uninitialize-node =
     topdown-consnil(try(

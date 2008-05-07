@@ -3,7 +3,11 @@ module caching
 strategies
 
   main-caching =
-    // This tests the caching semantics of both .random and .init
-    <eq> (id.init.random, id.init.random)
+    option-wrap(
+      verbose-option
+    ,
+      // This tests the caching semantics of both .random and .init
+      <eq> (id.init.random, id.init.random)
+    )
   
   local random = next-random
