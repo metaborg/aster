@@ -47,8 +47,6 @@ strategies
     with
       imports := |[ imports annotations attributes circular parents lists rewrites debug ]|
 
-  // TODO: Support args in eval functions
-  // TODO: Rewrite rules
   // TODO2: runtime check for annotated terms used for/by dynamic rules
 
   assimilate-def:

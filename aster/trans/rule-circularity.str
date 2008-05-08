@@ -26,7 +26,7 @@ strategies
       <+
         ?x_node;
         where(
-          x_old-value := <s_init> t_initial;
+          x_old-value := <s_ensure-init> t_initial;
           s_cache-write
         );
         
@@ -69,11 +69,12 @@ strategies
     with
       x_eval-recompute := <newname> <conc-strings> (x_eval, "-recompute");
       x_eval-enqueue   := <newname> <conc-strings> (x_eval, "-enqueue");
-      x_node           := <NodeVar>;
       x_attr-cache     := <AttributeCacheVar>;
+      x_all-parents    := <AllParentsVar>;
+      x_node           := <NodeVar>;
       x_old-value      := <newname> "old-value";
       x_new-value      := <newname> "new-value";
-      s_init           := <add-initialize-node>;
+      s_ensure-init    := Strat |[ astr-initialize-node-ensure(|x_all-parents, x_attr-cache) ]|;
       s_trace          := <trace-fixpoint-rule> def;
       (s*, t*)         := <params-to-args> ([], a*);
       s_cache-write    := <add-cache-write(|s*, t*, x_node)> def

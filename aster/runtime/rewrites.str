@@ -32,6 +32,8 @@ strategies
 
   eval-anonymous-rewrite = fail // this is a generated strategy
   
+  astr-has-rewrites = fail // this is a generated strategy
+  
   eval-anonymous-rewrites-cached(|all-parents, attr-cache) =
     get-rewrite-cached(|attr-cache, <id>)
   <+
@@ -48,27 +50,32 @@ strategies
 
 strategies
 
-  // TODO: Optimize - apply initialization caching ($init) in astr-initialize-node-apply-rewrites  
   // TODO: Optimize - don't reinitialize nodes if no attrs evaluated
   
-  astr-initialize-node-apply-rewrites(|all-parents, attr-cache) =
-    set-rewrite-mode(|attr-cache, 1);
-    do-while(
-      astr-initialize-node(|all-parents, attr-cache)
-    ,
-      { before:
-        ?before;
-        bottomup-consnil( // TODO: something like innermost-consnil?
-          ( get-rewrite-cached(|attr-cache, <id>)
-          <+
-            set-rewrite-cached(|attr-cache, <id>, <id>)
+  astr-initialize-node(|all-parents, attr-cache) =
+    if astr-has-rewrites then
+      get-initialize-cache(|attr-cache, NoParent(), <id>)
+    <+
+      set-rewrite-mode(|attr-cache, 1);
+      do-while(
+        astr-initialize-node(|all-parents, attr-cache)
+      ,
+        { before:
+          ?before;
+          bottomup-consnil( // TODO: something like innermost-consnil?
+            ( get-rewrite-cached(|attr-cache, <id>)
+            <+
+              set-rewrite-cached(|attr-cache, <id>, <id>)
+            );
+            eval-anonymous-rewrites-set-cached(|all-parents, attr-cache)
           );
-          eval-anonymous-rewrites-set-cached(|all-parents, attr-cache)
-        );
-        not(?before)
-      }
-    );
-    set-rewrite-mode(|attr-cache, 0)
+          not(?before)
+        }
+      );
+      set-rewrite-mode(|attr-cache, 0)
+    else
+      astr-initialize-node-no-rewrite(|all-parents, attr-cache)
+    end
   
   /**
    * Persist a rewrite in the tree by storing it in the rewrite cache.

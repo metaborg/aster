@@ -27,7 +27,7 @@ strategies
       verbose-option
     , !Fac(Fac(3))
       ; !<!<id>
-          ; astr-initialize-node-apply-rewrites(|<all-parents>, <attribute-cache>)>
+          ; astr-initialize-node(|<all-parents>, <attribute-cache>)>
       ; where(astr-uninitialize-node ; debug)
     )
 

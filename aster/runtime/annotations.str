@@ -68,10 +68,10 @@ strategies // Node initialization
       map(<fprintnl> (stderr(), ["\t", <id>]))
     end
   
-  astr-initialize-node(|all-parents, attribute-cache) =
-    astr-initialize-node(|all-parents, attribute-cache, NoParent())
+  astr-initialize-node-no-rewrite(|all-parents, attribute-cache) =
+    astr-initialize-node-no-rewrite(|all-parents, attribute-cache, NoParent())
   
-  astr-initialize-node(|all-parents, attribute-cache, parent) =
+  astr-initialize-node-no-rewrite(|all-parents, attribute-cache, parent) =
     get-initialize-cache(|attribute-cache, parent, <id>)
   <+
     // First add unique annos everywhere,

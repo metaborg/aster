@@ -31,8 +31,6 @@ strategies
       flatten-list;
       ordered* := [Rules(<id>)]
   
-  // TODO2: Optimize - don't cache the copy rules?
-  
   add-merged-rule:
     def @ Attribute(x_eval, sarity, tarity) ->
     |[ x_eval(as*|a*) =
