@@ -8,11 +8,15 @@ imports
 strategies
 
   main-test-stratego-rerag =
-    test-suite(
-      !"stratego-rerag tests"
+    option-wrap(
+      verbose-option
     ,
-      test-term-depth;
-      test-attributes
+      test-suite(
+        !"stratego-rerag tests"
+      ,
+        test-term-depth;
+        test-attributes
+      )
     )
   
   test-term-depth =

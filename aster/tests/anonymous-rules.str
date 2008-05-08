@@ -36,7 +36,7 @@ strategies
     ; ?Add(x, y)
     ; where(id)
     ; !<add> (x, y)
-    ; not(eq-ignore-annos(|node0))
+    ; not(?node0)
     ; say(
         <conc-strings> ( "  [rewrite] "
                        , <(!<id>
@@ -64,7 +64,7 @@ strategies
     ; ?Mul(x, y)
     ; where(id)
     ; !<mul> (x, y)
-    ; not(eq-ignore-annos(|node0))
+    ; not(?node0)
     ; say(
         <conc-strings> ( "  [rewrite] "
                        , <(!<id>
@@ -95,7 +95,7 @@ strategies
          i
        , Fac(<add> (i, -1))
        )
-    ; not(eq-ignore-annos(|node0))
+    ; not(?node0)
     ; say(
         <conc-strings> ( "  [rewrite] "
                        , <(!<id>
@@ -123,7 +123,7 @@ strategies
     ; ?Fac(0)
     ; where(id)
     ; !1
-    ; not(eq-ignore-annos(|node0))
+    ; not(?node0)
     ; say(
         <conc-strings> ( "  [rewrite] "
                        , <(!<id>
@@ -331,9 +331,7 @@ rules
 
   eval-inh-ancestor-default0(p|parent0, all-parents0, attr-cache0, rewrite-mode0) =
     say(
-      <conc-strings> ( "  [trace] "
-                     , "inh ancestor_1_0"
-                     , " @ "
+      <conc-strings> ( "  [trace] inh ancestor_1_0 @ "
                      , <(!<id>
                          ; astr-initialize-node-ensure(
                              astr-initialize-node-warning(|"path-short")
@@ -381,14 +379,11 @@ rules
   eval-local-elements(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
     get-cached-attribute(|attr-cache0, <id>, "eval-local-elements")
     ; not(EvalFailed)
-    ; astr-initialize-node-prefer(|all-parents0, attr-cache0)
     <+ if 1 := rewrite-mode0 then
          eval-anonymous-rewrites-cached(|all-parents0, attr-cache0)
        end
        ; say(
-           <conc-strings> ( "  [trace] "
-                          , "local elements"
-                          , " @ "
+           <conc-strings> ( "  [trace] local elements @ "
                           , <(!<id>
                               ; astr-initialize-node-ensure(
                                   astr-initialize-node-warning(|"path-short")
@@ -406,15 +401,13 @@ rules
                           , <to-tiny-string>
                           )
          )
-       ; ?node1
+       ; ?node0
        ; (eval-local-elements-IndexedSet-10(|parent0, all-parents0, attr-cache0, rewrite-mode0) <+ fail)
-       ; set-cached-attribute(|attr-cache0, node1, "eval-local-elements", <id>)
        ; if EvalFailed then
-           !node1
+           set-cached-attribute(|attr-cache0, node0, "eval-local-elements", <id>)
+           ; !node0
            ; say(
-               <conc-strings> ( "  [trace] "
-                              , "local elements"
-                              , " @ "
+               <conc-strings> ( "  [trace] local elements @ "
                               , <(!<id>
                                   ; astr-initialize-node-ensure(
                                       astr-initialize-node-warning(|"path-short")
@@ -436,6 +429,7 @@ rules
            ; fail
          else
            astr-initialize-node-prefer(|all-parents0, attr-cache0)
+           ; set-cached-attribute(|attr-cache0, node0, "eval-local-elements", <id>)
          end
 
   eval-local-add(|parent0, all-parents0, attr-cache0, rewrite-mode0, arg1) =
@@ -445,14 +439,11 @@ rules
     , ("eval-local-add_0_1", arg1)
     )
     ; not(EvalFailed)
-    ; astr-initialize-node-prefer(|all-parents0, attr-cache0)
     <+ if 1 := rewrite-mode0 then
          eval-anonymous-rewrites-cached(|all-parents0, attr-cache0)
        end
        ; say(
-           <conc-strings> ( "  [trace] "
-                          , "local add_0_1"
-                          , " @ "
+           <conc-strings> ( "  [trace] local add_0_1 @ "
                           , <(!<id>
                               ; astr-initialize-node-ensure(
                                   astr-initialize-node-warning(|"path-short")
@@ -470,21 +461,19 @@ rules
                           , <to-tiny-string>
                           )
          )
-       ; ?node2
+       ; ?node0
        ; (eval-local-add-IndexedSet-10(|parent0, all-parents0, attr-cache0, rewrite-mode0, arg1)
           <+ fail)
-       ; set-cached-attribute(
-         | attr-cache0
-         , node2
-         , ("eval-local-add_0_1", arg1)
-         , <id>
-         )
        ; if EvalFailed then
-           !node2
+           set-cached-attribute(
+           | attr-cache0
+           , node0
+           , ("eval-local-add_0_1", arg1)
+           , <id>
+           )
+           ; !node0
            ; say(
-               <conc-strings> ( "  [trace] "
-                              , "local add_0_1"
-                              , " @ "
+               <conc-strings> ( "  [trace] local add_0_1 @ "
                               , <(!<id>
                                   ; astr-initialize-node-ensure(
                                       astr-initialize-node-warning(|"path-short")
@@ -506,6 +495,12 @@ rules
            ; fail
          else
            astr-initialize-node-prefer(|all-parents0, attr-cache0)
+           ; set-cached-attribute(
+             | attr-cache0
+             , node0
+             , ("eval-local-add_0_1", arg1)
+             , <id>
+             )
          end
 
   eval-local-contains(|parent0, all-parents0, attr-cache0, rewrite-mode0, arg0) =
@@ -515,14 +510,11 @@ rules
     , ("eval-local-contains_0_1", arg0)
     )
     ; not(EvalFailed)
-    ; astr-initialize-node-prefer(|all-parents0, attr-cache0)
     <+ if 1 := rewrite-mode0 then
          eval-anonymous-rewrites-cached(|all-parents0, attr-cache0)
        end
        ; say(
-           <conc-strings> ( "  [trace] "
-                          , "local contains_0_1"
-                          , " @ "
+           <conc-strings> ( "  [trace] local contains_0_1 @ "
                           , <(!<id>
                               ; astr-initialize-node-ensure(
                                   astr-initialize-node-warning(|"path-short")
@@ -540,21 +532,19 @@ rules
                           , <to-tiny-string>
                           )
          )
-       ; ?node3
+       ; ?node0
        ; (eval-local-contains-IndexedSet-10(|parent0, all-parents0, attr-cache0, rewrite-mode0, arg0)
           <+ fail)
-       ; set-cached-attribute(
-         | attr-cache0
-         , node3
-         , ("eval-local-contains_0_1", arg0)
-         , <id>
-         )
        ; if EvalFailed then
-           !node3
+           set-cached-attribute(
+           | attr-cache0
+           , node0
+           , ("eval-local-contains_0_1", arg0)
+           , <id>
+           )
+           ; !node0
            ; say(
-               <conc-strings> ( "  [trace] "
-                              , "local contains_0_1"
-                              , " @ "
+               <conc-strings> ( "  [trace] local contains_0_1 @ "
                               , <(!<id>
                                   ; astr-initialize-node-ensure(
                                       astr-initialize-node-warning(|"path-short")
@@ -576,40 +566,50 @@ rules
            ; fail
          else
            astr-initialize-node-prefer(|all-parents0, attr-cache0)
+           ; set-cached-attribute(
+             | attr-cache0
+             , node0
+             , ("eval-local-contains_0_1", arg0)
+             , <id>
+             )
          end
 
   eval-local-path-short(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
     get-cached-attribute(|attr-cache0, <id>, "eval-local-path-short")
     ; not(EvalFailed)
-    ; astr-initialize-node-prefer(|all-parents0, attr-cache0)
     <+ if 1 := rewrite-mode0 then
          eval-anonymous-rewrites-cached(|all-parents0, attr-cache0)
        end
        ; id
-       ; ?node4
+       ; ?node0
        ; (eval-local-path-short-00(|parent0, all-parents0, attr-cache0, rewrite-mode0) <+ fail)
-       ; set-cached-attribute(|attr-cache0, node4, "eval-local-path-short", <id>)
        ; if EvalFailed then
-           !node4 ; id ; fail
+           set-cached-attribute(|attr-cache0, node0, "eval-local-path-short", <id>)
+           ; !node0
+           ; id
+           ; fail
          else
            astr-initialize-node-prefer(|all-parents0, attr-cache0)
+           ; set-cached-attribute(|attr-cache0, node0, "eval-local-path-short", <id>)
          end
 
   eval-local-path(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
     get-cached-attribute(|attr-cache0, <id>, "eval-local-path")
     ; not(EvalFailed)
-    ; astr-initialize-node-prefer(|all-parents0, attr-cache0)
     <+ if 1 := rewrite-mode0 then
          eval-anonymous-rewrites-cached(|all-parents0, attr-cache0)
        end
        ; id
-       ; ?node5
+       ; ?node0
        ; (eval-local-path-00(|parent0, all-parents0, attr-cache0, rewrite-mode0) <+ fail)
-       ; set-cached-attribute(|attr-cache0, node5, "eval-local-path", <id>)
        ; if EvalFailed then
-           !node5 ; id ; fail
+           set-cached-attribute(|attr-cache0, node0, "eval-local-path", <id>)
+           ; !node0
+           ; id
+           ; fail
          else
            astr-initialize-node-prefer(|all-parents0, attr-cache0)
+           ; set-cached-attribute(|attr-cache0, node0, "eval-local-path", <id>)
          end
 
   eval-inh-ancestor(p|parent0, all-parents0, attr-cache0, rewrite-mode0) =
@@ -618,9 +618,7 @@ rules
          eval-anonymous-rewrites-cached(|all-parents0, attr-cache0)
        end
        ; say(
-           <conc-strings> ( "  [trace] "
-                          , "inh ancestor_1_0"
-                          , " @ "
+           <conc-strings> ( "  [trace] inh ancestor_1_0 @ "
                           , <(!<id>
                               ; astr-initialize-node-ensure(
                                   astr-initialize-node-warning(|"path-short")
@@ -638,17 +636,15 @@ rules
                           , <to-tiny-string>
                           )
          )
-       ; ?node6
+       ; ?node0
        ; (eval-inh-ancestor-00(p|parent0, all-parents0, attr-cache0, rewrite-mode0)
           <+ eval-inh-ancestor-default0(p|parent0, all-parents0, attr-cache0, rewrite-mode0)
           <+ fail)
-       ; id
        ; if EvalFailed then
-           !node6
+           id
+           ; !node0
            ; say(
-               <conc-strings> ( "  [trace] "
-                              , "inh ancestor_1_0"
-                              , " @ "
+               <conc-strings> ( "  [trace] inh ancestor_1_0 @ "
                               , <(!<id>
                                   ; astr-initialize-node-ensure(
                                       astr-initialize-node-warning(|"path-short")
@@ -669,143 +665,159 @@ rules
              )
            ; fail
          else
-           astr-initialize-node-prefer(|all-parents0, attr-cache0)
+           astr-initialize-node-prefer(|all-parents0, attr-cache0) ; id
          end
 
   eval-inh-root(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
     get-cached-attribute(|attr-cache0, <id>, "eval-inh-root")
     ; not(EvalFailed)
-    ; astr-initialize-node-prefer(|all-parents0, attr-cache0)
     <+ if 1 := rewrite-mode0 then
          eval-anonymous-rewrites-cached(|all-parents0, attr-cache0)
        end
        ; id
-       ; ?node7
+       ; ?node0
        ; (eval-inh-root-00(|parent0, all-parents0, attr-cache0, rewrite-mode0)
           <+ eval-inh-root-default0(|parent0, all-parents0, attr-cache0, rewrite-mode0)
           <+ fail)
-       ; set-cached-attribute(|attr-cache0, node7, "eval-inh-root", <id>)
        ; if EvalFailed then
-           !node7 ; id ; fail
+           set-cached-attribute(|attr-cache0, node0, "eval-inh-root", <id>)
+           ; !node0
+           ; id
+           ; fail
          else
            astr-initialize-node-prefer(|all-parents0, attr-cache0)
+           ; set-cached-attribute(|attr-cache0, node0, "eval-inh-root", <id>)
          end
 
   eval-local-last-child(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
     get-cached-attribute(|attr-cache0, <id>, "eval-local-last-child")
     ; not(EvalFailed)
-    ; astr-initialize-node-prefer(|all-parents0, attr-cache0)
     <+ if 1 := rewrite-mode0 then
          eval-anonymous-rewrites-cached(|all-parents0, attr-cache0)
        end
        ; id
-       ; ?node8
+       ; ?node0
        ; (eval-local-last-child-00(|parent0, all-parents0, attr-cache0, rewrite-mode0) <+ fail)
-       ; set-cached-attribute(|attr-cache0, node8, "eval-local-last-child", <id>)
        ; if EvalFailed then
-           !node8 ; id ; fail
+           set-cached-attribute(|attr-cache0, node0, "eval-local-last-child", <id>)
+           ; !node0
+           ; id
+           ; fail
          else
            astr-initialize-node-prefer(|all-parents0, attr-cache0)
+           ; set-cached-attribute(|attr-cache0, node0, "eval-local-last-child", <id>)
          end
 
   eval-local-first-child(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
     get-cached-attribute(|attr-cache0, <id>, "eval-local-first-child")
     ; not(EvalFailed)
-    ; astr-initialize-node-prefer(|all-parents0, attr-cache0)
     <+ if 1 := rewrite-mode0 then
          eval-anonymous-rewrites-cached(|all-parents0, attr-cache0)
        end
        ; id
-       ; ?node9
+       ; ?node0
        ; (eval-local-first-child-00(|parent0, all-parents0, attr-cache0, rewrite-mode0) <+ fail)
-       ; set-cached-attribute(|attr-cache0, node9, "eval-local-first-child", <id>)
        ; if EvalFailed then
-           !node9 ; id ; fail
+           set-cached-attribute(|attr-cache0, node0, "eval-local-first-child", <id>)
+           ; !node0
+           ; id
+           ; fail
          else
            astr-initialize-node-prefer(|all-parents0, attr-cache0)
+           ; set-cached-attribute(|attr-cache0, node0, "eval-local-first-child", <id>)
          end
 
   eval-local-last-sibling(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
     get-cached-attribute(|attr-cache0, <id>, "eval-local-last-sibling")
     ; not(EvalFailed)
-    ; astr-initialize-node-prefer(|all-parents0, attr-cache0)
     <+ if 1 := rewrite-mode0 then
          eval-anonymous-rewrites-cached(|all-parents0, attr-cache0)
        end
        ; id
-       ; ?node10
+       ; ?node0
        ; (eval-local-last-sibling-00(|parent0, all-parents0, attr-cache0, rewrite-mode0) <+ fail)
-       ; set-cached-attribute(|attr-cache0, node10, "eval-local-last-sibling", <id>)
        ; if EvalFailed then
-           !node10 ; id ; fail
+           set-cached-attribute(|attr-cache0, node0, "eval-local-last-sibling", <id>)
+           ; !node0
+           ; id
+           ; fail
          else
            astr-initialize-node-prefer(|all-parents0, attr-cache0)
+           ; set-cached-attribute(|attr-cache0, node0, "eval-local-last-sibling", <id>)
          end
 
   eval-local-first-sibling(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
     get-cached-attribute(|attr-cache0, <id>, "eval-local-first-sibling")
     ; not(EvalFailed)
-    ; astr-initialize-node-prefer(|all-parents0, attr-cache0)
     <+ if 1 := rewrite-mode0 then
          eval-anonymous-rewrites-cached(|all-parents0, attr-cache0)
        end
        ; id
-       ; ?node11
+       ; ?node0
        ; (eval-local-first-sibling-00(|parent0, all-parents0, attr-cache0, rewrite-mode0) <+ fail)
-       ; set-cached-attribute(|attr-cache0, node11, "eval-local-first-sibling", <id>)
        ; if EvalFailed then
-           !node11 ; id ; fail
+           set-cached-attribute(|attr-cache0, node0, "eval-local-first-sibling", <id>)
+           ; !node0
+           ; id
+           ; fail
          else
            astr-initialize-node-prefer(|all-parents0, attr-cache0)
+           ; set-cached-attribute(|attr-cache0, node0, "eval-local-first-sibling", <id>)
          end
 
   eval-local-next-sibling(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
     get-cached-attribute(|attr-cache0, <id>, "eval-local-next-sibling")
     ; not(EvalFailed)
-    ; astr-initialize-node-prefer(|all-parents0, attr-cache0)
     <+ if 1 := rewrite-mode0 then
          eval-anonymous-rewrites-cached(|all-parents0, attr-cache0)
        end
        ; id
-       ; ?node12
+       ; ?node0
        ; (eval-local-next-sibling-00(|parent0, all-parents0, attr-cache0, rewrite-mode0) <+ fail)
-       ; set-cached-attribute(|attr-cache0, node12, "eval-local-next-sibling", <id>)
        ; if EvalFailed then
-           !node12 ; id ; fail
+           set-cached-attribute(|attr-cache0, node0, "eval-local-next-sibling", <id>)
+           ; !node0
+           ; id
+           ; fail
          else
            astr-initialize-node-prefer(|all-parents0, attr-cache0)
+           ; set-cached-attribute(|attr-cache0, node0, "eval-local-next-sibling", <id>)
          end
 
   eval-local-prev-sibling(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
     get-cached-attribute(|attr-cache0, <id>, "eval-local-prev-sibling")
     ; not(EvalFailed)
-    ; astr-initialize-node-prefer(|all-parents0, attr-cache0)
     <+ if 1 := rewrite-mode0 then
          eval-anonymous-rewrites-cached(|all-parents0, attr-cache0)
        end
        ; id
-       ; ?node13
+       ; ?node0
        ; (eval-local-prev-sibling-00(|parent0, all-parents0, attr-cache0, rewrite-mode0) <+ fail)
-       ; set-cached-attribute(|attr-cache0, node13, "eval-local-prev-sibling", <id>)
        ; if EvalFailed then
-           !node13 ; id ; fail
+           set-cached-attribute(|attr-cache0, node0, "eval-local-prev-sibling", <id>)
+           ; !node0
+           ; id
+           ; fail
          else
            astr-initialize-node-prefer(|all-parents0, attr-cache0)
+           ; set-cached-attribute(|attr-cache0, node0, "eval-local-prev-sibling", <id>)
          end
 
   eval-local-enable-warnings(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
     get-cached-attribute(|attr-cache0, <id>, "eval-local-enable-warnings")
     ; not(EvalFailed)
-    ; astr-initialize-node-prefer(|all-parents0, attr-cache0)
     <+ if 1 := rewrite-mode0 then
          eval-anonymous-rewrites-cached(|all-parents0, attr-cache0)
        end
        ; id
-       ; ?node14
+       ; ?node0
        ; (eval-local-enable-warnings-00(|parent0, all-parents0, attr-cache0, rewrite-mode0) <+ fail)
-       ; set-cached-attribute(|attr-cache0, node14, "eval-local-enable-warnings", <id>)
        ; if EvalFailed then
-           !node14 ; id ; fail
+           set-cached-attribute(|attr-cache0, node0, "eval-local-enable-warnings", <id>)
+           ; !node0
+           ; id
+           ; fail
          else
            astr-initialize-node-prefer(|all-parents0, attr-cache0)
+           ; set-cached-attribute(|attr-cache0, node0, "eval-local-enable-warnings", <id>)
          end

@@ -21,19 +21,6 @@ strategies
       !attr-cache;
       hashtable-put(|"$worklist", value)
     )
-
-strategies
-
-  circular-attributes-fixpoint(|attr-cache) =
-    if get-circular-worklist => [_] then // worklist not executed elsewhere
-      while(
-        circular-worklist-dequeue(|attr-cache)
-      , once-EvalCircularAttribute
-      )
-    end
-  
-  internal-circular-rule-def =
-    rules(EvalCircularAttribute: _) // ensure this is always defined somewhere
   
   circular-worklist-enqueue(|attr-cache) =
     where(
@@ -46,7 +33,26 @@ strategies
   circular-worklist-dequeue(|attr-cache) =
     where(
       get-circular-worklist(|attr-cache);
-      (ticket, queue) := <split-last>
+      (queue, ticket) := <split-last>
     );
     set-circular-worklist(|attr-cache, queue);
     !ticket
+
+strategies
+
+  circular-attributes-fixpoint(|attr-cache) =
+    not(IsExecutingFixpoint);
+    rules(IsExecutingFixpoint: _);
+    
+    with(
+      while(
+        circular-worklist-dequeue(|attr-cache)
+      , once-EvalCircularAttribute
+      )
+    );
+    
+    rules(IsExecutingFixPoint :- _)
+  
+  internal-circular-rule-def =
+    ?ticket;
+    rules(EvalCircularAttribute: ticket) // ensure this is always defined somewhere

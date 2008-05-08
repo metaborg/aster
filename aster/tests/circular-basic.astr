@@ -1,0 +1,28 @@
+module circular-basic
+
+imports
+  libstratego-lib
+
+strategies
+
+  main-circular-basic =
+    option-wrap(
+      verbose-option
+    ,
+      !(1, 5, 7).init;
+      (id.avg-others, id.avg-others, id.avg-others);
+      id.debug
+    )
+
+attributes
+
+  local (A, B, C) circular id:
+    A.avg-others = <round-avg> (B.avg-others, C.avg-others); debug'(!"A=")
+    B.avg-others = <round-avg> (A.avg-others, C.avg-others); debug'(!"B=")
+    C.avg-others = <round-avg> (A.avg-others, B.avg-others); debug'(!"C=")
+
+strategies
+
+  round-avg = <div> (<add>, 2); round-real
+  
+  round-real = <mul> (<id>, 10); int; real; <div> (<id>, 10)

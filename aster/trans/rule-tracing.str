@@ -21,6 +21,9 @@ strategies
   trace-failed-rule =
     trace-rule(|" (failed)")
   
+  trace-fixpoint-rule =
+    trace-rule(|" (fixpoint)")
+  
   trace-rule(|comment) =
     where(Attribute(real-name, _, _) := <RuleAttribute>);
     
@@ -33,9 +36,8 @@ strategies
   trace-rule(|comment, real-name):
     def @ Attribute(name, sarity, tarity) ->
     Strat |[
-        say(<conc-strings> ("  [trace] "
-           , ~str:message
-           , " @ "
+        say(<conc-strings> (
+             ~str:message
            , <s_path; (?"" <+ <conc-strings> (<id>, "."))>
            , <to-tiny-string>
            , t_comment*
@@ -44,7 +46,7 @@ strategies
     with
       type       := <RuleAccessorType> def;
       arity'     := <arity-to-string> (sarity, tarity);
-      message    := <conc-strings> (type, " ", real-name, arity');
+      message    := <conc-strings> ("  [trace] ", type, " ", real-name, arity', " @ ");
       s_path     := <trace-path>;
       
       if "" := comment then

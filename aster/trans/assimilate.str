@@ -118,7 +118,7 @@ strategies
           where(s_where);
           !t_after;
           
-          not(eq-ignore-annos(|x_before));
+          not(?x_before); // initialization caching ensure that, even after reinit, this would be the same
           s_trace
      ]|
      with

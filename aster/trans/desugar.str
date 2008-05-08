@@ -91,7 +91,7 @@ rules
     at-match-all(\IdTerm() -> Wld()\)
   
   desugar-id-term: // build context
-    IdTerm() -> RootApp(Id)
+    IdTerm() -> RootApp(Id())
 
   at-match-all(s) =
     ?before;

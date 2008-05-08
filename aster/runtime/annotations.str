@@ -72,20 +72,18 @@ strategies // Node initialization
     astr-initialize-node(|all-parents, attribute-cache, NoParent())
   
   astr-initialize-node(|all-parents, attribute-cache, parent) =
+    get-initialize-cache(|attribute-cache, parent, <id>)
+  <+
     // First add unique annos everywhere,
     // then assign parent rules for the newly formed nodes
-    get-initialize-cache(|attribute-cache, <id>)
-  <+
     ?node;
     astr-disable-sharing;
-    set-initialize-cache(|attribute-cache, node, <id>);
+    set-initialize-cache(|attribute-cache, parent, node, <id>);
     where(
       astr-add-parent-references(|all-parents, parent)
     )
 
 strategies // Adding annotations
-
-  // TODO: Consider using all-consnil to walk through lists
 
   astr-disable-sharing:
     t {a*} -> t' {b*}
@@ -102,10 +100,13 @@ strategies // Adding annotations
 
 strategies // Hash table storage for init/uninit
 
-  get-initialize-cache(|attribute-cache, node) =
+  get-initialize-cache(|attribute-cache, parent, node) =
+    where(NoParent() := parent);
     get-cached-attribute(|attribute-cache, node, "$inited")
  
-  set-initialize-cache(|attribute-cache, node, value) =
+  set-initialize-cache(|attribute-cache, parent, node, value) =
+    not(NoParent() := parent) // no caching for you
+  <+
     set-cached-attribute(|attribute-cache, node, "$inited", value)
 
   get-keep-uninitialized(|attribute-cache, node) =

@@ -127,10 +127,12 @@ rules // Native attribute definitions
                                            + !"astr-initialize-node">
   
   assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
-    Attribute("init", [], []) -> Strat |[ x_init(|x_all-parents, x_attr-cache) ]|
-    with
-      x_init := <UsesAnonymousRewriteRules < !"astr-initialize-node-apply-rewrites"
-                                           + !"astr-initialize-node">
+    Attribute("init", [], []) -> <add-initialize-node>
+  
+  add-initialize-node =
+    x_init := <UsesAnonymousRewriteRules < !"astr-initialize-node-apply-rewrites"
+                                           + !"astr-initialize-node">;
+    !Strat |[ x_init(|~id:<AllParentsVar>, ~id:<AttributeCacheVar>) ]|
   
   assimilate-native-attr:
     Attribute("reinit", [], []) -> Strat |[ astr-initialize-node-ensure(|<all-parents>, <attribute-cache>) ]|

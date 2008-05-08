@@ -28,6 +28,7 @@ strategies
         add-merged-rule;
         try(make-circular-rule(|def))
       });
+      flatten-list;
       ordered* := [Rules(<id>)]
   
   // TODO2: Optimize - don't cache the copy rules?
@@ -41,13 +42,14 @@ strategies
          s_trace;
          ?x_node;
          s;
-         s_cache-write;
          if EvalFailed then
+           s_cache-write;
            !x_node;
            s_trace-failed;
            fail
          else
-           astr-initialize-node-prefer(|x_all-parents, x_attr-cache)
+           astr-initialize-node-prefer(|x_all-parents, x_attr-cache);
+           s_cache-write
          end
     ]|
     with
@@ -55,9 +57,9 @@ strategies
       (s*, t*)       := <params-to-args> (as*, a*);
       x_all-parents  := <AllParentsVar>;
       x_attr-cache   := <AttributeCacheVar>;
+      x_node         := <NodeVar>;
       defs           := <sort-ordered-defs> <make-set> <bagof-OrderedRuleDefs> def;
       s              := <fold-lchoice> <map(def-call(|s*, t*))> defs;
-      x_node         := <newname> "node";
       s_trace        := <trace-rule> def;
       s_trace-failed := <trace-failed-rule> def;
       s_cache-read   := <add-cache-read(|s*, t*)> def;

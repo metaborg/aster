@@ -3,8 +3,13 @@ module rule-circularity
 imports
   libstratego-lib
   assimilate
+  rule-tracing
 
 strategies
+
+  // This generates quite a boilerplate,
+  // much of this could be moved to the runtime components if
+  // Stratego supported closures in dynamic rules...
 
   make-circular-rule(|def):
     |[ x_eval(as*|a*) =
@@ -13,37 +18,62 @@ strategies
         s_body
     ]| ->
     Def* |[
+      /**
+       * Read from cache, or enqueue into fixpoint with initial value
+       */
       x_eval(as*|a*) =
         s_cache-read
       <+
-        x_old-value := t_initial;
-        s_cache-write;
-        !x_node;
-        x_eval-circular(s*|t*);
-        circular-attributes-fixpoint(|attr-cache)
-      
-      // Uncached evaluator for use in fixpoint loop
-      x_eval-circular(as*|x_old-value, a*) =
-        s_body; // does a cache write
-        ?x_new-value;
-        if not(?x_old-value) then
-          where(
-            ticket := <new>;
-            circular-worklist-enqueue(|attr-cache)
-          );
-          rules(
-            EvalCircularAttribute:
-              ticket -> <x_eval-circular(s*|x_new-value, t*)> x_node
-          )
+        ?x_node;
+        where(
+          x_old-value := <s_init> t_initial;
+          s_cache-write
+        );
+        
+        x_eval-enqueue(s*|x_old-value, t*);
+        // x_eval-recompute(s*|x_old-value, t*);
+        
+        if circular-attributes-fixpoint(|x_attr-cache) then
+          <s_trace> x_node;
+          s_cache-read
         end
+      
+      /**
+       * Uncached evaluator for use in fixpoint loop.
+       */
+      x_eval-recompute(as*|x_old-value, a*) =
+        (s_body <+ !EvalFailed()); // does ?x_node, evaluates the attr, and writes it to the cache
+        if not(?x_old-value) then
+          verbose-msg(!"  [circular] Re-enqueuing @", <strip-annos> x_node, !"with", id, !"was", !x_old-value);
+          ?x_new-value;
+          !x_node;
+          x_eval-enqueue(s*|x_new-value, t*)
+        end
+      
+      /**
+       * Enqueue into fixpoint loop.
+       */
+      x_eval-enqueue(as*|x_new-value, a*) =
+        ?x_node;
+        where(
+          ticket := <new>;
+          circular-worklist-enqueue(|x_attr-cache)
+        );
+        rules(
+          EvalCircularAttribute:
+            ticket -> <x_eval-recompute(s*|x_new-value, t*)> x_node
+        )
     ]|
     where
-      t_initial       := <AttributeCircular> def
+      t_initial        := <AttributeCircular> <attribute-signature> <RuleAttribute> def
     with
-      x_eval-circular := <conc-strings> (x_eval, "-circular");
-      x_node          := <NodeVar>;
-      x_attr-cache    := <AttributeCacheVar>;
-      x_old-value     := <newname> "old-value";
-      x_new-value     := <newname> "new-value";
-      (s*, t*)        := <params-to-args> (as*, a*);
-      s_cache-write   := <add-cache-write(|s*, t*, x_node)> def
+      x_eval-recompute := <newname> <conc-strings> (x_eval, "-recompute");
+      x_eval-enqueue   := <newname> <conc-strings> (x_eval, "-enqueue");
+      x_node           := <NodeVar>;
+      x_attr-cache     := <AttributeCacheVar>;
+      x_old-value      := <newname> "old-value";
+      x_new-value      := <newname> "new-value";
+      s_init           := <add-initialize-node>;
+      s_trace          := <trace-fixpoint-rule> def;
+      (s*, t*)         := <params-to-args> ([], a*);
+      s_cache-write    := <add-cache-write(|s*, t*, x_node)> def

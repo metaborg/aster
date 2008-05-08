@@ -47,8 +47,10 @@ strategies
     )
 
 strategies
-  
+
+  // TODO: Optimize - apply initialization caching ($init) in astr-initialize-node-apply-rewrites  
   // TODO: Optimize - don't reinitialize nodes if no attrs evaluated
+  
   astr-initialize-node-apply-rewrites(|all-parents, attr-cache) =
     set-rewrite-mode(|attr-cache, 1);
     do-while(

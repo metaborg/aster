@@ -30,8 +30,7 @@ strategies
   add-cache-read'(|targs):
     Attribute(name, sarity, tarity) ->
     |[ get-cached-attribute(|x_attr-cache, <id>, t_key);
-       not(EvalFailed);
-       astr-initialize-node-prefer(|x_all-parents, x_attr-cache)
+       not(EvalFailed)
     ]|
     with
       x_all-parents := <AllParentsVar>;
