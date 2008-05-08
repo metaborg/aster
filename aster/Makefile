@@ -10,6 +10,8 @@ STRCFLAGS = \
 DEPS = \
     trans/stratego-rerag.str \
     $(wildcard trans/*.str) \
+    $(wildcard trans/*/*.str) \
+    $(wildcard trans/*/*/*.str) \
     syntax/Stratego-Attributes-in-Stratego.tbl \
     syntax/Stratego-Attributes-in-Stratego.tbl
 
@@ -27,13 +29,13 @@ check : all
 	$(MAKE) -C tests check
 
 clean :
-	rm -f syntax/*.tbl syntax/*.def syntax/*.dep trans/stratego-rerag trans/stratego-rerag-no-check trans/stratego-rerag.copy trans/check.str
+	rm -f syntax/*.tbl syntax/*.def syntax/*.dep trans/stratego-rerag trans/stratego-rerag-no-check trans/stratego-rerag.copy trans/front/check.str
 	$(MAKE) -C tests clean
 
 bootclean :
 	rm -f trans/stratego-rerag.copy trans/stratego-rerag-no-check
 
-% : %.str trans/check.str $(DEPS) $(wildcard runtime/*.str)
+% : %.str trans/front/check.str $(DEPS) $(wildcard runtime/*.str)
 	@rm -f $@.c
 	strc -i $< -o $@ -m main-`basename $*` $(STRCFLAGS) $(STRCSTFU)
 	@cp $@ $@.copy
@@ -42,11 +44,11 @@ bootclean :
 trans/stratego-rerag-no-check : $(DEPS)
 	[ -e trans/stratego-rerag.copy ] && cp trans/stratego-rerag.copy trans/stratego-rerag-no-check ||\
 	( rm -f $@.c && \
-	  cp trans/check.bootstrap.str trans/check.str && \
+	  cp trans/front/check.bootstrap.str trans/front/check.str && \
 	  strc -i $< -o $@ -m main-stratego-rerag -Xcc -O0 $(STRCFLAGS) $(STRCSTFU) && \
-	  rm trans/check.str $@.c )
+	  rm trans/front/check.str $@.c )
 
-trans/check.str : trans/check.astr trans/stratego-rerag-no-check
+trans/front/check.str : trans/front/check.astr trans/stratego-rerag-no-check
 	trans/stratego-rerag-no-check --verbose 2 -i $< -o $@ || $(MAKE) bootclean
 
 %.rtg : %.def

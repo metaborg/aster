@@ -3,11 +3,11 @@
  *
  * @author Lennart Kats <lennart add lclnet.nl>
  */
-module rule-caching
+module back/rule-caching
 
 imports
   libstratego-lib
-  util
+  back/util
 
 strategies
 

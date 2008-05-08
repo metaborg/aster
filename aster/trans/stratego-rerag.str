@@ -5,10 +5,10 @@ imports
   libstratego-sglr
   libstratego-xtc
 
-  analyze
-  assimilate
-  check
-  desugar
+  front/analyze
+  back/assimilate
+  front/check
+  front/desugar
   debug
   io
 

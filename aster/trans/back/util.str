@@ -1,4 +1,4 @@
-module util
+module back/util
 
 imports
   libstratego-lib

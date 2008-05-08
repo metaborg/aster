@@ -1,9 +1,9 @@
-module default-attributes
+module back/default-attributes
 
 imports
   Stratego-Attributes
   stratego-rerag
-  analyze
+  front/analyze
 
 rules
 

@@ -3,7 +3,7 @@ module analyze
 imports
   libstratego-lib
   Stratego-Attributes
-  assimilate
+  back/assimilate
 
 strategies
 

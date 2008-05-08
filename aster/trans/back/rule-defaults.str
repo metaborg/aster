@@ -1,10 +1,10 @@
-module rule-defaults
+module back/rule-defaults
 
 imports
   libstratego-lib
-  util
-  rule-tracing
-  assimilate
+  back/util
+  back/rule-tracing
+  back/assimilate
 
 strategies
 

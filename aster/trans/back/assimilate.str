@@ -1,0 +1,44 @@
+module back/assimilate
+
+imports
+  Stratego-Attributes
+  stratego-rerag
+  back/default-attributes
+  back/util
+  back/rule-merging
+  back/rule-defaults
+  back/rule-definitions
+  back/rule-naming
+
+strategies
+
+  assimilate-all =
+    init-shared-vars;
+    add-imports;
+    
+    all-stratego-defs(try(
+      assimilate-def
+    ));
+    
+    topdown(try(
+      assimilate-expr
+    ));
+    
+    add-default-rules;
+    add-merged-rules
+ 
+  init-shared-vars =
+    // TODO2: Things like <all-parents> should be optimized in a post-processing stage, not right away
+    // TODO2: Rename attr-cache to cache or store, or something
+    rules(
+      ParentVar         := <newname> "parent"
+      NodeVar           := <newname> "node"
+      AllParentsVar     := <newname> "all-parents"
+      AttributeCacheVar := <newname> "attr-cache"
+      RewriteModeVar    := <newname> "rewrite-mode"
+    )
+
+  add-imports:
+    Module(x, decl*) -> Module(x, [imports | decl*])
+    with
+      imports := |[ imports annotations attributes circular parents lists rewrites debug ]|

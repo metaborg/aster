@@ -2,8 +2,8 @@ module rule-circularity
 
 imports
   libstratego-lib
-  assimilate
-  rule-tracing
+  back/assimilate
+  back/rule-tracing
 
 strategies
 

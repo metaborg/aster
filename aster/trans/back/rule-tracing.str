@@ -3,12 +3,12 @@
  *
  * @author Lennart Kats <lennart add lclnet.nl>
  */
-module rule-tracing
+module back/rule-tracing
 
 imports
   libstratego-lib
-  util
-  default-attributes
+  back/util
+  back/default-attributes
 
 strategies
 

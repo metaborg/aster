@@ -1,0 +1,29 @@
+module back/rule-naming
+
+imports
+  Stratego-Attributes
+  back/util
+
+strategies
+
+  attribute-type-name(|local-type) =
+    if NoType() := local-type then
+      attribute-type // globally declared type
+    else
+      !local-type
+    end;
+    
+    switch id
+      case Inh():   !"inh"
+      case Local(): !"local"
+      otherwise:    !"syn"
+    end
+
+  attribute-accessor-name(|type):
+    Attribute(name, _, _) -> accessor
+    with
+      accessor  := <conc-strings> ("eval-", type, "-", name)
+  
+  preferred-attribute-accessor-type =
+    attribute-type-name(|NoType())
+      

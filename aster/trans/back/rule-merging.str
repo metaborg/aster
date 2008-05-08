@@ -1,13 +1,13 @@
-module rule-merging
+module back/rule-merging
 
 imports
   libstratego-lib
-  util
-  rule-tracing
-  rule-caching
-  rule-circularity
-  assimilate
-  analyze
+  back/util
+  back/rule-tracing
+  back/rule-caching
+  back/rule-circularity
+  back/assimilate
+  front/analyze
 
 overlays
   DEFAULT_RULE_INDEX = -1
