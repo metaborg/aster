@@ -6,8 +6,8 @@ strategies
     option-wrap(
       verbose-option
     ,
-      // This tests the caching semantics of both .random and .init
-      <eq> (id.init.random, id.init.random)
+      id.init;
+      <eq> (id.random, id.random)
     )
   
   local random = next-random

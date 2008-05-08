@@ -28,7 +28,7 @@ strategies
     , !Fac(Fac(3))
       ; !<!<id>
           ; astr-initialize-node(|<all-parents>, <attribute-cache>)>
-      ; where(astr-uninitialize-node ; debug)
+      ; where(astr-remove-annos ; debug)
     )
 
   eval-anonymous-rewrite =
@@ -36,7 +36,7 @@ strategies
     ; ?Add(x, y)
     ; where(id)
     ; !<add> (x, y)
-    ; not(?node0)
+    ; not(eq-ignore-annos(|node0))
     ; say(
         <conc-strings> ( "  [rewrite] "
                        , <(!<id>
@@ -64,7 +64,7 @@ strategies
     ; ?Mul(x, y)
     ; where(id)
     ; !<mul> (x, y)
-    ; not(?node0)
+    ; not(eq-ignore-annos(|node0))
     ; say(
         <conc-strings> ( "  [rewrite] "
                        , <(!<id>
@@ -95,7 +95,7 @@ strategies
          i
        , Fac(<add> (i, -1))
        )
-    ; not(?node0)
+    ; not(eq-ignore-annos(|node0))
     ; say(
         <conc-strings> ( "  [rewrite] "
                        , <(!<id>
@@ -123,7 +123,7 @@ strategies
     ; ?Fac(0)
     ; where(id)
     ; !1
-    ; not(?node0)
+    ; not(eq-ignore-annos(|node0))
     ; say(
         <conc-strings> ( "  [rewrite] "
                        , <(!<id>

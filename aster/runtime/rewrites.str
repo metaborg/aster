@@ -54,11 +54,9 @@ strategies
   
   astr-initialize-node(|all-parents, attr-cache) =
     if astr-has-rewrites then
-      get-initialize-cache(|attr-cache, NoParent(), <id>)
-    <+
       set-rewrite-mode(|attr-cache, 1);
       do-while(
-        astr-initialize-node(|all-parents, attr-cache)
+        astr-initialize-node-no-rewrite(|all-parents)
       ,
         { before:
           ?before;
@@ -74,7 +72,7 @@ strategies
       );
       set-rewrite-mode(|attr-cache, 0)
     else
-      astr-initialize-node-no-rewrite(|all-parents, attr-cache)
+      astr-initialize-node-no-rewrite(|all-parents)
     end
   
   /**

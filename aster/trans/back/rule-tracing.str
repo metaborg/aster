@@ -9,6 +9,7 @@ imports
   libstratego-lib
   back/util
   back/default-attributes
+  back/attribute-references
 
 strategies
 

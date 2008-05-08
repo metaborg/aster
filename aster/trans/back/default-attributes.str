@@ -97,7 +97,7 @@ rules // Native attribute definitions
     Attribute("eq", [], [t]) -> |[ eq-ignore-annos(|t) ]|
 
   assimilate-native-attr:
-    Attribute("debug", [], []) -> |[ where(astr-uninitialize-node; debug) ]|
+    Attribute("debug", [], []) -> |[ where(astr-remove-annos; debug) ]|
     
   assimilate-native-attr:
     Attribute("disable-warnings", [], []) -> |[ rules(AstrWarningsDisabled: _) ]|
@@ -115,10 +115,10 @@ rules // Native attribute definitions
     Attribute("path-list", [], []) -> |[ get-ancestor-list(|x_all-parents) ]|
 
   assimilate-native-attr:
-    Attribute("uninit", [], []) -> Strat |[ astr-uninitialize-node-persist(|<attribute-cache>) ]|
+    Attribute("uninit", [], []) -> Strat |[ astr-remove-annos-persist(|<attribute-cache>) ]|
 
   assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
-    Attribute("uninit", [], []) -> Strat |[ astr-uninitialize-node-persist(|x_attr-cache) ]|
+    Attribute("uninit", [], []) -> Strat |[ astr-remove-annos-persist(|x_attr-cache) ]|
   
   assimilate-native-attr:
     Attribute("init", [], []) -> Strat |[ astr-initialize-node(|<all-parents>, <attribute-cache>) ]|

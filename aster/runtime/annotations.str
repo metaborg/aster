@@ -18,25 +18,18 @@ strategies // Util
     ?term
   <+
     where(
-      <eq> (<get-constructor>, <get-constructor> term);
+      <eq> (<get-constructor>, <get-constructor> term); // base check, must at least pass this
       term' := <strip-annos> term
     );
     (?term' <+ strip-annos => term')
   
-  astr-uninitialize-node =
-    topdown-consnil(try(
-      \t {<is-astr-annotation>} -> t {}\
-    <+
-      \t {a*} -> t {b*}
-       where
-         b* := <filter(not(is-astr-annotation))> a*\
-    ))
-  
-  astr-uninitialize-node-persist(|attribute-cache) =
-    astr-uninitialize-node;
+  astr-remove-annos-persist(|attribute-cache) =
+    astr-remove-annos;
     set-keep-uninitialized(|attribute-cache, <id>)
 
 strategies // Node initialization
+
+  // TODO: Use an "uninit" annotation instead of get-keep-uninitialized, its overhead, and possible bugs because of it...
 
   /**
    * Initialize a node, unless it was marked uninitialized by .uninit.
@@ -68,37 +61,48 @@ strategies // Node initialization
       map(<fprintnl> (stderr(), ["\t", <id>]))
     end
   
-  astr-initialize-node-no-rewrite(|all-parents, attribute-cache) =
-    astr-initialize-node-no-rewrite(|all-parents, attribute-cache, NoParent())
+  astr-initialize-node-no-rewrite(|all-parents) =
+    astr-initialize-node-no-rewrite(|all-parents, NoParent())
   
-  astr-initialize-node-no-rewrite(|all-parents, attribute-cache, parent) =
-    get-initialize-cache(|attribute-cache, parent, <id>)
-  <+
+  astr-initialize-node-no-rewrite(|all-parents, parent) =
     // First add unique annos everywhere,
     // then assign parent rules for the newly formed nodes
     ?node;
-    astr-disable-sharing;
-    set-initialize-cache(|attribute-cache, parent, node, <id>);
+    astr-add-annos;
     where(
       astr-add-parent-references(|all-parents, parent)
     )
 
-strategies // Adding annotations
+strategies // Adding/removing node annotations
 
-  astr-disable-sharing:
+  astr-add-annos:
     t {a*} -> t' {b*}
     where
-      t' := <all-consnil(astr-disable-sharing)> t;
+      t' := <all-consnil(astr-add-annos)> t;
       if [] := a* then
         b* := [<newname> "@"]
       else
-        b* := [<newname> "@" | <astr-disable-sharing-of-annos> a*]
+        b* := [<newname> "@" | <map(astr-add-annos)> a*]
       end
   
-  astr-disable-sharing-of-annos =
-    filter(not(is-astr-annotation); astr-disable-sharing)
+  astr-remove-annos =
+    topdown-consnil(try(
+      \t {<is-astr-annotation>} -> t {}\
+    <+
+      \t {a*} -> t {b*}
+       where
+         b* := <filter(not(is-astr-annotation))> a*\
+    ))
 
 strategies // Hash table storage for init/uninit
+
+  /* UNDONE: Caching of node initialization
+  
+  // Caching of node initialization ensured:
+  // - caching of attributes accross tree copies and rewrites of complete trees
+  //   (but attribute caching and rewrite caching mostly takes care of that)
+  // - cheap equality checks after every rewrite or circular evaluation
+  //   (not really, unless you add an expensive remove-annos before caching)
 
   get-initialize-cache(|attribute-cache, parent, node) =
     where(NoParent() := parent);
@@ -108,6 +112,7 @@ strategies // Hash table storage for init/uninit
     not(NoParent() := parent) // no caching for you
   <+
     set-cached-attribute(|attribute-cache, node, "$inited", value)
+  */
 
   get-keep-uninitialized(|attribute-cache, node) =
     get-cached-attribute(|attribute-cache, node, "$uninited")

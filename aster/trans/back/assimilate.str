@@ -9,6 +9,7 @@ imports
   back/rule-defaults
   back/rule-definitions
   back/rule-naming
+  back/attribute-references
 
 strategies
 

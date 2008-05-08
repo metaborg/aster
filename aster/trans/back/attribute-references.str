@@ -1,4 +1,4 @@
-module assimilate
+module back/attribute-references
 
 imports
   Stratego-Attributes

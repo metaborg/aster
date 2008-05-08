@@ -14,7 +14,7 @@ EXEEXT =
 
 check : Stratego-Attributes.runtestsuite \
         test-stratego-rerag test-stratego-rerag.run test-stratego-rerag.str \
-        $(RUN_TESTS) $(STR_TESTS) $(EXE_TESTS)
+        $(STR_TESTS) $(EXE_TESTS) $(RUN_TESTS)
 
 clean :
 	rm -f $(RUN_TESTS) $(STR_TESTS) test-stratego-rerag test-attributes.str
@@ -34,7 +34,6 @@ test-stratego-rerag : test-attributes.str
 	@echo
 	@echo ==== `basename $@ .run` ====
 	@./$* --verbose 2
-	@echo
 
 %.runtestsuite : %.testsuite
 	parse-unit --no-heuristic-filters -i $< -p ../syntax/Stratego-Attributes.tbl

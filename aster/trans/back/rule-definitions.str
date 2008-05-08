@@ -8,6 +8,7 @@ imports
   back/rule-merging
   back/rule-defaults
   back/rule-naming
+  back/attribute-references
 
 overlays
   /**
@@ -86,7 +87,7 @@ strategies
           where(s_where);
           !t_after;
           
-          not(?x_before); // initialization caching ensure that, even after reinit, this would be the same
+          not(eq-ignore-annos(|x_before));
           s_trace
      ]|
      with
@@ -140,75 +141,4 @@ rules // Semantic rule definition helpers
       s_traverse-up' := <copy; fold-seq> (depth, s_traverse-up)
     
     // TODO2: Optimize - ancestor-check should use intermediate patterns
-
-rules // Evaluate attributes in AG context
-
-  assimilate-expr-inside-ag(|sig, s_parent, s_parent-desired, x_node, x_all-parents, x_attr-cache) =
-    assimilate-native-ref-inside-ag(|s_parent, x_all-parents, x_node, x_attr-cache)
-  <+
-    assimilate-native-ref
-  <+
-    ?AttributeRef(_, attr);
-    assimilate-attr-ref-inside-ag(|s_parent, s_parent-desired, x_all-parents, x_node, x_attr-cache);
-    try(
-      assimilate-attr-self-ref-inside-ag(|sig, attr, s_parent, x_node)
-    )
-   
-  assimilate-attr-ref-inside-ag(|s_parent, s_parent-desired, x_all-parents, x_node, x_attr-cache):
-    AttributeRef(t, attr @ Attribute(name, s*, t*)) ->
-    Strat |[ <s> t ]|
-    with
-      type           := <preferred-attribute-accessor-type> attr;
-      x_eval         := <attribute-accessor-name(|type)> attr;
-      x_rewrite-mode := <RewriteModeVar>;
-      if "inh" := type then
-        s := |[ x_eval(s* |<s_parent>,         x_all-parents, x_attr-cache, x_rewrite-mode, t*) ]|
-      else
-        // Pass current node as a parent, or pass UnknownParent
-        s := |[ x_eval(s* |<s_parent-desired>, x_all-parents, x_attr-cache, x_rewrite-mode, t*) ]|
-      end
-
-  /**
-   * Adjust references to attributes to avoid circular references
-   * (e.g., 'inh foo = id.foo' becomes '... = id.parent.foo').
-   */
-  assimilate-attr-self-ref-inside-ag(|sig, attr, s_parent, x_node):
-    s_eval ->
-    Strat |[
-      (?x_node < s_parent; not(NoParent) + id);
-      s_eval
-    ]|
-    where
-      <attribute-signature> attr => sig;
-      <attribute-type> attr => Inh()
-
-rules // Evaluate attributes outside of AG context
-
-  // TODO: Don't eagerly get parent reference
-
-  assimilate-expr =
-    assimilate-native-ref
-  <+
-    assimilate-attr-ref
-
-  // TODO2: Optimize - use local variables to cache all <attribute-cache> and <all-parents> calls
-
-  assimilate-attr-ref:
-    AttributeRef(t, attr @ Attribute(name, s*, t*)) ->
-    Strat |[
-      !t;
-      astr-initialize-node-ensure(
-        astr-initialize-node-warning(|~str:name')
-      | <all-parents => x_all-parents>
-      , <attribute-cache => x_attr-cache>
-      );
-      x_eval(s* |UnknownParent(), x_all-parents, x_attr-cache, <get-rewrite-mode(|x_attr-cache)>, t*)
-    ]|
-    with
-      type           := <attribute-type-name(|NoType())> attr;
-      x_eval         := <attribute-accessor-name(|type)> attr;
-      x_all-parents  := <newname> "all-parents";
-      x_attr-cache   := <newname> "attr-cache";
-      name'          := name
-        
       
