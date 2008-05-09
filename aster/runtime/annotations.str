@@ -37,10 +37,20 @@ strategies // Node initialization
   // TODO: Use an "uninit" annotation instead of get-keep-uninitialized, its overhead, and possible bugs because of it...
 
   /**
-   * Initialize a node, unless it was marked uninitialized by .uninit.
+   * Initialize an attribute value.
+   *
+   * Attribute values are like any other node, but can explicitly be marked
+   * as uninitialized (using id.uninit / astr-remove-annos-persist).
+   * Additionally, attribute values may be lists or tuples of reference
+   * values.
    */
-  astr-initialize-node-prefer(|all-parents, attribute-cache) =
+  astr-initialize-attribute-value(|all-parents, attribute-cache) =
     get-keep-uninitialized(|attribute-cache, <id>)
+  <+
+    map(astr-initialize-node-ensure(|all-parents, attribute-cache))
+  <+
+    where(get-constructor => ""); // is-tuple
+    all(astr-initialize-node-ensure(|all-parents, attribute-cache))
   <+
     astr-initialize-node-ensure(|all-parents, attribute-cache)
   

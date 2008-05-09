@@ -54,6 +54,12 @@ attributes
   syn 1.test-copy-syn = id
   
   local first-kid = one(?kid); !kid
+  
+  local all-kids = ?_#(<id>)
+  
+  local all-kids-tuple = ?_#(<id>); ListToTuple
+  
+  local new-fork = \_#(kids) -> "Fork2"#(kids)\
  
   test-attribute-behavior =
     apply-and-check(
@@ -91,5 +97,23 @@ attributes
     , id.parent
     , !Fork(1, 3).init.first-kid // first-kid is a reference, and has a parent
     , ?Fork(1, 3)
+    );
+    apply-and-check(
+      !"reference list attribute"
+    , Hd; id.parent
+    , !Fork(1, 3).init.all-kids // all-kids is a list of references, not a new tree
+    , ?Fork(1, 3)
+    );
+    apply-and-check(
+      !"reference tuple attribute"
+    , Thd; id.parent
+    , !Fork(1, 3).init.all-kids-tuple // all-kids is a tuple of references, not a new tree
+    , ?Fork(1, 3)
+    );
+    apply-and-check(
+      !"non-reference attribute"
+    , id.new-fork.first-child.parent
+    , !Fork(1, 3).init
+    , not(?Fork(1, 3))
     )
 

@@ -428,7 +428,7 @@ rules
              )
            ; fail
          else
-           astr-initialize-node-prefer(|all-parents0, attr-cache0)
+           astr-initialize-attribute-value(|all-parents0, attr-cache0)
            ; set-cached-attribute(|attr-cache0, node0, "eval-local-elements", <id>)
          end
 
@@ -494,7 +494,7 @@ rules
              )
            ; fail
          else
-           astr-initialize-node-prefer(|all-parents0, attr-cache0)
+           astr-initialize-attribute-value(|all-parents0, attr-cache0)
            ; set-cached-attribute(
              | attr-cache0
              , node0
@@ -565,7 +565,7 @@ rules
              )
            ; fail
          else
-           astr-initialize-node-prefer(|all-parents0, attr-cache0)
+           astr-initialize-attribute-value(|all-parents0, attr-cache0)
            ; set-cached-attribute(
              | attr-cache0
              , node0
@@ -589,7 +589,7 @@ rules
            ; id
            ; fail
          else
-           astr-initialize-node-prefer(|all-parents0, attr-cache0)
+           astr-initialize-attribute-value(|all-parents0, attr-cache0)
            ; set-cached-attribute(|attr-cache0, node0, "eval-local-path-short", <id>)
          end
 
@@ -608,7 +608,7 @@ rules
            ; id
            ; fail
          else
-           astr-initialize-node-prefer(|all-parents0, attr-cache0)
+           astr-initialize-attribute-value(|all-parents0, attr-cache0)
            ; set-cached-attribute(|attr-cache0, node0, "eval-local-path", <id>)
          end
 
@@ -665,7 +665,7 @@ rules
              )
            ; fail
          else
-           astr-initialize-node-prefer(|all-parents0, attr-cache0) ; id
+           astr-initialize-attribute-value(|all-parents0, attr-cache0) ; id
          end
 
   eval-inh-root(|parent0, all-parents0, attr-cache0, rewrite-mode0) =
@@ -685,7 +685,7 @@ rules
            ; id
            ; fail
          else
-           astr-initialize-node-prefer(|all-parents0, attr-cache0)
+           astr-initialize-attribute-value(|all-parents0, attr-cache0)
            ; set-cached-attribute(|attr-cache0, node0, "eval-inh-root", <id>)
          end
 
@@ -704,7 +704,7 @@ rules
            ; id
            ; fail
          else
-           astr-initialize-node-prefer(|all-parents0, attr-cache0)
+           astr-initialize-attribute-value(|all-parents0, attr-cache0)
            ; set-cached-attribute(|attr-cache0, node0, "eval-local-last-child", <id>)
          end
 
@@ -723,7 +723,7 @@ rules
            ; id
            ; fail
          else
-           astr-initialize-node-prefer(|all-parents0, attr-cache0)
+           astr-initialize-attribute-value(|all-parents0, attr-cache0)
            ; set-cached-attribute(|attr-cache0, node0, "eval-local-first-child", <id>)
          end
 
@@ -742,7 +742,7 @@ rules
            ; id
            ; fail
          else
-           astr-initialize-node-prefer(|all-parents0, attr-cache0)
+           astr-initialize-attribute-value(|all-parents0, attr-cache0)
            ; set-cached-attribute(|attr-cache0, node0, "eval-local-last-sibling", <id>)
          end
 
@@ -761,7 +761,7 @@ rules
            ; id
            ; fail
          else
-           astr-initialize-node-prefer(|all-parents0, attr-cache0)
+           astr-initialize-attribute-value(|all-parents0, attr-cache0)
            ; set-cached-attribute(|attr-cache0, node0, "eval-local-first-sibling", <id>)
          end
 
@@ -780,7 +780,7 @@ rules
            ; id
            ; fail
          else
-           astr-initialize-node-prefer(|all-parents0, attr-cache0)
+           astr-initialize-attribute-value(|all-parents0, attr-cache0)
            ; set-cached-attribute(|attr-cache0, node0, "eval-local-next-sibling", <id>)
          end
 
@@ -799,7 +799,7 @@ rules
            ; id
            ; fail
          else
-           astr-initialize-node-prefer(|all-parents0, attr-cache0)
+           astr-initialize-attribute-value(|all-parents0, attr-cache0)
            ; set-cached-attribute(|attr-cache0, node0, "eval-local-prev-sibling", <id>)
          end
 
@@ -818,6 +818,6 @@ rules
            ; id
            ; fail
          else
-           astr-initialize-node-prefer(|all-parents0, attr-cache0)
+           astr-initialize-attribute-value(|all-parents0, attr-cache0)
            ; set-cached-attribute(|attr-cache0, node0, "eval-local-enable-warnings", <id>)
          end

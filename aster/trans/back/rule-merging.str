@@ -46,7 +46,7 @@ strategies
            s_trace-failed;
            fail
          else
-           astr-initialize-node-prefer(|x_all-parents, x_attr-cache);
+           astr-initialize-attribute-value(|x_all-parents, x_attr-cache);
            s_cache-write
          end
     ]|
