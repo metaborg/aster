@@ -37,15 +37,13 @@ strategies
     attribute-signature;
     AttributeType
   
-  // TODO: attribute signature should be a tuple or something
+  // TODO2: Explicit constructors for attribute or eval signatures?
+  
   attribute-signature:
-    Attribute(name, s*, a*) ->
-    <strip-annos>
-    (name, <length> s*, <length> a*)
+    Attribute(name, s*, a*) -> <strip-annos> Attribute(name, <length> s*, <length> a*)
 
   attribute-signature:
-    |[ x_eval(as*|a*) = s ]| ->
-    Attribute(x_eval, sarity, tarity)
+    |[ x_eval(as*|a*) = s ]| -> Attribute(x_eval, sarity, tarity)
     with
       sarity := <length> as*;
       tarity := <subt> (<length> a*, AG_STANDARD_ARGS())

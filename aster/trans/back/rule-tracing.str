@@ -10,6 +10,7 @@ imports
   back/util
   back/default-attributes
   back/attribute-references
+  front/analyze
 
 strategies
 
@@ -47,7 +48,8 @@ strategies
     with
       type       := <RuleAccessorType> def;
       arity'     := <arity-to-string> (sarity, tarity);
-      message    := <conc-strings> ("  [trace] ", type, " ", real-name, arity', " @ ");
+      circular   := <RuleAttribute; attribute-signature; AttributeCircular < !"circular " + !""> def;
+      message    := <conc-strings> ("  [trace] ", circular, type, " ", real-name, arity', " @ ");
       s_path     := <trace-path>;
       
       if "" := comment then

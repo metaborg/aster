@@ -15,6 +15,7 @@ strategies
         !"stratego-rerag tests"
       ,
         test-term-depth;
+        test-eq-ignore-annos;
         test-attributes
       )
     )
@@ -30,3 +31,13 @@ strategies
     apply-test(!"term-depth (8)", term-depth(|Var("v")), !Term |[ [1,2 | v] ]|, !3);
     apply-test(!"term-depth (9)", term-depth(|Var("v")), !Term |[ [[v]] ]|, !2);
     apply-test(!"term-depth (10)", term-depth(|Var("v")), !Term |[ [2{v}] ]|, !1)
+
+  test-eq-ignore-annos =
+    apply-test(!"eq-ignore-annos (1)", eq-ignore-annos(|[]) <+ !"fail", ![], ![]);
+    apply-test(!"eq-ignore-annos (2)", eq-ignore-annos(|[]) <+ !"fail", ![]{"@3"}, ![]{"@3"});
+    apply-test(!"eq-ignore-annos (3)", eq-ignore-annos(|[]{"@3"}) <+ !"fail", ![], ![]);
+    apply-test(!"eq-ignore-annos (5)", eq-ignore-annos(|[]{"@4"}) <+ !"fail", ![]{"@3"}, ![]{"@3"});
+    apply-test(!"eq-ignore-annos (6)", eq-ignore-annos(|1{"@3"}) <+ !"fail", !1, !1);
+    apply-test(!"eq-ignore-annos (7)", eq-ignore-annos(|1{"@4"}) <+ !"fail", !1{"@3"}, !1{"@3"});
+    apply-test(!"eq-ignore-annos (8)", eq-ignore-annos(|[1]) <+ !"fail", ![], !"fail");
+    apply-test(!"eq-ignore-annos (9)", eq-ignore-annos(|[]) <+ !"fail", ![1], !"fail")

@@ -11,17 +11,22 @@ strategies // Util
 
   debug' = where(strip-annos; debug)
   
-  is-astr-annotation =
-    explode-string => ['@' | _]
+  // TODO2: Optimize - eq-ignore-annos is expensive
   
   eq-ignore-annos(|term) =
     ?term
   <+
-    where(
-      <eq> (<get-constructor>, <get-constructor> term); // base check, must at least pass this
-      term' := <strip-annos> term
+    where( // cheapish base check, must at least pass this
+      input-ctor := <get-constructor>{};
+      term-ctor  := <get-constructor> term{};
+      ?input-ctor
     );
-    (?term' <+ strip-annos => term')
+    where(
+      term' := <astr-remove-annos> term
+    );
+    where(
+      ?term' <+ astr-remove-annos => term'
+    )
   
   astr-remove-annos-persist(|attribute-cache) =
     astr-remove-annos;
@@ -82,17 +87,23 @@ strategies // Adding/removing node annotations
       if [] := a* then
         b* := [<newname> "@"]
       else
-        b* := [<newname> "@" | <map(astr-add-annos)> a*]
+        b* := [<newname> "@" | <filter(not(is-astr-annotation); astr-add-annos)> a*]
       end
   
   astr-remove-annos =
     topdown-consnil(try(
       \t {<is-astr-annotation>} -> t {}\
     <+
+      ?_{}
+    <+
       \t {a*} -> t {b*}
        where
          b* := <filter(not(is-astr-annotation))> a*\
     ))
+  
+  is-astr-annotation =
+    // explode-string => ['@' | _] // too expensive me thinks
+    is-string
 
 strategies // Hash table storage for init/uninit
 
