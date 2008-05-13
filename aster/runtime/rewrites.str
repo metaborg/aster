@@ -25,7 +25,7 @@ strategies
 
   eval-anonymous-rewrite = fail // this is a generated strategy
   
-  astr-has-rewrites = fail // this is a generated strategy
+  astr-rewrites-enabled = fail // this is a generated strategy
   
   eval-anonymous-rewrites-cached(|all-parents, attr-cache) =
     get-rewrite-cached(|attr-cache, <id>)
@@ -46,7 +46,7 @@ strategies
   // TODO: Optimize - don't reinitialize nodes if no attrs evaluated
   
   astr-initialize-node(|all-parents, attr-cache) =
-    if astr-has-rewrites then
+    if astr-rewrites-enabled then
       set-rewrite-mode(|attr-cache, 1);
       do-while(
         astr-initialize-node-no-rewrite(|all-parents)

@@ -16,7 +16,7 @@ strategies
     ,
       !Fac(Fac(3));
       
-      id.init.debug
+      id.init.debug => 720
     )
     
   eq Add(x, y) -> <add> (x, y)

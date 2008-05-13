@@ -10,6 +10,7 @@ imports
   back/rule-definitions
   back/rule-naming
   back/attribute-references
+  back/anonymous-rewrites
 
 strategies
 
@@ -26,7 +27,8 @@ strategies
     ));
     
     add-default-rules;
-    add-merged-rules
+    add-merged-rules;
+    add-rewrites-enabled
  
   init-shared-vars =
     // TODO2: Things like <all-parents> should be optimized in a post-processing stage, not right away

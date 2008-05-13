@@ -17,11 +17,11 @@ strategies // Set-up, testing
       verbose-option
     ,
       input := [
-         Assign("obsolete1", "value")
-       , Assign("obsolete2", "obsolete1")
+         Assign("bogus1", "value")
+       , Assign("bogus2", "bogus1")
        , Assign("x", "value")
        , While("x", [
-           Assign("x", "obsolete3")
+           Assign("x", "bogus3")
          , Assign("x", "value")
          ])
        , Return("x")
@@ -36,14 +36,14 @@ strategies // Set-up, testing
       if(id.is-stm, \id -> id{^id.live-before.uninit}\)
     );
     
-    ?[ Assign("obsolete1", "value")      {             "obsolete3", "value"}
-     , Assign("obsolete2", "obsolete1")  {"obsolete1", "obsolete3", "value"}
-     , Assign("x", "value")              {             "obsolete3", "value"}
+    ?[ Assign("bogus1", "value")   {          "bogus3", "value"}
+     , Assign("bogus2", "bogus1")  {"bogus1", "bogus3", "value"}
+     , Assign("x", "value")        {          "bogus3", "value"}
      , While("x", [
-         Assign("x", "obsolete3")        {             "obsolete3", "value"}
-       , Assign("x", "value")            {             "obsolete3", "value"}
-      ])                                 {"x",         "obsolete3", "value"}
-     , Return("x")                       {"x"}
+         Assign("x", "bogus3")     {          "bogus3", "value"}
+       , Assign("x", "value")      {          "bogus3", "value"}
+      ])                           {"x",      "bogus3", "value"}
+     , Return("x")                 {"x"}
      ];
      
      say(!"live-before matches")
@@ -53,14 +53,14 @@ strategies // Set-up, testing
       if(id.is-stm, \id -> id{^id.live-after.uninit}\)
     );
       
-    ?[ Assign("obsolete1", "value")      {"obsolete1", "obsolete3", "value"}
-     , Assign("obsolete2", "obsolete1")  {             "obsolete3", "value"}
-     , Assign("x", "value")              {"x",         "obsolete3", "value"}
+    ?[ Assign("bogus1", "value")   {"bogus1", "bogus3", "value"}
+     , Assign("bogus2", "bogus1")  {          "bogus3", "value"}
+     , Assign("x", "value")        {"x",      "bogus3", "value"}
      , While("x", [
-         Assign("x", "obsolete3")        {             "obsolete3", "value"}
-       , Assign("x", "value")            {"x",         "obsolete3", "value"}
-       ])                                {"x",         "obsolete3", "value"}
-     , Return("x")                       {}
+         Assign("x", "bogus3")     {          "bogus3", "value"}
+       , Assign("x", "value")      {"x",      "bogus3", "value"}
+       ])                          {"x",      "bogus3", "value"}
+     , Return("x")                 {}
      ];
      
      say(!"live-after matches")

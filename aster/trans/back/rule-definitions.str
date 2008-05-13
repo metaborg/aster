@@ -20,80 +20,62 @@ strategies
 
   // TODO2: runtime check for annotated terms used for/by dynamic rules
 
+ assimilate-def:
+   AttributeDef(
+     type
+   , t_pattern
+   , AttributeDefStrategy(child, attr @ Attribute(name, as*, a*), _, s)
+   ) ->
+   <make-merged-def(|attr, t_pattern, child, type-name)>
+   Def |[
+     x_eval(as* |x_parent, x_all-parents, x_attr-cache, x_rewrite-mode, a'*) =
+       ?x_node;
+       where(s_init-args);
+       s_pattern;
+       s'
+   ]|
+   with
+     x_parent           := <ParentVar>;
+     x_node             := <NodeVar>;
+     x_all-parents      := <AllParentsVar>;
+     x_attr-cache       := <AttributeCacheVar>;
+     x_rewrite-mode     := <RewriteModeVar>;
+     type-name          := <attribute-type-name(|type)> attr;
+     sig                := <attribute-signature> attr;
+     x_eval             := <attribute-accessor-name(|type-name)> attr;
+     (a'*, s_init-args) := <extract-arg-patterns> a*;
+     
+     s_parent         := |[ ?x_node; !x_parent; not(UnknownParent)
+                            <+ get-parent(|x_all-parents) ]|;
+     s_parent-desired := |[ ?x_node < !x_parent + !UnknownParent() ]|;
+     
+     if NoChild() := child then
+       Root()    := t_pattern;
+       s_pattern := <root-pattern(|x_parent, x_all-parents)>
+     <+
+       s_pattern := |[ ?t_pattern ]|
+     else // Inherited attribute
+       Child(child') := child;
+       s_pattern     := <ancestor-check(|child', x_parent, x_all-parents)> t_pattern
+     end;
+     
+     !s;
+     topdown(try(
+       assimilate-expr-inside-ag(|sig, s_parent, s_parent-desired, x_node, x_all-parents, x_attr-cache)
+     ));
+     add-eval-failed => s'
+   
   assimilate-def:
-    AttributeDef(
-      type
-    , t_pattern
-    , AttributeDefStrategy(child, attr @ Attribute(name, as*, a*), _, s)
-    ) ->
-    <make-merged-def(|attr, t_pattern, child, type-name)>
-    Def |[
-      x_eval(as* |x_parent, x_all-parents, x_attr-cache, x_rewrite-mode, a'*) =
-        ?x_node;
-        where(s_init-args);
-        s_pattern;
-        s'
+    AttributeDecl(_, _, _, _) -> []
+   
+  root-pattern(|x_parent, x_all-parents) =
+    !|[ where(
+         ?root;
+         UnknownParent() := x_parent
+           < get-parent(|x_all-parents); NoParent
+           + <NoParent> x_parent
+        )
     ]|
-    with
-      x_parent           := <ParentVar>;
-      x_node             := <NodeVar>;
-      x_all-parents      := <AllParentsVar>;
-      x_attr-cache       := <AttributeCacheVar>;
-      x_rewrite-mode     := <RewriteModeVar>;
-      type-name          := <attribute-type-name(|type)> attr;
-      sig                := <attribute-signature> attr;
-      x_eval             := <attribute-accessor-name(|type-name)> attr;
-      (a'*, s_init-args) := <extract-arg-patterns> a*;
-      
-      s_parent         := |[ ?x_node; !x_parent; not(UnknownParent)
-                             <+ get-parent(|x_all-parents) ]|;
-      s_parent-desired := |[ ?x_node < !x_parent + !UnknownParent() ]|;
-      
-      if NoChild() := child then
-        Root()    := t_pattern;
-        s_pattern := <root-pattern(|x_parent, x_all-parents)>
-      <+
-        s_pattern := |[ ?t_pattern ]|
-      else // Inherited attribute
-        Child(child') := child;
-        s_pattern     := <ancestor-check(|child', x_parent, x_all-parents)> t_pattern
-      end;
-      
-      !s;
-      topdown(try(
-        assimilate-expr-inside-ag(|sig, s_parent, s_parent-desired, x_node, x_all-parents, x_attr-cache)
-      ));
-      add-eval-failed => s'
-   
-   assimilate-def:
-     AttributeDecl(_, _, _, _) -> []
-   
-   root-pattern(|x_parent, x_all-parents) =
-     !|[ where(
-          ?root;
-          UnknownParent() := x_parent
-            < get-parent(|x_all-parents); NoParent
-            + <NoParent> x_parent
-         )
-     ]|
-   
-   // TODO2: Apply partial ordering to anon. rewr. rules?
-   
-   assimilate-def:
-     AnonymousRewriteRule(t_pattern, t_after, s_where) ->
-     |[ eval-anonymous-rewrite =
-          ?x_before;
-          
-          ?t_pattern;
-          where(s_where);
-          !t_after;
-          
-          not(eq-ignore-annos(|x_before));
-          s_trace
-     ]|
-     with
-       x_before       := <NodeVar>;
-       s_trace        := <trace-rewrite>
 
 rules // Argument patterns
   
