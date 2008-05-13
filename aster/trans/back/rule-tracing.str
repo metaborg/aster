@@ -40,8 +40,7 @@ strategies
     Strat |[
         say(<conc-strings> (
              ~str:message
-           , <s_path; (?"" <+ <conc-strings> (<id>, "."))>
-           , <to-tiny-string>
+           , <s_path>
            , t_comment*
         ))
       ]|
@@ -59,7 +58,7 @@ strategies
       end
   
   trace-path =
-    <assimilate-expr> <desugar-all> Strat |[ id.path-short ]|
+    <assimilate-expr> <desugar-all> Strat |[ id.path-and-node ]|
   
   trace-rewrite =
     if <get-config> Trace() then

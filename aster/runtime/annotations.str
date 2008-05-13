@@ -28,6 +28,8 @@ strategies // Util
       ?term' <+ astr-remove-annos => term'
     )
   
+  is-astr-initialized(|all-parents) = where(get-parent(|all-parents))
+  
   astr-remove-annos-persist(|attribute-cache) =
     astr-remove-annos;
     set-keep-uninitialized(|attribute-cache, <id>)
@@ -61,14 +63,19 @@ strategies // Node initialization
     astr-initialize-node-ensure(id|all-parents, attribute-cache)
 
   astr-initialize-node-ensure(warning|all-parents, attribute-cache) =
-    if not(get-parent(|all-parents)) then
+    if not(is-astr-initialized(|all-parents)) then
       where(warning);    
       astr-initialize-node(|all-parents, attribute-cache)
     end
 
-  astr-initialize-node-warning(|attribute) =
+  astr-initialize-node-warning(|all-parents, attribute) =
     if not(AstrWarningsDisabled) then
-      warn(|["Evaluating attribute '", attribute, "' on an uninitialized term"]);
+      if (is-list + is-tuple); all(is-astr-initialized(|all-parents)) then
+        warn(|["Evaluating attribute '", attribute, "' on an uninitialized term",
+               " (list and tuple attribute values must be explicitly initialized)"])
+      else
+        warn(|["Evaluating attribute '", attribute, "' on an uninitialized term"])
+      end;
       prim("SSL_stacktrace_get_all_frame_names");
       try(\["astr_initialize_node_warning_0_0" | tail] -> tail\);
       try(\["astr_initialize_node_ensure_1_1" | tail] -> tail\);
@@ -135,9 +142,9 @@ strategies // Hash table storage for init/uninit
     set-cached-attribute(|attribute-cache, node, "$inited", value)
   */
 
-  get-keep-uninitialized(|attribute-cache, node) =
-    get-cached-attribute(|attribute-cache, node, "$uninited")
+  get-keep-uninitialized(|attr-cache, node) =
+    get-cached-attribute(|attr-cache, node, "$uninited")
  
-  set-keep-uninitialized(|attribute-cache, node) =
-    set-cached-attribute(|attribute-cache, node, "$uninited", node)
+  set-keep-uninitialized(|attr-cache, node) =
+    set-cached-attribute(|attr-cache, node, "$uninited", node)
     

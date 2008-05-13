@@ -45,6 +45,9 @@ rules
   desugar-attribute-def:
     AttributeDefNoPattern(type, value) ->
     AttributeDef(type, Wld(), value)
+  
+  desugar-attribute-def:
+    CircularFail() -> Circular(FailTerm())
 
 rules // where and with clause
 
@@ -88,9 +91,15 @@ rules
     FailTerm() -> RootApp(Fail())
   
   desugar-id-term = // match context
-    at-match-all(\IdTerm() -> Wld()\)
+    at-match-all(
+      \NoAnnoList(IdTerm()) -> Wld()\
+    + \IdTerm() -> Wld()\
+    )
   
   desugar-id-term: // build context
+    NoAnnoList(IdTerm()) -> RootApp(Id())
+  
+  desugar-id-term: // build context (AnnoList)
     IdTerm() -> RootApp(Id())
 
   at-match-all(s) =

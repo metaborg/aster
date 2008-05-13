@@ -65,7 +65,7 @@ rules // Evaluate attributes outside of AG context
     Strat |[
       !t;
       astr-initialize-node-ensure(
-        astr-initialize-node-warning(|~str:name')
+        astr-initialize-node-warning(|x_all-parents, ~str:name')
       | <all-parents => x_all-parents>
       , <attribute-cache => x_attr-cache>
       );
@@ -74,8 +74,8 @@ rules // Evaluate attributes outside of AG context
     with
       type           := <attribute-type-name(|NoType())> attr;
       x_eval         := <attribute-accessor-name(|type)> attr;
-      x_all-parents  := <newname> "all-parents";
-      x_attr-cache   := <newname> "attr-cache";
+      x_all-parents  := <AllParentsVar>;
+      x_attr-cache   := <AttributeCacheVar>;
       name'          := name
         
       

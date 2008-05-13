@@ -18,7 +18,7 @@ rules
       if id.error then
         log(|Error(), <conc-strings> (id.error, context), id.pp)
       else
-        where(as-string(id.warning); debug);
+        where(as-string(id.warning));
         log(|Warning(), <conc-strings> (id.warning, context), id.pp)
       end
     });
@@ -56,11 +56,17 @@ attributes
     where
       id.in-match
     
-    AttributeDef(type, pattern, s) -> "Chained attributes must specify type inh or syn for each definition."
+    AttributeDef(type, pattern, s) -> "Chained attributes must specify type inh or syn for each definition"
     where
       Chained() := id.def-type;
-      <not(Chained + Inh + Syn)> type;
+      <not(Inh + Syn)> type;
       <not(RootApp(Fail()))> pattern
+    
+    AttributeDef(_, pattern, s) -> "Attribute definition overrides propagation rules for non-local attribute"
+    where
+      <not(Local + Inh + Chained)> id.def-type; // allowed for inh because of the special id.rec=parent.rec semantics
+      <not(oncetd(WhereClause(id)))> s;
+      <(Wld + Var(id))> pattern
     
     AttributeDef(_, Root(), _) -> "Synthesized attribute cannot have a root definition"
     where
@@ -73,23 +79,27 @@ attributes
     // TODO: report error at the declaration site? (id.def-type.parent)
     AttributeDef(not-Local, _, _) -> "Can only assign local definitions to local attribute"
     where
-      <not(Local)> not-Local;
+      <not(Local + NoType)> not-Local;
       <Local> id.def-type
     
     AttributeDef(_, _, AttributeDefStrategy(_, Attribute([_ | _], _, _), Circular(_), _)) ->
     "Circular attributes cannot have strategy arguments" 
 
   local warning:
-    Var(x) -> "Performing match using annotated term"
+    Var(x) -> "Performing match using annotated term - use id.eq instead"
     where
-      id.in-match; (id.is-pattern-var(|x) + id.is-def-arg(|x));
-      <debug> id.in-match.parent
-    
+      id.in-match;
+      not(id.in-pattern);
+      (id.is-pattern-var(|x) + id.is-def-arg(|x))
+  
+  // TODO: confirm attribute applicability based on pattern, where possible
+  
   // TODO: more checks
   // - check if topdown-depth succeeds for child patterns
   // - no child patterns in strat calls
   // - inh x(kid).foo = kid.foo should be synthesized or local
   // - inh foo(x) = .... ?x -> Warning: should not use annotated terms in match?
+  // - congruence in attribute strategy: Foo().x = Bar() always results in a hard failure
 
 attributes
   
@@ -106,11 +116,14 @@ attributes
     AnonymousRewriteRule(s, _, _) -> id
     AttributeDefStrategy(_, Attribute(_, _, t), _, _).t -> id
   
+  inh in-pattern:
+    AttributeDef(_, pattern, _).pattern -> id
+  
   inh is-pattern-var(|var):
     AttributeDef(_, pattern, _) -> <oncetd(id.eq(|Var(var)))> pattern
   
   inh is-def-arg(|var):
-    AttributeDef(_, _, args) -> <oncetd(id.eq(|Var(var)))> args
+    AttributeDef(_, _, AttributeDefStrategy(_, attr, _, _)) -> <oncetd(id.eq(|Var(var)))> attr
   
   // TODO2: Proper error pp
   local pp =

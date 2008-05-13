@@ -2,31 +2,24 @@ module rewrites
 
 imports
   annotations
+  hashtables
   parents
 
 strategies
 
   get-rewrite-mode(|attr-cache) =
-    !attr-cache;
-    hashtable-get(|"$rewrite-mode")
+    hashtable-get(|attr-cache, "$rewrite-mode")
   <+
     !0
   
   set-rewrite-mode(|attr-cache, value) =
-    where(
-      !attr-cache;
-      hashtable-put(|"$rewrite-mode", value)
-    )
+    hashtable-put(|attr-cache, "$rewrite-mode", value)
   
   get-rewrite-cached(|attr-cache, node) =
-    !attr-cache;
-    hashtable-get(|node)
+    hashtable-get(|attr-cache, node)
 
   set-rewrite-cached(|attr-cache, node, value) =
-    where(
-      !attr-cache;
-      hashtable-put(|node, value)
-    )
+    hashtable-put(|attr-cache, node, value)
 
 strategies
 

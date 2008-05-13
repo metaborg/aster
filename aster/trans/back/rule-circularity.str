@@ -7,62 +7,57 @@ imports
 
 strategies
 
-  // This generates quite a boilerplate,
-  // much of this could be moved to the runtime components if
-  // Stratego supported closures in dynamic rules...
-
   make-circular-rule(|def):
-    |[ x_eval(as*|a*) =
-        s_cache-read
-      <+
-        s_body
-    ]| ->
-    Def* |[
+    |[ x_eval(as*|a*) = s ]| ->
+        Def* |[
       /**
        * Read from cache, or enqueue into fixpoint with initial value
        */
-      x_eval(as*|a*) =
-        s_cache-read
+      x_eval(|a*) =
+        switch s_cache-read
+          case ?CIRCULAR_FINISHED(x_cached):
+            <not(EVAL_FAILED)> x_cached
+          
+          case ?CIRCULAR_BUSY(x_cached):
+            <not(EVAL_FAILED)> x_cached
+          
+          case ?x_cached: // re-eval once per iteration
+            ?x_node;
+            x_eval-recompute(|x_cached, t*)
+        end
       <+
-        ?x_node;
-        where(
-          x_old-value := <s_ensure-init> t_initial;
-          s_cache-write
-        );
-        
-        x_eval-enqueue(s*|x_old-value, t*);
-        // x_eval-recompute(s*|x_old-value, t*);
-        
-        if circular-attributes-fixpoint(|x_attr-cache) then
-          <s_trace> x_node;
-          s_cache-read
+        let eval(|x_old-value) =
+          x_eval-recompute(|x_old-value, t*)
+        in
+          where(
+            ?x_node;
+            x_old-value := <s_ensure-init <+ !EVAL_FAILED()> t_initial
+          );
+          circular-fixpoint(eval |x_attr-cache, x_old-value);
+          not(EVAL_FAILED)
         end
       
       /**
        * Uncached evaluator for use in fixpoint loop.
+       *
+       * @returns The initialized value produced by the semantic function, or EVAL_FAILED.
        */
-      x_eval-recompute(as*|x_old-value, a*) =
-        (s_body <+ !EvalFailed()); // does ?x_node, evaluates the attr, and writes it to the cache
-        if not(eq-ignore-annos(|x_old-value)) then
-          verbose-msg(!"  [circular] Re-enqueuing @", <strip-annos> x_node, !"with", id, !"was", !x_old-value);
-          ?x_new-value;
-          !x_node;
-          x_eval-enqueue(s*|x_new-value, t*)
+      x_eval-recompute(|x_old-value, a*) =
+        where({ x_node: // scope: x_node is set to the rewritten node value later
+          ?x_node;
+          <s_cache-write> CIRCULAR_BUSY(x_old-value)
+        });
+        s;
+        if eq-ignore-annos(|x_old-value) then
+          verbose-msg(!"  [circular] No change @", <strip-annos> x_node, !"with", strip-annos);
+          circular-add-participant(|x_attr-cache, x_node, t_name-args, x_old-value);
+          <s_cache-write> x_old-value // remove CIRCULAR_BUSY
+        else
+          verbose-msg(!"  [circular] Changed @", <strip-annos> x_node, !"with", strip-annos, !"was", <strip-annos> x_old-value);
+          astr-initialize-attribute-value(|x_all-parents, x_attr-cache);
+          circular-set-has-changed(|x_attr-cache);
+          s_cache-write
         end
-      
-      /**
-       * Enqueue into fixpoint loop.
-       */
-      x_eval-enqueue(as*|x_new-value, a*) =
-        ?x_node;
-        where(
-          ticket := <new>;
-          circular-worklist-enqueue(|x_attr-cache)
-        );
-        rules(
-          EvalCircularAttribute:
-            ticket -> <x_eval-recompute(s*|x_new-value, t*)> x_node
-        )
     ]|
     where
       t_initial        := <AttributeCircular> <attribute-signature> <RuleAttribute> def
@@ -72,9 +67,11 @@ strategies
       x_attr-cache     := <AttributeCacheVar>;
       x_all-parents    := <AllParentsVar>;
       x_node           := <NodeVar>;
+      x_cached         := <newname> "cached";
       x_old-value      := <newname> "old-value";
-      x_new-value      := <newname> "new-value";
-      s_ensure-init    := Strat |[ astr-initialize-node-ensure(|x_all-parents, x_attr-cache) ]|;
+      s_ensure-init    := Strat |[ astr-initialize-attribute-value(|x_all-parents, x_attr-cache) ]|;
       s_trace          := <trace-fixpoint-rule> def;
-      (s*, t*)         := <params-to-args> ([], a*);
-      s_cache-write    := <add-cache-write(|s*, t*, x_node)> def
+      ([], t*)         := <params-to-args> ([], a*);
+      t_name-args      := <make-cache-key(|t*)> def;
+      s_cache-read     := <add-cache-read(|t*)> def;
+      s_cache-write    := <add-cache-write(|t*)> def

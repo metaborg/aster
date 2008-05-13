@@ -13,43 +13,64 @@ strategies
 
   // TODO: Cached attributes should deal with term arguments
   
-  add-cache-read(|sargs, targs) =
-    if [] := sargs then
-      add-cache-read'(|targs)
-    else
-      !Strat |[ fail ]|
-    end
+  make-cached-rule(|def):
+    |[ x_eval(as*|a*) = s ]| ->
+    |[ x_eval(as*|a*) =
+         s_cache-read
+         < not(EVAL_FAILED)
+         + s; // does ?x_node after rewrite
+           if EVAL_FAILED then
+             s_cache-write;
+             fail
+           else
+             astr-initialize-attribute-value(|x_all-parents, x_attr-cache);
+             s_cache-write
+           end
+     ]|
+     where
+      ([], a*) := <RuleArgs> def     
+     with
+      ([], t*)      := <params-to-args> ([], a*);
+      s_cache-read  := <add-cache-read(|t*)> def;
+      s_cache-write := <add-cache-write(|t*)> def;
+      x_all-parents  := <AllParentsVar>;
+      x_attr-cache   := <AttributeCacheVar>
   
-  add-cache-write(|sargs, targs, x_node) =
-    if [] := sargs then
-      add-cache-write'(|targs, x_node)
-    else
-      !Strat |[ id ]|
-    end
-
-  add-cache-read'(|targs):
-    Attribute(name, sarity, tarity) ->
-    |[ get-cached-attribute(|x_attr-cache, <id>, t_key);
-       not(EvalFailed)
+  make-uncached-rule:
+    |[ x_eval(as*|a*) = s ]| ->
+    |[ x_eval(as*|a*) =
+         s;
+         not(EVAL_FAILED);
+         astr-initialize-attribute-value(|x_all-parents, x_attr-cache)
     ]|
+    with
+      x_all-parents  := <AllParentsVar>;
+      x_attr-cache   := <AttributeCacheVar>
+
+  add-cache-read(|targs):
+    def ->
+    |[ get-cached-attribute(|x_attr-cache, <id>, t_key) ]|
     with
       x_all-parents := <AllParentsVar>;
       x_attr-cache  := <AttributeCacheVar>;
-      t_key         := <make-cache-key(|name, tarity, sarity, targs)>
+      t_key         := <make-cache-key(|targs)> def
 
-  add-cache-write'(|targs, x_node):
-    Attribute(name, sarity, tarity) ->
+  add-cache-write(|targs):
+    def ->
     |[ set-cached-attribute(|x_attr-cache, x_node, t_key, <id>) ]|
     with
       x_attr-cache  := <AttributeCacheVar>;
-      t_key         := <make-cache-key(|name, tarity, sarity, targs)>
+      x_node        := <NodeVar>;
+      t_key         := <make-cache-key(|targs)> def
 
-  make-cache-key(|name, tarity, sarity, targs) =
-    arity' := <arity-to-string> (sarity, tarity);
-    name'  := <conc-strings> (name, arity');
-    targs' := <drop(|AG_STANDARD_ARGS())> targs;
-    
-    !NoAnnoList(Str(name'));
-    if not([] := targs') then
-      !NoAnnoList(Tuple([<id>, targs']))
-    end
+  make-cache-key(|targs):
+    Attribute(name, sarity, tarity) -> key
+    with
+      arity' := <arity-to-string> (sarity, tarity);
+      name'  := <conc-strings> (name, arity');
+      targs' := <drop(|AG_STANDARD_ARGS())> targs;
+      
+      !NoAnnoList(Str(name'));
+      if not([] := targs') then
+        !NoAnnoList(Tuple([<id>, targs']))
+      end => key

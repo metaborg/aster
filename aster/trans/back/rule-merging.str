@@ -12,7 +12,7 @@ imports
 overlays
   DEFAULT_RULE_INDEX = -1
   ROOT_RULE_INDEX    = 100000
-  HAS_CHILD_INDEX    = 10000
+  NO_CHILD_INDEX     = 10000
 
 strategies
   
@@ -23,32 +23,28 @@ strategies
     Module(x, decl*) -> Module(x, [decl*, ordered*])
     where
       bagof-AllRules;
-      map({
-        ?def;
-        add-merged-rule;
-        try(make-circular-rule(|def))
-      });
+      map(make-merged-rule);
       flatten-list;
       ordered* := [Rules(<id>)]
   
-  add-merged-rule:
+  finish-merged-rule(|def) =
+    make-circular-rule(|def)
+  <+
+    make-cached-rule(|def)
+  <+
+    make-uncached-rule
+  
+  make-merged-rule:
     def @ Attribute(x_eval, sarity, tarity) ->
-    |[ x_eval(as*|a*) =
-         s_cache-read
-       <+
-         s_rewrite;
-         s_trace;
-         ?x_node;
-         s;
-         if EvalFailed then
-           s_cache-write;
-           !x_node;
-           s_trace-failed;
-           fail
-         else
-           astr-initialize-attribute-value(|x_all-parents, x_attr-cache);
-           s_cache-write
-         end
+    <finish-merged-rule(|def)> |[
+      x_eval(as*|a*) =
+        s_rewrite => x_node;
+        s_trace;
+        ( s // this scope ensures x_node is available to decorators 
+        <+
+          <s_trace-failed> x_node;
+          !EVAL_FAILED()
+        )
     ]|
     with
       (as*, a*)      := <RuleArgs> def;
@@ -60,8 +56,6 @@ strategies
       s              := <fold-lchoice> <map(def-call(|s*, t*))> defs;
       s_trace        := <trace-rule> def;
       s_trace-failed := <trace-failed-rule> def;
-      s_cache-read   := <add-cache-read(|s*, t*)> def;
-      s_cache-write  := <add-cache-write(|s*, t*, x_node)> def;
       s_rewrite      := <add-rewrite(|x_all-parents, x_attr-cache)>
 
   // TODO2: Move this
@@ -154,13 +148,16 @@ strategies
       )
     end
   
+  // TODO: Higher ordering penalty for deep child patterns?
+  
   /**
    * Determine a priority number for a given semantic rule pattern.
    * (Rules with higher values are tried first.)
    */
   pattern-order-index(|child):
-    pattern -> <add> (ops, bonus)
+    pattern -> <add> (<add> (ops, tails), bonus)
     where
       ops   := <length> <collect-all(?AnnoList(_, _) + ?NoAnnoList(_))> pattern;
-      // vars  := <length> <collect-all(?Var(_))> pattern;
-      bonus := <!child => NoChild() < !0 + !HAS_CHILD_INDEX()>
+      tails := <length> <collect-all(?ListTail(_, _))> pattern; // [_|_] > [_]
+      bonus := <!child => NoChild() < !NO_CHILD_INDEX() + !0>
+

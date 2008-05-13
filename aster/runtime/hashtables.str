@@ -1,0 +1,19 @@
+module hashtables
+
+strategies
+
+  hashtable-get(|table, key) =
+    !table;
+    hashtable-get(|key)
+  
+  hashtable-put(|table, key, value) =
+    where(
+      !table;
+      hashtable-put(|key, value)
+    )
+  
+  hashtable-remove(|table, key) =
+    where(
+      !table;
+      hashtable-remove(|key)
+    )

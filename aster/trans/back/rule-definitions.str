@@ -70,6 +70,7 @@ strategies
    
    root-pattern(|x_parent, x_all-parents) =
      !|[ where(
+          ?root;
           UnknownParent() := x_parent
             < get-parent(|x_all-parents); NoParent
             + <NoParent> x_parent
@@ -116,10 +117,10 @@ rules // Argument patterns
 rules // Semantic rule definition helpers
 
   add-eval-failed:
-    Seq(WhereClause(s1), s2) -> |[ where(s1); (s2 <+ !EvalFailed()) ]|
+    Seq(WhereClause(s1), s2) -> |[ where(s1); (s2 <+ !EVAL_FAILED()) ]|
   
   add-eval-failed:
-    s -> |[ s <+ !EvalFailed() ]|
+    s -> |[ s <+ !EVAL_FAILED() ]|
     where
       not(?Seq(WhereClause(c), _))
   
@@ -129,11 +130,11 @@ rules // Semantic rule definition helpers
   ancestor-check(|x_child, x_parent, x_all-parents):
     t_pattern ->
     |[ ?x_child;
-        where(
-          (!x_parent; not(UnknownParent) <+ s_traverse-up);
-          s_traverse-up';
-          ?t_pattern
-        )
+       where(
+         (!x_parent; not(UnknownParent) <+ s_traverse-up);
+         s_traverse-up';
+         ?t_pattern
+       )
     ]|
     with
       depth          := <dec> <term-depth(|Var(x_child))> t_pattern;

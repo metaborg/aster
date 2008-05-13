@@ -2,7 +2,6 @@ module Stratego-Attributes
 
 imports
   Stratego-Sugar
-  StrategoMix[Plain]
 
 hiddens
   context-free start-symbols Module
@@ -13,6 +12,7 @@ exports
     Pattern
     AttributeRef
     AttributeCall
+    AttributeCallLHS
     AttributeDecl
     AttributeKeyword
     AttributeName
@@ -25,7 +25,6 @@ exports
     NameDefBlockDef
     PatternDefBlockDef
     Circular
-    Plain
     Where
   
   context-free syntax %% attributes
@@ -41,10 +40,13 @@ exports
     Id               -> AttributeName
     AttributeKeyword -> AttributeName {reject}
 
-    Term "." AttributeRef -> AttributeCall {cons("AttributeRef")}
+    AttributeCallLHS "." AttributeRef -> AttributeCall {cons("AttributeRef")}
+    Term                              -> AttributeCallLHS
+    "<" Strategy ">" Term             -> AttributeCallLHS {reject}
+
     
     AttributeCall -> Strategy {prefer}
-    AttributeCall -> Term {cons("AttributeTerm")}
+    AttributeCall -> PreTerm {cons("AttributeTerm")}
    
   context-free syntax %% semantic rules: core syntax
 
@@ -66,9 +68,10 @@ exports
                -> OptDotChild {cons("NoChild")}
 
     %% Patterns are terms without attribute references
-    Term[[Plain]] -> Pattern
-    "root"        -> Pattern {cons("Root"), prefer}
     
+    Term          -> Pattern
+    AttributeCall -> Pattern {reject}
+    "root"        -> Pattern {cons("Root"), prefer}
 
   context-free syntax %% attribute types
   
@@ -79,11 +82,12 @@ exports
     "eq"            -> AttributeType {cons("NoType")}
     "eq" "<" Id ">" -> AttributeType {cons("Decorator")}
     
-    AttributeKeyword                                -> Pattern {reject}
-    AttributeKeyword "(" { Term[[Plain]] "," }* ")" -> Pattern {reject}
-    AttributeKeyword                                -> Var {reject} %% disambiguate 'as' (@) operator
+    AttributeKeyword                       -> Pattern {reject}
+%%  AttributeKeyword "(" { Term "," }* ")" -> Pattern {reject}
+%%  AttributeKeyword                       -> Var {reject} %% disambiguate 'as' (@) operator
 
     "circular" Term -> Circular {cons("Circular")}
+    "circular"      -> Circular {cons("CircularFail")}
                     -> Circular {cons("NotCircular")}
 
   lexical syntax
@@ -136,8 +140,7 @@ exports
     "eq" Pattern "->" Term "where" Strategy -> RuleDef {cons("AnonymousRewriteRule")}
     "eq" Pattern "->" Term                  -> RuleDef {cons("AnonymousRewriteRuleNoWhere")}
   
-    "id"   -> Term {cons("IdTerm")}
-    "id"   -> Pattern {cons("IdTerm")}
+    "id"   -> PreTerm {cons("IdTerm")}
     "fail" -> Term {cons("FailTerm")}
  
     %% Id "(" { Id "," }+ ")" -> TermPrototype
@@ -147,3 +150,4 @@ exports
     %%
     %% "rewrite" RuleType { Attribute "+" }+ "->" AttributeRule
     %% Term(...) -> 
+

@@ -9,50 +9,88 @@ module circular
 
 imports
   libstratego-lib
+  hashtables
+
+signature constructors
+  CIRCULAR_FINISHED : Term -> Term
+  CIRCULAR_BUSY     : Term -> Term
 
 strategies
+
+  circular-fixpoint(eval : t * a -> a |attr-cache, initial) =
+    if circular-enter-fixpoint(|attr-cache) then
+      ?fixpoint-locked
+    end;
   
-  get-circular-worklist(|attr-cache) =
-    !attr-cache;
-    hashtable-get(|"$worklist")
-  
-  set-circular-worklist(|attr-cache, value) =
+    ?node;
+    eval(|initial);
+
+    if !fixpoint-locked then
+      while(
+        circular-get-remove-has-changed(|attr-cache)
+      ,
+        circular-reset-participants(|attr-cache);
+          
+        { old-value:
+          ?old-value;
+          <eval(|old-value)> node
+        }
+      );
+      
+      circular-mark-participants-finished(|attr-cache); // also resets
+      circular-exit-fixpoint(|attr-cache);
+      not(EVAL_FAILED)
+    end
+
+strategies // Maintain a list of attributes participating in the latest fixpoint network
+
+  // We maintain a set of all unchanged attributes in the last evaluation;
+  // _only_ these will surely reach fixpoint once the iteration is complete.
+  circular-add-participant(|attr-cache, node, name-args, value) =
     where(
-      !attr-cache;
-      hashtable-put(|"$worklist", value)
+      ( hashtable-get(|attr-cache, "$circular-unchanged")
+      <+
+        new-iset;
+        hashtable-put(|attr-cache, "$circular-unchanged", <new-iset>)
+      );
+      iset-add(|(node, name-args, value))
     )
   
-  circular-worklist-enqueue(|attr-cache) =
+  circular-mark-participants-finished(|attr-cache) =
     where(
-      queue := <get-circular-worklist(|attr-cache)>
-    <+
-      queue := []
-    );
-    set-circular-worklist(|attr-cache, [<id> | queue])
-  
-  circular-worklist-dequeue(|attr-cache) =
-    where(
-      get-circular-worklist(|attr-cache);
-      (queue, ticket) := <split-last>
-    );
-    set-circular-worklist(|attr-cache, queue);
-    !ticket
+      hashtable-get(|attr-cache, "$circular-unchanged") => set;
+      iset-elements;
+      
+      list-loop(
+        { node, name-args, value:
+          ?(node, name-args, value);
+          set-cached-attribute(|attr-cache, node, name-args, CIRCULAR_FINISHED(value))
+        }
+      );
+      
+      <iset-clear> set
+    )
 
-strategies
+  circular-reset-participants(|attr-cache) =
+    where(try(
+      hashtable-get(|attr-cache, "$circular-unchanged");
+      iset-clear
+    ))
 
-  circular-attributes-fixpoint(|attr-cache) =
-    not(IsExecutingFixpoint);
-    rules(IsExecutingFixpoint: _);
-    
-    with(
-      while(
-        circular-worklist-dequeue(|attr-cache)
-      , once-EvalCircularAttribute
-      )
-    );
-    
-    rules(IsExecutingFixPoint :- _)
+strategies // Only one fixpoint loop runs at a time
+
+  circular-enter-fixpoint(|attr-cache) =
+    not(hashtable-get(|attr-cache, "$circular-lock"));
+    hashtable-put(|attr-cache, "$circular-lock", ())
+
+  circular-exit-fixpoint(|attr-cache) =
+    hashtable-remove(|attr-cache, "$circular-lock")
+
+strategies // Fixpoint keeps running while something changed
   
-  internal-circular-rule-def =
-    ?ticket;
-    rules(EvalCircularAttribute: ticket) // ensure this is always defined somewhere
+  circular-set-has-changed(|attr-cache) =
+    hashtable-put(|attr-cache, "$circular-changed", ())
+  
+  circular-get-remove-has-changed(|attr-cache) =
+    where(hashtable-get(|attr-cache, "$circular-changed"));
+    hashtable-remove(|attr-cache, "$circular-changed")

@@ -16,22 +16,21 @@ strategies
    * Fails for non-AG-annotated terms.
    */
   get-parent(|all-parents) =
-    ?key;
-    !all-parents;
-    hashtable-get(|key)
+    hashtable-get(|all-parents, <id>)
+  
+  set-parent(|all-parents, value) =
+    hashtable-put(|all-parents, <id>, value)
+
+  all-parents =
+    lookup-table(|"all-parents")
+
+strategies
   
   get-ancestor-list(|all-parents) =
     parent := <get-parent(|all-parents); not(NoParent)>;
     ![ parent | <get-ancestor-list(|all-parents)>]
   <+
     ![]
-  
-  set-parent(|all-parents, value) =
-    where(
-      ?key;
-      !all-parents;
-      hashtable-put(|key, value)
-    )
 
   get-prev-sibling(|parent) =
     ?child;
@@ -79,8 +78,7 @@ strategies
       last
     end
 
-  all-parents =
-    lookup-table(|"all-parents")
+strategies
   
   /** @internal */
   astr-add-parent-references(|all-parents, parent) =

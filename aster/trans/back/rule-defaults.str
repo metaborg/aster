@@ -24,16 +24,24 @@ strategies
         s_trace;
         s_rule
     ]|
-    where
+    with
       type          := <attribute-type> <RuleAttribute> def;
       (as*,a*)      := <RuleArgs> def;
       (s*,t*)       := <params-to-args> (as*,a*);
       s_call        := |[ x_eval(s*|t*) ]|;
-      s_rule        := <default-rule(|s_call, def)> type
-    with
-      s_trace       := <trace-default-rule> def
+      s_rule        := <default-rule(|s_call, def)> type;
+
+      if Local() := type then
+        s_trace := Id()
+      else
+        s_trace := <trace-default-rule> def
+      end
 
 rules // default semantic rules (or "copy rules")
+
+  // Local has a default rule '!EVAL_FAILED' for caching of fails and proper tracing
+  default-rule(|s_call, def):
+    Local() -> |[ !EVAL_FAILED() ]|
  
   default-rule(|s_call, def):
     Inh() ->  

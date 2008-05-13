@@ -33,7 +33,7 @@ clean :
 	$(MAKE) -C tests clean
 
 bootclean :
-	rm -f trans/stratego-rerag.copy trans/stratego-rerag-no-check
+	rm -f trans/stratego-rerag.copy trans/stratego-rerag-no-check trans/stratego-rerag
 
 % : %.str trans/front/check.str $(DEPS) $(wildcard runtime/*.str)
 	@rm -f $@.c
