@@ -1,0 +1,25 @@
+module anonymous-rules
+
+imports
+  libstratego-lib
+
+signature constructors
+  Add : Expr * Expr -> Expr
+  Mul : Expr * Expr -> Expr
+  Fac : Expr        -> Expr
+
+strategies
+
+  main-anonymous-rules =
+    option-wrap(
+      verbose-option
+    ,
+      !Fac(Fac(3));
+      
+      id.init.debug
+    )
+    
+  eq Add(x, y) -> <add> (x, y)
+  eq Mul(x, y) -> <mul> (x, y)
+  eq Fac(i) -> Mul(i, Fac(<add> (i, -1))) where not(0 := i)
+  eq Fac(0) -> 1
