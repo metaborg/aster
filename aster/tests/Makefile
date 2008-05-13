@@ -6,7 +6,7 @@ STRCFLAGS = \
 	--format-check 0 \
 	-Xcc -O0
 
-TESTS = empty find-minimum repmin binary-numbers caching cons-nil anonymous-rules circular-basic circular-liveness
+TESTS = empty find-minimum repmin binary-numbers caching cons-nil anonymous-rules circular-basic circular-liveness circular-liveness-rewrites
 RUN_TESTS = $(TESTS:=.run)
 STR_TESTS = $(TESTS:=.str)
 EXE_TESTS = $(TESTS:=)
@@ -29,6 +29,8 @@ clean :
 	$(MAKE) -C .. trans/stratego-rerag
 
 test-stratego-rerag : test-attributes.str
+
+circular-liveness-rewrites.str : circular-liveness.str
 
 %.run : %
 	@echo

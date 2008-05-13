@@ -10,8 +10,8 @@ strategies
     end
 
   one-consnil(s) = 
-    if ?[_, _] then
-       [s | id] + [id | s]
+    if ?[_ | _] then
+       [s | id] <+ [id | s]
     else
       one(s)
     end

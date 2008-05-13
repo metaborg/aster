@@ -4,6 +4,7 @@ imports
   annotations
   hashtables
   parents
+  lists
 
 strategies
 
@@ -77,7 +78,8 @@ strategies
       to'         := <astr-initialize-node(|all-parents, attr-cache)> to;
       from-parent := <get-parent(|all-parents)> from;
       to-parent   := <persist-anonymous-rewrite-upwards(|all-parents, attr-cache, from, to')>;
-      <set-parent(|all-parents, to-parent)> to'
+      <set-parent(|all-parents, to-parent)> to';
+      set-rewrite-cached(|attr-cache, from, to')
     );
     !to'
   
@@ -87,11 +89,11 @@ strategies
       if NoParent then
         node' := node
       else
-        node'       := <one((from-child -> to-child))> node;
+        node'       := <one-consnil((from-child -> to-child))> node;
         from-parent := <get-parent(|all-parents)> node;
         to-parent   := <persist-anonymous-rewrite-upwards(|all-parents, attr-cache, node, node')>;
         
         set-rewrite-cached(|attr-cache, from-parent, to-parent);
-        <all(set-parent(|all-parents, to-parent))> to-parent;
+        <all-consnil(set-parent(|all-parents, to-parent))> to-parent;
         <set-parent(|all-parents, to-parent)> node'
       end

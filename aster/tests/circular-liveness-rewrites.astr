@@ -1,0 +1,33 @@
+module circular-liveness-rewrites
+
+imports
+  libstratego-lib
+  circular-liveness
+
+strategies
+
+  main-circular-liveness-rewrites =
+    option-wrap(
+      verbose-option
+    ,
+      make-input;
+      id.debug => [Assign("x", "value"), Return("x")]
+    )
+  
+rules
+
+  eq [assign | s*] -> s* where assign.is-dead
+  
+  eq [While("x",[]) | s*] -> s*
+
+attributes
+
+  local is-dead =
+    <id.diff> (id.defines, id.live-after);
+    not([])
+
+attributes // HACK: imports not quite working!! (at all)
+  
+  local defines    := id where fail
+  local live-after := id where fail
+

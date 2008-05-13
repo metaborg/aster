@@ -5,8 +5,9 @@ imports
 
 strategies
   
-  input-stratego-file =
+  input-stratego-file(|args) =
     parse-xtc-file-report-errors(|<parse-table-stratego-attributes>, "Module")
+    // pack-stratego-trm(|args, "astr", "atree")
 
   output-stratego-file =
     write-to;

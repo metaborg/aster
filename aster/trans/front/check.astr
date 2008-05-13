@@ -112,8 +112,8 @@ attributes
     RuleNoCond(t, _).t -> id
     RootApp(s).s       -> fail
     App(s, _).s        -> fail
-    NameDefBlock(_, t, _, _).t    -> id
-    AnonymousRewriteRule(s, _, _) -> id
+    NameDefBlock(_, t, _, _).t      -> id
+    AnonymousRewriteRule(s, _, _).s -> id
     AttributeDefStrategy(_, Attribute(_, _, t), _, _).t -> id
   
   inh in-pattern:

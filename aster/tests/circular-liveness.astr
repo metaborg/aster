@@ -16,20 +16,22 @@ strategies // Set-up, testing
     option-wrap(
       verbose-option
     ,
-      input := [
-         Assign("bogus1", "value")
-       , Assign("bogus2", "bogus1")
-       , Assign("x", "value")
-       , While("x", [
-           Assign("x", "bogus3")
-         , Assign("x", "value")
-         ])
-       , Return("x")
-      ].init;
+      input := <make-input>;
       
       <test-live-before> input;
       <test-live-after> input
     )
+  
+  make-input =
+    ![ Assign("bogus1", "value")
+     , Assign("bogus2", "bogus1")
+     , Assign("x", "value")
+     , While("x", [
+         Assign("x", "bogus3")
+       , Assign("x", "value")
+       ])
+     , Return("x")
+    ].init
   
   test-live-before =
     topdown(
@@ -112,9 +114,4 @@ attributes // Data flow
       id.succ;
       map(id.live-before);
       id.union
-    
-attributes // Application
-
-  local is-dead =
-    <id.diff> (id.defines, id.live-after)
 

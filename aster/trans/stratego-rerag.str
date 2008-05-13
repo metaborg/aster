@@ -35,6 +35,7 @@ strategies
 strategies // I/O
 
   main-stratego-rerag =
+    ?[_ | args];
     xtc-io-wrap(
       stratego-rerag-options
     ,
@@ -49,3 +50,7 @@ strategies // I/O
     , <set-config> (Trace(), <id>)
     , !"--trace          Enable tracing messages (for debugging support)"
     )
+  <+
+    ArgOption("-I" + "--Include",        
+	where(<post-extend-config> ("-I", ["-I", <id>])); !(),
+	!"-I d | --Include d Include modules from directory d")
