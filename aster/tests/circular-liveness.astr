@@ -1,0 +1,121 @@
+module circular-liveness
+
+imports
+  libstratego-lib
+
+signature constructors
+  While  : Var * Stm       -> Stm
+  If     : Var * Stm * Stm -> Stm
+  Assign : Var * Var       -> Stm
+  Return : Var             -> Stm
+  String : Var
+
+strategies // Test
+
+  main-circular-liveness =
+    option-wrap(
+      verbose-option
+    ,
+      input := [
+         Assign("obsolete1", "value")
+       , Assign("obsolete2", "obsolete1")
+       , Assign("x", "value")
+       , While("x", [
+           Assign("x", "obsolete3")
+         , Assign("x", "value")
+         ])
+       , Return("x")
+      ].init;
+      
+      <test-live-before> input;
+      <test-live-after> input
+    )
+  
+  test-live-before =
+    topdown(
+      if(id.is-stm, \id -> id{^id.live-before.uninit}\)
+    );
+    
+    ?[ Assign("obsolete1", "value")      {             "obsolete3", "value"}
+     , Assign("obsolete2", "obsolete1")  {"obsolete1", "obsolete3", "value"}
+     , Assign("x", "value")              {             "obsolete3", "value"}
+     , While("x", [
+         Assign("x", "obsolete3")        {             "obsolete3", "value"}
+       , Assign("x", "value")            {             "obsolete3", "value"}
+      ])                                 {"x",         "obsolete3", "value"}
+     , Return("x")                       {"x"}
+     ];
+     
+     say(!"live-before matches")
+  
+  test-live-after =
+    topdown(
+      if(id.is-stm, \id -> id{^id.live-after.uninit}\)
+    );
+      
+    ?[ Assign("obsolete1", "value")      {"obsolete1", "obsolete3", "value"}
+     , Assign("obsolete2", "obsolete1")  {             "obsolete3", "value"}
+     , Assign("x", "value")              {"x",         "obsolete3", "value"}
+     , While("x", [
+         Assign("x", "obsolete3")        {             "obsolete3", "value"}
+       , Assign("x", "value")            {"x",         "obsolete3", "value"}
+       ])                                {"x",         "obsolete3", "value"}
+     , Return("x")                       {}
+     ];
+     
+     say(!"live-after matches")
+  
+  local [stm | _].stm.is-stm = not(is-list) // statements are contained by lists
+
+attributes // Control flow defaults
+  
+  inh succ-enclosing: // next statement as determined by the enclosing control structures  
+    root             -> []
+    [s1, s2 | _].s1  -> [s2]
+
+  local succ = id.succ-enclosing // default next statement for particular statement
+  
+  local hds:
+    id      -> []
+    [s | _] -> [s]
+
+attributes // Control flow for specific statements
+  
+  eq If(e, s1, s2).succ := [s1, s2]
+     
+  eq While(e, s):
+    id.succ           := <conc> (s.hds, id.succ-enclosing)
+    id.succ-enclosing := [id]
+  
+  eq Return(e).succ := []
+
+attributes // Local variable use and define sites
+
+  local uses:
+    id             -> []
+    If(var, _, _)  -> [var]
+    While(var, _)  -> [var]
+    Assign(_, var) -> [var]
+    Return(var)    -> [var]
+  
+  local defines:
+    id             -> []
+    Assign(var, _) -> [var]
+
+attributes // Data flow
+
+  local stm circular []:
+    id.live-before =
+      ?node;
+      <id.union> (id.uses, <id.diff> (id.live-after, id.defines))
+  
+    id.live-after =
+      id.succ;
+      map(id.live-before);
+      id.union
+    
+attributes // Application
+
+  local is-dead =
+    <id.diff> (id.defines, id.live-after)
+
