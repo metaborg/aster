@@ -10,7 +10,7 @@ signature constructors
   Return : Var             -> Stm
   String : Var
 
-strategies // Test
+strategies // Set-up, testing
 
   main-circular-liveness =
     option-wrap(
@@ -106,7 +106,6 @@ attributes // Data flow
 
   local stm circular []:
     id.live-before =
-      ?node;
       <id.union> (id.uses, <id.diff> (id.live-after, id.defines))
   
     id.live-after =
