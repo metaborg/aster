@@ -3,12 +3,14 @@ module circular-liveness
 imports
   libstratego-lib
 
+// Definition of a small toy language
+
 signature constructors
-  While  : Var * Stm       -> Stm
-  If     : Var * Stm * Stm -> Stm
-  Assign : Var * Var       -> Stm
-  Return : Var             -> Stm
-  String : Var
+  While  : Var * List(Stm)             -> Stm
+  If     : Var * List(Stm) * List(Stm) -> Stm
+  Assign : Var * Var                   -> Stm
+  Return : Var                         -> Stm
+  String :                                Var
 
 strategies // Set-up, testing
 
@@ -35,7 +37,7 @@ strategies // Set-up, testing
   
   test-live-before =
     topdown(
-      if(id.is-stm, \id -> id{^id.live-before.uninit}\)
+      if(id.is-stm, !id{^id.live-before})
     );
     
     ?[ Assign("bogus1", "value")   {          "bogus3", "value"}
@@ -52,7 +54,7 @@ strategies // Set-up, testing
   
   test-live-after =
     topdown(
-      if(id.is-stm, \id -> id{^id.live-after.uninit}\)
+      if(id.is-stm, !id{^id.live-after})
     );
       
     ?[ Assign("bogus1", "value")   {"bogus1", "bogus3", "value"}
@@ -69,28 +71,6 @@ strategies // Set-up, testing
   
   local [stm | _].stm.is-stm = not(is-list) // statements are contained by lists
 
-attributes // Control flow defaults
-  
-  inh succ-enclosing: // next statement as determined by the enclosing control structures  
-    root             -> []
-    [s1, s2 | _].s1  -> [s2]
-
-  local succ = id.succ-enclosing // default next statement for particular statement
-  
-  local hds:
-    id      -> []
-    [s | _] -> [s]
-
-attributes // Control flow for specific statements
-  
-  eq If(e, s1, s2).succ := [s1, s2]
-     
-  eq While(e, s):
-    id.succ           := <conc> (s.hds, id.succ-enclosing)
-    id.succ-enclosing := [id]
-  
-  eq Return(e).succ := []
-
 attributes // Local variable use and define sites
 
   local uses:
@@ -103,6 +83,28 @@ attributes // Local variable use and define sites
   local defines:
     id             -> []
     Assign(var, _) -> [var]
+
+attributes // Control flow defaults
+  
+  inh succ-enclosing: // next statement as determined by the enclosing control structures  
+    root            -> []
+    [s1, s2 | _].s1 -> [s2]
+
+  local succ = id.succ-enclosing // default next statement for a particular statement
+  
+  local hds: // helper attribute to get the first statement in a list
+    id      -> []
+    [s | _] -> [s]
+
+attributes // Control flow for specific statements
+  
+  eq If(e, s1, s2).succ := [s1.hds, s2.hds]
+     
+  eq While(e, s):
+    id.succ           := <conc> (s.hds, id.succ-enclosing)
+    id.succ-enclosing := [id]
+  
+  eq Return(e).succ := []
 
 attributes // Data flow
 

@@ -39,7 +39,7 @@ strategies // I/O
     xtc-io-wrap(
       stratego-rerag-options
     ,
-      input-stratego-file;
+      input-stratego-file(|args);
       stratego-rerag;
       output-stratego-file
     )
