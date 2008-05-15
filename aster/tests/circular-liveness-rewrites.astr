@@ -11,23 +11,19 @@ strategies
       verbose-option
     ,
       make-input;
-      id.debug => [Assign("x", "value"), Return("x")]
+      id.debug => [Assign("x","value"), While("x", [Assign("x","value")]), Return("x")]
     )
   
 rules
 
-  eq [assign | s*] -> s* where assign.is-dead
-  
-  eq [While("x",[]) | s*] -> s*
+  eq [assign | s*] -> s*
 
 attributes
 
-  local is-dead =
-    <id.diff> (id.defines, id.live-after);
-    not([])
+  local is-dead = not(<id.diff> (id.defines, id.live-after) => [])
 
-attributes // HACK: imports not quite working!! (at all)
+attributes // HACK: different main files and imports in the same directory don't work too well
   
   local defines    := id where fail
   local live-after := id where fail
-
+  

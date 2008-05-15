@@ -75,7 +75,7 @@ strategies
    */
   persist-anonymous-rewrite(|all-parents, attr-cache, from, to) =
     with(
-      to'         := <astr-initialize-node(|all-parents, attr-cache)> to;
+      to'         := <astr-initialize-node-no-rewrite(|all-parents, attr-cache)> to;
       from-parent := <get-parent(|all-parents)> from;
       to-parent   := <persist-anonymous-rewrite-upwards(|all-parents, attr-cache, from, to')>;
       <set-parent(|all-parents, to-parent)> to';
