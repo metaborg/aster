@@ -49,11 +49,11 @@ strategies
         });
         s;
         if eq-ignore-annos(|x_old-value) then
-          verbose-msg(!"  [circular] No change @", <strip-annos> x_node, !"with", strip-annos);
+          // verbose-msg(!"  [circ.] No change @", <strip-annos> x_node, !"with", strip-annos);
           circular-add-participant(|x_attr-cache, x_node, t_name-args, x_old-value);
           <s_cache-write> x_old-value // remove CIRCULAR_BUSY
         else
-          verbose-msg(!"  [circular] Changed @", <strip-annos> x_node, !"with", strip-annos, !"was", <strip-annos> x_old-value);
+          // verbose-msg(!"  [circ.] Changed @", <strip-annos> x_node, !"with", strip-annos, !"was", <strip-annos> x_old-value);
           astr-initialize-attribute-value(|x_all-parents, x_attr-cache);
           circular-set-has-changed(|x_attr-cache);
           s_cache-write
