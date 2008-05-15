@@ -3,7 +3,6 @@ STRCFLAGS = \
 	-la stratego-sglr \
 	-I syntax \
 	-I runtime \
-	-I ~/.nix-profile/share \
 	--format-check 0 \
 	`pkg-config --variable=strcxtcflags strategoxt`
 
@@ -16,7 +15,7 @@ DEPS = \
     syntax/Stratego-Attributes-in-Stratego.tbl
 
 # I don't care much for nullary constructor warnings unless it's about lowercase ones, such as 'start'
-STRCSTFU=2>&1 | grep -vE 'warning ] Nullary constructor .*[A-Z]|warning ] multiple external| \[ExtSDef\(|stratego-trm|module-name-checked|module-name-checked"' \
+STRCSTFU=2>&1 | grep -vE 'warning ] Nullary constructor .*[A-Z]|warning ] multiple external| \[ExtSDef\(|module-name-checked|module-name-checked"' \
                  >&2
 
 all : syntax/Stratego-Attributes.tbl \

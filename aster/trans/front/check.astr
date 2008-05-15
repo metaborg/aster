@@ -3,7 +3,7 @@ module check
 imports
   libstratego-lib
   Stratego-Attributes
-  back/default-attributes
+  // back/default-attributes
 
 rules
 

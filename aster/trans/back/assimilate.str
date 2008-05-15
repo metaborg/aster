@@ -16,7 +16,7 @@ strategies
 
   assimilate-all =
     init-shared-vars;
-    add-imports;
+    map(add-imports);
     
     all-stratego-defs(try(
       assimilate-def
@@ -26,9 +26,11 @@ strategies
       assimilate-expr
     ));
     
-    add-default-rules;
-    add-merged-rules;
-    add-rewrites-enabled
+    map1(
+      add-default-rules;
+      add-merged-rules;
+      add-rewrites-enabled
+    )
  
   init-shared-vars =
     // TODO2: Things like <all-parents> should be optimized in a post-processing stage, not right away

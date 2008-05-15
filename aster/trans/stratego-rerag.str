@@ -2,8 +2,6 @@ module stratego-rerag
 
 imports
   libstratego-lib
-  libstratego-sglr
-  libstratego-xtc
 
   front/analyze
   back/assimilate
@@ -11,6 +9,7 @@ imports
   front/desugar
   debug
   io
+  lib/xtc-multi-options
 
 signature constructors
 
@@ -21,36 +20,42 @@ strategies
   // TODO: Add switch for run-time checks, e.g., for circularity and tree concistency
   
   stratego-rerag =
-    add-default-attributes;
+    map1(add-default-attributes);
     desugar-all;
     
-    // init-check; // TODO: init-check, when working w/ dyn. rules...
+    // init-check; // TODO: init-check, if working w/ dyn. rules...?
     all-stratego-defs(try(analyze));
     where(check-all);
     assimilate-all
   
   all-stratego-defs(s) =
-    Module(id, map(all(map(s); flatten-list <+ not(is-list))))
+    map(
+      Module(
+        id
+      , map(
+          all(
+            map(s); flatten-list
+          <+
+            not(is-list)
+          )
+        )
+      )
+    )
 
 strategies // I/O
 
   main-stratego-rerag =
-    ?[_ | args];
-    xtc-io-wrap(
+    xtc-multi-io-wrap(
       stratego-rerag-options
     ,
-      input-stratego-file(|args);
+      map(input-stratego-file);
       stratego-rerag;
-      output-stratego-file
+      map(output-stratego-file)
     )
   
   stratego-rerag-options =
-    Option( // defined in dryad as loose-option; pass-loose
+    Option(
       "--trace"
     , <set-config> (Trace(), <id>)
     , !"--trace          Enable tracing messages (for debugging support)"
     )
-  <+
-    ArgOption("-I" + "--Include",        
-	where(<post-extend-config> ("-I", ["-I", <id>])); !(),
-	!"-I d | --Include d Include modules from directory d")

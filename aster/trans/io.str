@@ -2,12 +2,13 @@ module io
 
 imports
   libstratego-lib
+  libstratego-sglr
+  libstratego-xtc // TODO2: XTC detox
 
 strategies
   
-  input-stratego-file(|args) =
+  input-stratego-file =
     parse-xtc-file-report-errors(|<parse-table-stratego-attributes>, "Module")
-    // pack-stratego-trm(|args, "astr", "atree")
 
   output-stratego-file =
     write-to;

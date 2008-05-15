@@ -1,6 +1,7 @@
 module desugar
 
 imports
+  libstratego-lib
   Stratego-Attributes
   stratego-rerag
 
@@ -12,16 +13,19 @@ rules
 
   desugar-all =
     topdown(repeat(
-      desugar
+      desugar-attribute-ref
+    + desugar-attribute-def
+    + desugar-where-with
+    + desugar-id-term
+    + desugar-fail-term
+    + desugar-attribute-child
     ));
-    try(all-stratego-defs(try(
-      astr-flatten-block-def
-    )))
-  
-  desugar =
-    desugar-attribute-ref + desugar-attribute-def
-  + desugar-where-with + desugar-id-term + desugar-fail-term
-  + desugar-attribute-child
+    
+    try(
+      all-stratego-defs(
+        try(astr-flatten-block-def)
+      )
+    )
 
 rules
 
