@@ -34,7 +34,7 @@ strategies
       s_cache-read  := <add-cache-read(|t*)> def;
       s_cache-write := <add-cache-write(|t*)> def;
       x_all-parents  := <AllParentsVar>;
-      x_attr-cache   := <AttributeCacheVar>
+      x_attr-cache   := <AttrCacheVar>
   
   make-uncached-rule:
     |[ x_eval(as*|a*) = s ]| ->
@@ -45,21 +45,21 @@ strategies
     ]|
     with
       x_all-parents  := <AllParentsVar>;
-      x_attr-cache   := <AttributeCacheVar>
+      x_attr-cache   := <AttrCacheVar>
 
   add-cache-read(|targs):
     def ->
     |[ get-cached-attribute(|x_attr-cache, <id>, t_key) ]|
     with
       x_all-parents := <AllParentsVar>;
-      x_attr-cache  := <AttributeCacheVar>;
+      x_attr-cache  := <AttrCacheVar>;
       t_key         := <make-cache-key(|targs)> def
 
   add-cache-write(|targs):
     def ->
     |[ set-cached-attribute(|x_attr-cache, x_node, t_key, <id>) ]|
     with
-      x_attr-cache  := <AttributeCacheVar>;
+      x_attr-cache  := <AttrCacheVar>;
       x_node        := <NodeVar>;
       t_key         := <make-cache-key(|targs)> def
 

@@ -30,9 +30,16 @@ strategies // Util
   
   is-astr-initialized(|all-parents) = where(get-parent(|all-parents))
   
-  astr-remove-annos-persist(|attribute-cache) =
+  astr-remove-annos-persist(|attr-cache) =
     astr-remove-annos;
-    set-keep-uninitialized(|attribute-cache, <id>)
+    set-keep-uninitialized(|attr-cache, <id>)
+  
+  astr-node-path(|parent, all-parents, attr-cache) =
+    if is-astr-initialized(|all-parents) then
+      eval-local-path-and-node(|parent, all-parents, attr-cache, 0)
+    else
+      <conc-strings> ("?", ".", <to-tiny-string>)
+    end
 
 strategies // Node initialization
 
@@ -46,42 +53,41 @@ strategies // Node initialization
    * Additionally, attribute values may be lists or tuples of reference
    * values.
    */
-  astr-initialize-attribute-value(|all-parents, attribute-cache) =
-    get-keep-uninitialized(|attribute-cache, <id>)
+  astr-initialize-attribute-value(|all-parents, attr-cache) =
+    get-keep-uninitialized(|attr-cache, <id>)
   <+
-    map(astr-initialize-node-ensure(|all-parents, attribute-cache))
+    map(astr-initialize-node-ensure(|all-parents, attr-cache))
   <+
     where(get-constructor => ""); // is-tuple
-    all(astr-initialize-node-ensure(|all-parents, attribute-cache))
+    all(astr-initialize-node-ensure(|all-parents, attr-cache))
   <+
-    astr-initialize-node-ensure(|all-parents, attribute-cache)
+    astr-initialize-node-ensure(|all-parents, attr-cache)
   
   /**
    * Initialize a node if it was not yet initialized.
    */
-  astr-initialize-node-ensure(|all-parents, attribute-cache) =
-    astr-initialize-node-ensure(id|all-parents, attribute-cache)
+  astr-initialize-node-ensure(|all-parents, attr-cache) =
+    astr-initialize-node-ensure(id|all-parents, attr-cache)
 
-  astr-initialize-node-ensure(warning|all-parents, attribute-cache) =
+  astr-initialize-node-ensure(warning|all-parents, attr-cache) =
     if not(is-astr-initialized(|all-parents)) then
       where(warning);    
-      astr-initialize-node(|all-parents, attribute-cache)
+      astr-initialize-node(|all-parents, attr-cache)
     end
 
   astr-initialize-node-warning(|all-parents, attribute) =
-    if not(AstrWarningsDisabled) then
-      if (is-list + is-tuple); all(is-astr-initialized(|all-parents)) then
-        warn(|["Evaluating attribute '", attribute, "' on an uninitialized term",
-               " (list and tuple attribute values must be explicitly initialized)"])
-      else
-        warn(|["Evaluating attribute '", attribute, "' on an uninitialized term"])
-      end;
+    if not(AstrWarningsDisabled <+ astr-is-reference-collection(|all-parents)) then
+      warn(|["Evaluating attribute '", attribute, "' on an uninitialized term"]);
       prim("SSL_stacktrace_get_all_frame_names");
       try(\["astr_initialize_node_warning_0_0" | tail] -> tail\);
       try(\["astr_initialize_node_ensure_1_1" | tail] -> tail\);
       reverse;
       map(<fprintnl> (stderr(), ["\t", <id>]))
     end
+  
+  astr-is-reference-collection(|all-parents) = 
+    (is-list + is-tuple);
+    all(is-astr-initialized(|all-parents))
   
   astr-initialize-node-no-rewrite(|all-parents) =
     astr-initialize-node-no-rewrite(|all-parents, NoParent())
@@ -132,14 +138,14 @@ strategies // Hash table storage for init/uninit
   // - cheap equality checks after every rewrite or circular evaluation
   //   (not really, unless you add an expensive remove-annos before caching)
 
-  get-initialize-cache(|attribute-cache, parent, node) =
+  get-initialize-cache(|attr-cache, parent, node) =
     where(NoParent() := parent);
-    get-cached-attribute(|attribute-cache, node, "$inited")
+    get-cached-attribute(|attr-cache, node, "$inited")
  
-  set-initialize-cache(|attribute-cache, parent, node, value) =
+  set-initialize-cache(|attr-cache, parent, node, value) =
     not(NoParent() := parent) // no caching for you
   <+
-    set-cached-attribute(|attribute-cache, node, "$inited", value)
+    set-cached-attribute(|attr-cache, node, "$inited", value)
   */
 
   get-keep-uninitialized(|attr-cache, node) =

@@ -38,7 +38,7 @@ strategies
      x_parent           := <ParentVar>;
      x_node             := <NodeVar>;
      x_all-parents      := <AllParentsVar>;
-     x_attr-cache       := <AttributeCacheVar>;
+     x_attr-cache       := <AttrCacheVar>;
      x_rewrite-mode     := <RewriteModeVar>;
      type-name          := <attribute-type-name(|type)> attr;
      sig                := <attribute-signature> attr;

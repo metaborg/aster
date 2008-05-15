@@ -39,7 +39,7 @@ strategies
       ParentVar         := <newname> "parent"
       NodeVar           := <newname> "node"
       AllParentsVar     := <newname> "all-parents"
-      AttributeCacheVar := <newname> "attr-cache"
+      AttrCacheVar := <newname> "attr-cache"
       RewriteModeVar    := <newname> "rewrite-mode"
     )
 

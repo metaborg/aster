@@ -15,5 +15,5 @@ strategies
   set-cached-attribute(|attr-cache, node, name-args, value) =
     hashtable-put(|attr-cache, (node, name-args), value)
 
-  attribute-cache =
-    lookup-table(|"attribute-cache")
+  attr-cache =
+    lookup-table(|"attr-cache")

@@ -58,7 +58,7 @@ rules // Evaluate attributes outside of AG context
   <+
     assimilate-attr-ref
 
-  // TODO2: Optimize - use local variables to cache all <attribute-cache> and <all-parents> calls
+  // TODO2: Optimize - use local variables to cache all <attr-cache> and <all-parents> calls
 
   assimilate-attr-ref:
     AttributeRef(t, attr @ Attribute(name, s*, t*)) ->
@@ -67,7 +67,7 @@ rules // Evaluate attributes outside of AG context
       astr-initialize-node-ensure(
         astr-initialize-node-warning(|x_all-parents, ~str:name')
       | <all-parents => x_all-parents>
-      , <attribute-cache => x_attr-cache>
+      , <attr-cache => x_attr-cache>
       );
       x_eval(s* |UnknownParent(), x_all-parents, x_attr-cache, <get-rewrite-mode(|x_attr-cache)>, t*)
     ]|
@@ -75,7 +75,7 @@ rules // Evaluate attributes outside of AG context
       type           := <attribute-type-name(|NoType())> attr;
       x_eval         := <attribute-accessor-name(|type)> attr;
       x_all-parents  := <AllParentsVar>;
-      x_attr-cache   := <AttributeCacheVar>;
+      x_attr-cache   := <AttrCacheVar>;
       name'          := name
         
       

@@ -50,7 +50,7 @@ strategies
       (as*, a*)      := <RuleArgs> def;
       (s*, t*)       := <params-to-args> (as*, a*);
       x_all-parents  := <AllParentsVar>;
-      x_attr-cache   := <AttributeCacheVar>;
+      x_attr-cache   := <AttrCacheVar>;
       x_node         := <NodeVar>;
       defs           := <sort-ordered-defs> <make-set> <bagof-OrderedRuleDefs> def;
       s              := <fold-lchoice> <map(def-call(|s*, t*))> defs;

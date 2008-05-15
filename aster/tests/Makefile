@@ -30,8 +30,6 @@ clean :
 
 test-stratego-rerag : test-attributes.str
 
-circular-liveness-rewrites.str : circular-liveness.str
-
 %.run : %
 	@echo
 	@echo ==== `basename $@ .run` ====

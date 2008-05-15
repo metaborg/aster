@@ -64,7 +64,7 @@ strategies
     with
       x_eval-recompute := <newname> <conc-strings> (x_eval, "-recompute");
       x_eval-enqueue   := <newname> <conc-strings> (x_eval, "-enqueue");
-      x_attr-cache     := <AttributeCacheVar>;
+      x_attr-cache     := <AttrCacheVar>;
       x_all-parents    := <AllParentsVar>;
       x_node           := <NodeVar>;
       x_cached         := <newname> "cached";

@@ -132,19 +132,19 @@ rules // Native attribute definitions
     Attribute("path-list", [], []) -> |[ get-ancestor-list(|x_all-parents) ]|
 
   assimilate-native-attr:
-    Attribute("uninit", [], []) -> Strat |[ astr-remove-annos-persist(|<attribute-cache>) ]|
+    Attribute("uninit", [], []) -> Strat |[ astr-remove-annos-persist(|<attr-cache>) ]|
 
   assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
     Attribute("uninit", [], []) -> Strat |[ astr-remove-annos-persist(|x_attr-cache) ]|
   
   assimilate-native-attr:
-    Attribute("init", [], []) -> Strat |[ astr-initialize-node(|<all-parents>, <attribute-cache>) ]|
+    Attribute("init", [], []) -> Strat |[ astr-initialize-node(|<all-parents>, <attr-cache>) ]|
   
   assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
     Attribute("init", [], []) -> Strat |[ astr-initialize-node(|x_all-parents, x_attr-cache) ]|
   
   assimilate-native-attr:
-    Attribute("ensure-init", [], []) -> Strat |[ astr-initialize-node-ensure(|<all-parents>, <attribute-cache>) ]|
+    Attribute("ensure-init", [], []) -> Strat |[ astr-initialize-node-ensure(|<all-parents>, <attr-cache>) ]|
   
   assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
     Attribute("ensure-init", [], []) -> Strat |[ astr-initialize-node-ensure(|x_all-parents, x_attr-cache) ]|

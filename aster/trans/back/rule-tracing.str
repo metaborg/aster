@@ -40,16 +40,18 @@ strategies
     Strat |[
         say(<conc-strings> (
              ~str:message
-           , <s_path>
+           , <astr-node-path(|x_parent, x_all-parents, x_attr-cache)>
            , t_comment*
         ))
       ]|
     with
-      type       := <RuleAccessorType> def;
-      arity'     := <arity-to-string> (sarity, tarity);
-      circular   := <RuleAttribute; attribute-signature; AttributeCircular < !"circular " + !""> def;
-      message    := <conc-strings> ("  [trace] ", circular, type, " ", real-name, arity', " @ ");
-      s_path     := <trace-path>;
+      type          := <RuleAccessorType> def;
+      arity'        := <arity-to-string> (sarity, tarity);
+      circular      := <RuleAttribute; attribute-signature; AttributeCircular < !"circular " + !""> def;
+      message       := <conc-strings> ("  [trace] ", circular, type, " ", real-name, arity', " @ ");
+      x_parent      := <ParentVar>;
+      x_all-parents := <AllParentsVar>;
+      x_attr-cache  := <AttrCacheVar>;
       
       if "" := comment then
         t_comment* := []
@@ -57,19 +59,12 @@ strategies
         t_comment* := [Term |[ ~str:comment ]|]
       end
   
-  trace-path =
-    <assimilate-expr> <desugar-all> Strat |[ id.path-and-node ]|
-  
   trace-rewrite =
     if <get-config> Trace() then
-      with(
-        x_node := <NodeVar>;
-        s_path := <trace-path>
-      );
       !Strat |[
         say(<conc-strings> (
           "  [rewr.] "
-        , <s_path> x_node
+        , <astr-node-path(|UnknownParent(), <all-parents>, <attr-cache>)> ~id:<NodeVar>
         , " -> "
         , <to-tiny-string>
         ))

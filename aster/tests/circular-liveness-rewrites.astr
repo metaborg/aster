@@ -16,7 +16,7 @@ strategies
   
 rules
 
-  eq [assign | s*] -> s*
+  eq [assign | s*] -> s* where assign.is-dead
 
 attributes
 
