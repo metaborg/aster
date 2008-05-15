@@ -1,0 +1,43 @@
+module repmin
+
+signature constructors
+  Fork : Leaf * Leaf -> Node
+  Leaf : Int         -> Node
+
+strategies
+
+  main-repmin-anonymous =
+    option-wrap(
+      verbose-option
+    ,
+      !Fork(
+        Fork(
+          Leaf(70)
+        , Fork(
+            Leaf(212)
+          , Leaf(83)
+          )
+        )
+      , Leaf(42)
+      );
+      
+      id.init.debug;
+      
+      where(
+        collect-all(?Leaf(<id>));
+        map(42)
+      )
+    )
+
+attributes
+  
+  inh root.global-min = id.min
+  
+  syn Fork(t1, t2).min := <min> (t1.min, t2.min)
+
+  syn Leaf(x).min      := x
+
+rules
+
+  eq Leaf(x) -> Leaf(id.global-min)
+
