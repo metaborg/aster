@@ -4,11 +4,24 @@ imports
   libstratego-lib
   libstratego-sglr
   libstratego-xtc // TODO2: XTC detox
+  libstrc
 
 strategies
   
+  // We parse individual files using libstrc.
+  // Using pack-stratego isn't really an option as long as
+  // we want to support both .str/.rtree and .astr files
+  
+  // FIXME: Proper -I path for parse table
+  
   input-stratego-file =
-    parse-xtc-file-report-errors(|<parse-table-stratego-attributes>, "Module")
+    ?FILE(file);
+    parse-stratego-trm(
+    | [ "-i", file
+      , "-I", "syntax", "-I", "../syntax"
+      , "--default-syntax", "Stratego-Attributes"
+      ]
+    )
 
   output-stratego-file =
     write-to;

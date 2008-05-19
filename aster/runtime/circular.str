@@ -17,6 +17,9 @@ signature constructors
 
 strategies
 
+  // TODO: Start a new fixpoint for a new strongly connected component? (helps performance and prevents premature caching)
+  //       or could we give an error for attributes apply premature caching during circular fixpoint?
+
   circular-fixpoint(eval : t * a -> a |attr-cache, initial) =
     if circular-enter-fixpoint(|attr-cache) then
       ?fixpoint-locked

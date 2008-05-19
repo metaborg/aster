@@ -1,6 +1,7 @@
 STRCFLAGS = \
 	-la stratego-lib \
 	-la stratego-sglr \
+	-la strc \
 	-I syntax \
 	-I runtime \
 	--format-check 0 \

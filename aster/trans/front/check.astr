@@ -100,6 +100,7 @@ attributes
   // - inh x(kid).foo = kid.foo should be synthesized or local
   // - inh foo(x) = .... ?x -> Warning: should not use annotated terms in match?
   // - congruence in attribute strategy: Foo().x = Bar() always results in a hard failure
+  // - inh x := y -> "set default value using root.x := y"
 
 attributes
   
