@@ -11,6 +11,8 @@ hiddens
 exports
 
   variables
+     
+    %% TODO: s/as\*/sa\*/g; add as to syntax
   
     "as"[0-9\']* "*"                     -> {Typedid ","}+ {prefer}
 

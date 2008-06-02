@@ -4,8 +4,9 @@ imports
   libstratego-lib
   Stratego-Attributes
   back/assimilate
+  back/rule-naming
 
-strategies
+strategies // Analysis
 
   analyze =
     ( ?AttributeDef(type, _, AttributeDefStrategy(_, attribute, circular, s))
@@ -33,27 +34,12 @@ strategies
       UsesAnonymousRewriteRules: _
     )
   
-  attribute-type =
-    attribute-signature;
-    AttributeType
-  
-  // TODO2: Explicit constructors for attribute or eval signatures?
-  
-  attribute-signature:
-    Attribute(name, s*, a*) -> <strip-annos> Attribute(name, <length> s*, <length> a*)
-
-  attribute-signature:
-    |[ x_eval(as*|a*) = s ]| -> Attribute(x_eval, sarity, tarity)
-    with
-      sarity := <length> as*;
-      tarity := <subt> (<length> a*, AG_STANDARD_ARGS())
-  
-  rename-signature(|name'):
-    Attribute(name,  s*, a*) ->
-    Attribute(name', s*, a*)
-  
   unify-attribute-type =
     \(t, t) -> t\
+  <+
+    \(Decorated(t), _) -> Decorated(t)\
+  <+
+    \(_, Decorated(t)) -> Decorated(t)\
   <+
     \(Local(), _) -> Local()\
   <+
@@ -65,3 +51,32 @@ strategies
   <+
     !Chained()
     
+strategies // Providing information
+  
+  get-attribute-type =
+    attribute-signature;
+    AttributeType
+  
+  get-attribute-circular =
+    attribute-signature;
+    AttributeCircular
+  
+  // TODO: Explicit constructors / tuples for attribute signatures
+  
+  attribute-signature:
+    Attribute(name, s*, a*) ->
+    <strip-annos> Attribute(name, <length> s*, <length> a*)
+
+  attribute-signature =
+    Attribute(id, is-int, is-int)
+
+  attribute-signature:
+    |[ x_eval(as*|a*) = s ]| -> Attribute(x_eval', sarity, tarity)
+    with
+      sarity  := <length> as*;
+      tarity  := <subt> (<length> a*, DEFAULT_ARG_COUNT());
+      x_eval' := <try(UndoAccessorName)> x_eval
+  
+  rename-signature(|name'):
+    Attribute(name,  s*, a*) ->
+    Attribute(name', s*, a*)

@@ -29,13 +29,14 @@ rules
       inh tree-access-ancestors:
         id.root = try(id.root)
         id.ancestor(p) = id.parent; p <+ id.ancestor(p)
-  
+        id.ancestors(top,p) = id.parent; top <+ id.parent; p; id.ancestors(p, top)
+      
       local path =
-         id.path-list;
-         reverse;
-         map(get-constructor; as-string);
-         separate-by(|".");
-         concat-strings
+        id.path-list;
+        reverse;
+        map(get-constructor; as-string);
+        separate-by(|".");
+        concat-strings
       
       local path-and-node =
         where(node := <to-tiny-string>);
@@ -68,16 +69,37 @@ rules
         id.union = union(id.eq) <+ foldr(![], union(id.eq))
         id.diff = diff(id.eq)   <+ foldr(![], diff(id.eq))
         id.isect = isect(id.eq) <+ foldr(![], isect(id.eq))
+      
+      // Decorators
+      
+      /**
+       * Applies the attribute semantic rule at the root of the tree.
+       */
+      inh `at-root`(d) =
+        `at-root`(d) <+ d
+      
+      /**
+       * Collects all nodes in the tree where the attribute can be applied,
+       * including subnodes of the results.
+       */
+      `at-root` `collect-all`(d) =
+        collect-all(d, concat)
+      
+      /**
+       * Collects all nodes in the tree where the attribute can be applied.
+       */
+      `at-root` `collect`(d) =
+        collect(d, concat)
   ]|
   
   ignore-trace-def =
-  // traces on path attributes cause looping
+    // traces on path attributes cause looping
     "path" + "path-list" + "path-and-node" 
-  // helper attributes where tracing is undesirable
+    // helper attributes where tracing is undesirable
   + "debug" + "enable-warnings"
   + "next-sibling" + "prev-sibling" + "first-sibling" + "last-sibling"
   + "root" + "first-child" + "last-child"
-  // attributes dealing with uninitialized terms
+    // attributes dealing with uninitialized terms
   + "union" + "diff" + "isect"
 
 rules // Native attribute definitions
@@ -142,6 +164,11 @@ rules // Native attribute definitions
   
   assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
     Attribute("init", [], []) -> Strat |[ astr-initialize-node(|x_all-parents, x_attr-cache) ]|
+  
+  // TODO: id.eval() for regular attributes
+  
+  assimilate-native-attr:
+    Attribute("eval", [s, s-default], []) -> |[ fatal-err(|"id.eval() not fully implemented yet") ]|
   
   assimilate-native-attr:
     Attribute("ensure-init", [], []) -> Strat |[ astr-initialize-node-ensure(|<all-parents>, <attr-cache>) ]|

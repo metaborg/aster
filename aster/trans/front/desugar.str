@@ -19,6 +19,7 @@ rules
     + desugar-id-term
     + desugar-fail-term
     + desugar-attribute-child
+    + desugar-application
     ));
     
     try(
@@ -43,8 +44,8 @@ rules
   
   desugar-attribute-def:
     AttributeDefTerm(child, attribute, circular, term, condition) ->
-    AttributeDefStrategy(child, attribute, circular, strategy)
-    where strategy := Seq(condition, Build(term))
+    AttributeDefStrategy(child, attribute, circular, s)
+    where s := Seq(condition, Build(term))
   
   desugar-attribute-def:
     AttributeDefNoPattern(type, value) ->
@@ -70,6 +71,16 @@ rules // where and with clause
   
   desugar-where-with:
     AnonymousRewriteRuleNoWhere(t1, t2) -> AnonymousRewriteRule(t1, t2, Id())
+
+rules
+
+  // Desugar Stratego-Sugar a bit for decorator svarss
+
+  desugar-application:
+    Strat |[ x ]| -> |[ x(|) ]|
+
+  desugar-application:
+    Strat |[ x() ]| -> |[ x(|) ]|
 
 rules
 

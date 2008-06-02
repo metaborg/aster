@@ -102,19 +102,24 @@ strategies // Node initialization
     )
 
 strategies // Adding/removing node annotations
+  
+  astr-add-annos =
+    leaves-consnil(astr-add-anno)
 
-  astr-add-annos:
-    t {a*} -> t' {b*}
+  astr-add-anno:
+    t {a*} -> t {b*}
     where
-      t' := <all-consnil(astr-add-annos)> t;
       if [] := a* then
         b* := [<newname> "@"]
       else
-        b* := [<newname> "@" | <filter(not(is-astr-annotation); astr-add-annos)> a*]
+        b* := [<newname> "@" | <filter(not(is-astr-annotation))> a*]
       end
   
   astr-remove-annos =
-    topdown-consnil(try(
+    leaves-consnil(astr-remove-anno)
+  
+  astr-remove-anno =
+    try(
       \t {<is-astr-annotation>} -> t {}\
     <+
       ?_{}
@@ -122,7 +127,7 @@ strategies // Adding/removing node annotations
       \t {a*} -> t {b*}
        where
          b* := <filter(not(is-astr-annotation))> a*\
-    ))
+    )
   
   is-astr-annotation =
     // explode-string => ['@' | _] // too expensive me thinks

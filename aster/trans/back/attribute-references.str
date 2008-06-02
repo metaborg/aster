@@ -6,8 +6,6 @@ imports
   back/default-attributes
   back/rule-naming
 
-strategies
-
 rules // Evaluate attributes in AG context
 
   assimilate-expr-inside-ag(|sig, s_parent, s_parent-desired, x_node, x_all-parents, x_attr-cache) =
@@ -20,7 +18,7 @@ rules // Evaluate attributes in AG context
     try(
       assimilate-attr-self-ref-inside-ag(|sig, attr, s_parent, x_node)
     )
-   
+  
   assimilate-attr-ref-inside-ag(|s_parent, s_parent-desired, x_all-parents, x_node, x_attr-cache):
     AttributeRef(t, attr @ Attribute(name, s*, t*)) ->
     Strat |[ <s> t ]|
@@ -35,19 +33,23 @@ rules // Evaluate attributes in AG context
         s := |[ x_eval(s* |<s_parent-desired>, x_all-parents, x_attr-cache, x_rewrite-mode, t*) ]|
       end
 
+  // TODO: Call default-rule-call for self references
+  
   /**
-   * Adjust references to attributes to avoid circular references
+   * Adjust self-references to attributes to avoid circular references
    * (e.g., 'inh foo = id.foo' becomes '... = id.parent.foo').
    */
   assimilate-attr-self-ref-inside-ag(|sig, attr, s_parent, x_node):
     s_eval ->
-    Strat |[
+    |[
       (?x_node < s_parent; not(NoParent) + id);
       s_eval
     ]|
     where
       <attribute-signature> attr => sig;
-      <attribute-type> attr => Inh()
+      <get-attribute-type> attr => Inh()
+
+  // TODO: Similar special id.attr semantics for syn and chained attributes?
 
 rules // Evaluate attributes outside of AG context
 
@@ -57,6 +59,8 @@ rules // Evaluate attributes outside of AG context
     assimilate-native-ref
   <+
     assimilate-attr-ref
+  <+
+    assimilate-decorator-ref
 
   // TODO2: Optimize - use local variables to cache all <attr-cache> and <all-parents> calls
 

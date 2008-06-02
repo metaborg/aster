@@ -7,9 +7,9 @@ imports
 
 strategies
 
-  make-circular-rule(|def):
+  add-circular-rule-logic(|def):
     |[ x_eval(as*|a*) = s ]| ->
-        Def* |[
+    Def* |[
       /**
        * Read from cache, or enqueue into fixpoint with initial value
        */
@@ -60,7 +60,7 @@ strategies
         end
     ]|
     where
-      t_initial        := <AttributeCircular> <attribute-signature> <RuleAttribute> def
+      t_initial        := <get-attribute-circular> def
     with
       x_eval-recompute := <newname> <conc-strings> (x_eval, "-recompute");
       x_eval-enqueue   := <newname> <conc-strings> (x_eval, "-enqueue");

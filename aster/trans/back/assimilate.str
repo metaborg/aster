@@ -19,6 +19,8 @@ strategies
     map(add-imports);
     
     all-stratego-defs(try(
+      assimilate-decorator-def
+    <+
       assimilate-def
     ));
     
@@ -36,11 +38,13 @@ strategies
     // TODO2: Things like <all-parents> should be optimized in a post-processing stage, not right away
     // TODO2: Rename attr-cache to cache or store, or something
     rules(
-      ParentVar         := <newname> "parent"
-      NodeVar           := <newname> "node"
-      AllParentsVar     := <newname> "all-parents"
-      AttrCacheVar := <newname> "attr-cache"
-      RewriteModeVar    := <newname> "rewrite-mode"
+      ParentVar      := <newname> "parent"
+      NodeVar        := <newname> "node"
+      AllParentsVar  := <newname> "all-parents"
+      AttrCacheVar   := <newname> "attr-cache"
+      RewriteModeVar := <newname> "rewrite-mode"
+      RootVar        := <newname> "root"
+      CachedVar      := <newname> "cached"
     )
 
   add-imports:

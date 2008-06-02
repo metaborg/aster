@@ -27,7 +27,7 @@ strategies
     trace-rule(|" (fixpoint)")
   
   trace-rule(|comment) =
-    where(Attribute(real-name, _, _) := <RuleAttribute>);
+    where(Attribute(real-name, _, _) := <attribute-signature>);
     
     if <get-config> Trace(); not(<ignore-trace-def> real-name) then
       trace-rule(|comment, real-name)
@@ -47,11 +47,12 @@ strategies
     with
       type          := <RuleAccessorType> def;
       arity'        := <arity-to-string> (sarity, tarity);
-      circular      := <RuleAttribute; attribute-signature; AttributeCircular < !"circular " + !""> def;
+      circular      := <get-attribute-circular < !"circular " + !""> def;
       message       := <conc-strings> ("  [trace] ", circular, type, " ", real-name, arity', " @ ");
       x_parent      := <ParentVar>;
       x_all-parents := <AllParentsVar>;
       x_attr-cache  := <AttrCacheVar>;
+      t_arg*        := <default-args>;
       
       if "" := comment then
         t_comment* := []

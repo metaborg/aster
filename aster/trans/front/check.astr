@@ -30,9 +30,16 @@ rules
 attributes
   
   local error:
-    Attribute(_, _, _) -> "Undefined attribute referenced"
+    Attribute(name, _, _) -> "Undefined attribute referenced"
     where
-      not(attribute-type + is-native-attribute)
+      not(get-attribute-type + is-native-attribute);
+      not(<?Decorator(_)> name)
+    
+    decorator -> "Undefined attribute decorator referenced"
+    where
+      is-string;
+      id.ancestors(?Decorated(_), is-list);
+      not(<get-attribute-type> Attribute(<id>, [1], []))
     
     AttributeDef(_, _, _) -> "Attribute type not declared"
     where
@@ -51,7 +58,13 @@ attributes
     AttributeDefStrategy(_, Attribute(_, _, args), _, _) -> "Strategy applications not allowed in attribute argument patterns"
     where
       <oncetd(?RootApp(_))> args
-    
+
+    AttributeDefStrategy(_, _, Circular(_), _) -> "Circular attributes cannot be decorated"
+    where
+      id.def-type => Decorated(_)
+
+    AttributeDefStrategy(_, Attribute(Decorator(_), [], _), _, _) -> "Circular attributes must specify a target strategy argument."
+        
     AttributeRef(_, _) -> "Illegal attribute reference in match pattern"
     where
       id.in-match
@@ -62,11 +75,14 @@ attributes
       <not(Inh + Syn)> type;
       <not(RootApp(Fail()))> pattern
     
-    AttributeDef(_, pattern, s) -> "Attribute definition overrides propagation rules for non-local attribute"
+    /* TODO: Warning
+    AttributeDef(_, pattern, s) -> "Attribute definition overrides attribute propagation rules"
     where
-      <not(Local + Inh + Chained)> id.def-type; // allowed for inh because of the special id.rec=parent.rec semantics
-      <not(oncetd(WhereClause(id)))> s;
-      <(Wld + Var(id))> pattern
+      <not(is-recursive-definition)>;
+      <(Wld + Var(id))> pattern;
+      <not(Local + Decorator(id))> id.def-type;
+      <not(oncetd(WhereClause(id)))> s
+   */
     
     AttributeDef(_, Root(), _) -> "Synthesized attribute cannot have a root definition"
     where
@@ -89,7 +105,7 @@ attributes
     Var(x) -> "Performing match using annotated term - use id.eq instead"
     where
       id.in-match;
-      not(id.in-pattern);
+      not(id.in-pattern + id.is-def-param);
       (id.is-pattern-var(|x) + id.is-def-arg(|x))
   
   // TODO: confirm attribute applicability based on pattern, where possible
@@ -103,6 +119,8 @@ attributes
   // - inh x := y -> "set default value using root.x := y"
 
 attributes
+
+  is-recursive-definition = id // TODO2: is-recursive-definition
   
   inh in-match:
     Match(t).t         -> id
@@ -125,11 +143,14 @@ attributes
   
   inh is-def-arg(|var):
     AttributeDef(_, _, AttributeDefStrategy(_, attr, _, _)) -> <oncetd(id.eq(|Var(var)))> attr
+
+  local is-def-param:
+    AttributeDefStrategy(_, Attribute(_, _, t), _, _).t -> id
   
   // TODO2: Proper error pp
-  local pp =
-    try(attribute-signature);
-    id.uninit
+  local pp:
+    id                   -> <try(attribute-signature); id.uninit>
+    Attribute(n, [], []) -> n
   
   local pp-context =
     id.ancestor(?AttributeDef(_, _, <id>));
@@ -137,7 +158,7 @@ attributes
     <conc-strings> (" in attribute ", <as-string>)
   
   inh def-type:
-    AttributeDef(_, _, AttributeDefStrategy(_, attr, _, _)) ->  <attribute-type> attr
+    AttributeDef(_, _, AttributeDefStrategy(_, attr, _, _)) ->  <get-attribute-type> attr
   
   inh def-type-local:
     AttributeDef(type, _, _) ->  type

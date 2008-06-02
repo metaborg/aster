@@ -1,4 +1,4 @@
-module repmin
+module repmin-anonymous
 
 signature constructors
   Fork : Leaf * Leaf -> Node

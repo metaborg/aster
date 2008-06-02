@@ -9,11 +9,9 @@ imports
   libstratego-lib
   back/util
 
-strategies
+rules
 
-  // TODO: Cached attributes should deal with term arguments
-  
-  make-cached-rule(|def):
+  add-cached-rule-logic(|def):
     |[ x_eval(as*|a*) = s ]| ->
     |[ x_eval(as*|a*) =
          s_cache-read
@@ -26,17 +24,17 @@ strategies
              astr-initialize-attribute-value(|x_all-parents, x_attr-cache);
              s_cache-write
            end
-     ]|
-     where
-      ([], a*) := <RuleArgs> def     
-     with
+    ]|
+    where
+      ([], a*) := <RuleParams> def     
+    with
       ([], t*)      := <params-to-args> ([], a*);
       s_cache-read  := <add-cache-read(|t*)> def;
       s_cache-write := <add-cache-write(|t*)> def;
-      x_all-parents  := <AllParentsVar>;
-      x_attr-cache   := <AttrCacheVar>
+      x_all-parents := <AllParentsVar>;
+      x_attr-cache  := <AttrCacheVar>
   
-  make-uncached-rule:
+  add-uncached-rule-logic:
     |[ x_eval(as*|a*) = s ]| ->
     |[ x_eval(as*|a*) =
          s;
@@ -47,6 +45,20 @@ strategies
       x_all-parents  := <AllParentsVar>;
       x_attr-cache   := <AttrCacheVar>
 
+  add-cache-read(|sargs, targs) =
+    if [] := sargs then
+      add-cache-read(|targs)
+    else
+      !Fail()
+    end
+
+  add-cache-write(|sargs, targs) =
+    if [] := sargs then
+      add-cache-write(|targs)
+    else
+      !Id()
+    end
+  
   add-cache-read(|targs):
     def ->
     |[ get-cached-attribute(|x_attr-cache, <id>, t_key) ]|
@@ -68,7 +80,7 @@ strategies
     with
       arity' := <arity-to-string> (sarity, tarity);
       name'  := <conc-strings> (name, arity');
-      targs' := <drop(|AG_STANDARD_ARGS())> targs;
+      targs' := <drop(|DEFAULT_ARG_COUNT())> targs;
       
       !NoAnnoList(Str(name'));
       if not([] := targs') then

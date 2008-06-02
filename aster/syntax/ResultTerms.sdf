@@ -1,0 +1,40 @@
+module ResultTerms
+
+imports
+  Stratego-Sugar
+
+exports
+
+  sorts
+    LineEnd
+    TermNoApp
+    ResultTerm
+    SingleLineLayout
+
+  context-free syntax
+
+    TermNoApp -> ResultTerm
+
+    Term                  -> TermNoApp
+    StrategyAngle         -> TermNoApp {reject}
+    "<" Strategy ">" Term -> TermNoApp {reject}
+
+  lexical syntax
+  
+    ShortCom -> SingleLineLayout
+    LongCom  -> SingleLineLayout
+    [\ \t]+  -> SingleLineLayout
+    [\n\r]   -> LineEnd
+    Eof      -> LineEnd
+  
+  syntax
+  
+    %% <s>\n
+    
+    <StrategyAngle-CF> <SingleLineLayout*-LEX> <LineEnd-CF> -> <ResultTerm-CF> {ast("RootApp(<1>)")}
+    
+    %% <s>A
+    
+    "<" <LAYOUT?-CF> <Strategy-CF> <LAYOUT?-CF> ">" <SingleLineLayout*-LEX>
+        <Term-CF>                                                          -> <ResultTerm-CF> {ast("App(<1>, <3>)")}
+

@@ -1,9 +1,25 @@
+/**
+ * Default rule definitions for attributes.
+ *
+ * Default rules or "copy rules" can be used to
+ * implicitly propagate a value through the tree.
+ *
+ * Default rules are invoked if:
+ *  a) No semantic rule matches for a pattern
+ *     (i.e., soft failure occurs)
+ *
+ *  b) An attribute is called recursively, e.g.:
+ *     inh root = id.root <+ id
+ *
+ * @author Lennart Kats <lennart add lclnet.nl>
+ */
 module back/rule-defaults
 
 imports
   libstratego-lib
   back/util
   back/rule-tracing
+  back/rule-merging
   back/assimilate
 
 strategies
@@ -17,19 +33,21 @@ strategies
       defaults* := [Rules(<id>)]
   
   default-rule:
-    def @ Attribute(x_eval, sarity, tarity) ->
+    def @ Attribute(_, sarity, tarity) ->
     <make-merged-def-default>
     |[
       x_eval(as*|a*) =
         s_trace;
-        s_rule
+        s_rule'
     ]|
     with
-      type          := <attribute-type> <RuleAttribute> def;
-      (as*,a*)      := <RuleArgs> def;
-      (s*,t*)       := <params-to-args> (as*,a*);
-      s_call        := |[ x_eval(s*|t*) ]|;
-      s_rule        := <default-rule(|s_call, def)> type;
+      type     := <get-attribute-type> def;
+      (as*,a*) := <RuleParams> def;
+      (s*,t*)  := <params-to-args> (as*,a*);
+      x_eval   := <RuleAccessorName> def;
+      s_call   := |[ x_eval(s*|t*) ]|;
+      s_rule   := <default-rule(|s_call, def)> type;
+      s_rule'  := <try(make-decorator-default-rule(|def))> s_rule;
 
       if Local() := type then
         s_trace := Id()
@@ -42,6 +60,48 @@ rules // default semantic rules (or "copy rules")
   // Local has a default rule '!EVAL_FAILED' for caching of fails and proper tracing
   default-rule(|s_call, def):
     Local() -> |[ !EVAL_FAILED() ]|
+
+  default-rule(|s_eval, def):
+    Decorated(ds) ->
+    |[ let x_cached =
+         s_eval // No caching w/ altered strat. argument
+       in
+         s_decorated;
+         not(EVAL_FAILED)
+       end
+    ]|
+    with
+      x_cached    := <CachedVar>;
+      s_eval'     := <make-fail-once> s_eval;
+      s_decorated := <foldr(!s_eval', make-decorated)> ds
+
+
+  /*
+  default-rule(|s_eval, def):
+    Decorated(ds) ->
+    |[ let x_cached =
+         s_eval'
+       in
+         s_decorated
+       end
+    ]|
+    with
+      x_cached    := <CachedVar>;
+      s_eval'     := <make-fail-once> s_eval;
+      s_decorated := <foldr(!Strat |[ x_cached ]|, make-decorated)> ds
+  */
+  make-fail-once:
+    s_eval ->
+    |[ (id < id + ?x_failed-once); // ensure it's bound
+       if !x_failed-once then
+         s_eval
+       else
+         ?x_failed-once;
+         fail
+       end
+    ]|
+    with
+      x_failed-once := <newname> "failed-once"
  
   default-rule(|s_call, def):
     Inh() ->  
@@ -78,7 +138,7 @@ rules // default semantic rules (or "copy rules")
       "inh" := <RuleAccessorType> def // context is an inh rule def
     with
       !s_call     => |[ x_eval(s* |x_parent, t*) ]|;
-      x_eval-syn := <attribute-accessor-name(|"syn")> <RuleAttribute> def
+      x_eval-syn := <attribute-accessor-name(|"syn")> def
       
   default-rule(|s_call, def):
     Chained() ->
@@ -91,4 +151,40 @@ rules // default semantic rules (or "copy rules")
       "syn"      := <RuleAccessorType> def; // context is a syn rule def
       !s_call    => |[ x_eval(s* |x_parent, t*) ]|;
       x_node     := <NodeVar>;
-      x_eval-inh := <attribute-accessor-name(|"inh")> <RuleAttribute> def
+      x_eval-inh := <attribute-accessor-name(|"inh")> def
+      
+  default-rule-name =
+    attribute-signature => sig;
+    ( DefaultRuleName
+    <+
+      ?Attribute(x_eval, _, _);
+      name := <conc-strings; newname> (x_eval, "-default");
+      rules(
+        DefaultRuleName: sig -> name
+      )
+    )
+  
+  default-rule-call =
+    default-rule-call-from-attr
+  <+
+    default-rule-call-by-sig
+  
+  default-rule-call-from-attr =
+    ?Attribute(_, as*, a*);
+    x_eval-default := <default-rule-name> <attribute-signature>;
+    (s*, t*)       := <params-to-args> (as*, a*);
+    default-t*     := <default-args>;
+    
+    default-rule-call(|x_eval-default, s*, [default-t*, t*])
+  
+  default-rule-call-by-sig =
+    attribute-signature => sig;
+    x_eval-default := <default-rule-name> sig;
+    (s*, t*)       := <params-to-args> <RuleParams> sig;
+    
+    default-rule-call(|x_eval-default, s*, t*)
+    
+  default-rule-call(|x_eval-default, s*, t*) =
+    !|[
+      x_eval-default(s*|t*)
+    ]|

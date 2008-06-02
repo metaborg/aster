@@ -5,7 +5,9 @@ imports
   back/util
   back/rule-tracing
   back/rule-caching
+  back/rule-naming
   back/rule-circularity
+  back/rule-decorators
   back/assimilate
   front/analyze
 
@@ -27,18 +29,20 @@ strategies
       flatten-list;
       ordered* := [Rules(<id>)]
   
-  finish-merged-rule(|def) =
-    make-circular-rule(|def)
+  add-merged-rule-logic(|def) =
+    add-decorated-rule-logic(|def)
   <+
-    make-cached-rule(|def)
+    add-circular-rule-logic(|def)
   <+
-    make-uncached-rule
+    add-cached-rule-logic(|def)
+  <+
+    add-uncached-rule-logic
   
   make-merged-rule:
-    def @ Attribute(x_eval, sarity, tarity) ->
-    <finish-merged-rule(|def)> |[
+    def @ Attribute(_, sarity, tarity) ->
+    <add-merged-rule-logic(|def)> |[
       x_eval(as*|a*) =
-        s_rewrite => x_node;
+        s_rewrite => x_node; // (join point)
         s_trace;
         ( s // this scope ensures x_node is available to decorators 
         <+
@@ -47,11 +51,12 @@ strategies
         )
     ]|
     with
-      (as*, a*)      := <RuleArgs> def;
+      (as*, a*)      := <RuleParams> def;
       (s*, t*)       := <params-to-args> (as*, a*);
       x_all-parents  := <AllParentsVar>;
       x_attr-cache   := <AttrCacheVar>;
       x_node         := <NodeVar>;
+      x_eval         := <RuleAccessorName> def;
       defs           := <sort-ordered-defs> <make-set> <bagof-OrderedRuleDefs> def;
       s              := <fold-lchoice> <map(def-call(|s*, t*))> defs;
       s_trace        := <trace-rule> def;
@@ -84,9 +89,9 @@ strategies
 
 strategies
 
-  make-merged-def(|attribute, pattern, child, accessor-type) =
+  make-merged-def(|pattern, child, accessor-type) =
     with(
-      record-def(|attribute, accessor-type)
+      record-def(|accessor-type)
     );
     if Root() := pattern then
       make-merged-def-root
@@ -120,8 +125,9 @@ strategies
   make-merged-def-default:
     |[ x_eval(as*|a*) = s ]| -> |[ x_eval-default(as*|a*) = s ]|
     with
-      sig            := <attribute-signature>;
-      x_eval-default := <conc-strings; newname> (x_eval, "-default");
+      ?eval;
+      sig            := <attribute-signature> eval;
+      x_eval-default := <default-rule-name> eval;
       sig'           := <rename-signature(|x_eval-default)> sig;
       rules(
         OrderedRuleDefs  :+ sig -> sig'
@@ -134,7 +140,7 @@ strategies
   <+
     !""
   
-  record-def(|attribute, accessor-type) =
+  record-def(|accessor-type) =
     ?|[ x_eval(as*|a*) = s ]|;
     sig := <attribute-signature>;
     
@@ -142,8 +148,8 @@ strategies
       rules(
         AllRules         :+= sig
         IsKnownRule      :   sig
-        RuleArgs         :   sig -> (as*, a*)
-        RuleAttribute    :   sig -> attribute
+        RuleAccessorName :   sig -> x_eval
+        RuleParams       :   sig -> (as*, a*)
         RuleAccessorType :   sig -> accessor-type
       )
     end

@@ -15,7 +15,7 @@ strategies
   // FIXME: Proper -I path for parse table
   
   input-stratego-file =
-    ?FILE(file);
+    xtc-ensure-file => FILE(file);
     parse-stratego-trm(
     | [ "-i", file
       , "-I", "syntax", "-I", "../syntax"

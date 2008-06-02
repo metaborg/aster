@@ -8,22 +8,25 @@ strategies
 
   attribute-type-name(|local-type) =
     if NoType() := local-type then
-      attribute-type // globally declared type
+      get-attribute-type // globally declared type
     else
       !local-type
     end;
     
     switch id
-      case Inh():   !"inh"
-      case Local(): !"local"
-      otherwise:    !"syn"
+      case Inh():         !"inh"
+      case Local():       !"local"
+      case Decorated(id): !"decorated"
+      otherwise:          !"syn"
     end
 
-  attribute-accessor-name(|type):
-    Attribute(name, _, _) -> accessor
-    with
-      accessor  := <conc-strings> ("eval-", type, "-", name)
+  attribute-accessor-name(|type) =
+    attribute-signature => Attribute(name, _, _);
+    accessor := <conc-strings> ("eval-", type, "-", name);
+    rules(
+      UndoAccessorName: accessor -> name
+    )
   
   preferred-attribute-accessor-type =
     attribute-type-name(|NoType())
-      
+

@@ -24,3 +24,9 @@ strategies
 
   innermost-consnil(s) =
     bottomup-consnil(try(s; innermost-consnil(s)))
+
+  leaves-consnil(s) =
+    all-consnil(try(?has-children); leaves-consnil(s));
+    if not(!has-children) then
+      s
+    end

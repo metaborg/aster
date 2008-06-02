@@ -49,14 +49,20 @@ test Non-empty pattern block and strategy definition
   "
 -> _
 
-test Custom rule type and circularity vs. 'as' operator
+test Decorated rule (1)
   "module foo
    rules
      s = ?a 
      
-     eq <custom> rule : 2 -> 3
+     `custom` rule : 2 -> 3
   " -> _
-  
+
+test Decorated rule (2)
+  "module foo
+   rules
+     `custom` Pattern(s): s.x := 3
+  " -> _  
+
 test Attribute definition block with variable pattern
   "module foo
    rules
@@ -115,12 +121,26 @@ test AttributeDecl and AttributeDefNoPattern
      eq B(a): id.x = 1
    " -> _
 
-test Attribute reference vs. <RootApp> (1)
+test Attribute definition vs. <App> (1)
+  "module foo
+   rules
+     s = x := <Foo>
+     eq bar = 1
+  " -> _
+
+test Attribute definition vs. <App> (2)
+  "module foo
+   rules
+     s = x := <Foo>
+     syn bar = 1
+  " -> _
+
+test Attribute reference vs. <App> (1)
   "module foo rules
      s = <foo> 1.bar
   " -> Module("foo",[Rules([SDefNoArgs("s",BA(CallNoArgs(SVar("foo")),NoAnnoList(AttributeTerm(AttributeRef(NoAnnoList(Int("1")),AttributeNoArgs("bar"))))))])])
   
-test Attribute reference vs. <RootApp> (2)
+test Attribute reference vs. <App> (2)
   "module foo rules
      s = <foo> foo.bar
   " -> Module("foo",[Rules([SDefNoArgs("s",BA(CallNoArgs(SVar("foo")),NoAnnoList(AttributeTerm(AttributeRef(Var("foo"),AttributeNoArgs("bar"))))))])])
@@ -129,4 +149,59 @@ test Attribute as annotation list
   "module foo rules
     s = !1{^id.annos}
   " -> _
+
+test Attribute pattern definitions vs. <App> (1)
+  "module foo
+   rules
+     eq inh:
+       1 -> <s>
+       A(2) -> 3
+  " -> Module("foo",[Rules([PatternDefBlock(NoType,AttributeNoArgs("inh"),NotCircular,[AttributePDefTerm(NoAnnoList(Int("1")),NoChild,RootApp(CallNoArgs(SVar("s"))),NoWhere),AttributePDefTerm(NoAnnoList(Op("A",[NoAnnoList(Int("2"))])),NoChild,NoAnnoList(Int("3")),NoWhere)])])])
+
+test Attribute pattern definitions vs. <App> (2)
+  "module foo
+   rules
+     eq inh:
+       1 -> <s> A
+       (2) -> 3
+  " -> Module("foo",[Rules([PatternDefBlock(NoType,AttributeNoArgs("inh"),NotCircular,[AttributePDefTerm(NoAnnoList(Int("1")),NoChild,App(CallNoArgs(SVar("s")),Var("A")),NoWhere),AttributePDefTerm(NoAnnoList(Tuple([NoAnnoList(Int("2"))])),NoChild,NoAnnoList(Int("3")),NoWhere)])])])
+
+test Attribute pattern definitions vs. <App> (3)
+  "module foo
+   rules
+     eq inh:
+       1 -> <s>
+       A
+       (2) -> 3
+  " -> _ // just has to be unambiguous
+
+test Attribute pattern definitions vs. <App> (4)
+  "module foo
+   rules
+     eq inh:
+       1 -> <s> A (2) -> 3" -> _ // just has to be unambiguous
+
+test Attribute pattern definitions vs. <App> (5)
+  "module foo
+   rules
+     eq inh:
+       1 -> <s> 2 -> 3" fails // not so nice, but just has to be unambiguous
+
+
+test Attribute pattern definitions vs. <App> (6)
+  "module foo
+   rules
+     eq inh: 1 -> 2 3 -> 4" -> _
+
+test Attribute pattern definitions vs. <App> (7)
+  "module foo
+   rules
+     eq inh:
+       1 -> <s> A /* foo */ (2) -> 3" -> _ // just has to be unambiguous
+
+test Attribute pattern definitions vs. <App> (8)
+  "module foo
+   rules
+     eq inh:
+       1 -> <s> /* foo */ A (2) -> 3" -> _ // just has to be unambiguous
 

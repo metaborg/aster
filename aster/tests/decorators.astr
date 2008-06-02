@@ -1,0 +1,35 @@
+module decorators
+
+strategies
+
+  main-decorators =
+    option-wrap(
+      verbose-option
+    ,
+      ![1,2,3,[4,5,1,2,6]].init;
+      id.collect-lt(|4);
+      id.debug;
+      ?[1,2,3,4,1,2]
+    )
+  
+  /**
+   * Collects all values in the tree smaller than 'i'.
+   */
+  `_collect` collect-lt(|i) = where(is-int; <lt> (id, i))
+  
+  /**
+   * Collects all nodes in the tree where the attribute can be applied.
+   */
+  `_at-root` `_collect`(s) = collect(s)
+  
+  /**
+   * Applies the attribute semantic rule at the root of the tree.
+   */
+  `_inh` `_at-root`(s) = `_at-root`(s) <+ s
+
+  local `_inh`(s) =
+    id.eval(
+      s
+    , id.parent; `_inh`(s)
+    )
+
