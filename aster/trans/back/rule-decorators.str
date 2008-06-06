@@ -186,7 +186,7 @@ strategies // Helpers
       x_all-parents  := <AllParentsVar>;
       x_attr-cache   := <AttrCacheVar>;
       x_node         := <NodeVar>;
-      s_parent       := |[ !x_parent <+ get-parent(|x_all-parents) ]|
+      s_parent       := |[ ?x_node < !x_parent + !UnknownParent() ]|
     );
     assimilate-attr-ref-inside-ag(|s_parent, s_parent, x_all-parents, x_node, x_attr-cache)
       

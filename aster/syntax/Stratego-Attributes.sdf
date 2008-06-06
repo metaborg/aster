@@ -89,7 +89,7 @@ exports
     AttributeKeyword                       -> Pattern {reject}
 %%  AttributeKeyword "(" { Term "," }* ")" -> Pattern {reject}
 
-%%  Either reject suffices, but the first may be to specific
+%%  Either reject suffices, but the first may be too specific
 %%  "<" Strategy ">" AttributeKeyword -> Term {reject}
     AttributeKeyword -> Var {reject}
 
@@ -138,6 +138,7 @@ exports
     %% Definitions grouped in a PatternDefBlock
     Pattern OptDotChild "->" ResultTerm Where -> PatternDefBlockDef {cons("AttributePDefTerm")}
 
+                                     -> Where {cons("NoWhere")}
     "where" Strategy                 -> Where {cons("WhereClause")}
     "with" Strategy                  -> Where {cons("WithClause")}
     "where" Strategy "with" Strategy -> Where {cons("WhereWithClause")}

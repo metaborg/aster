@@ -8,6 +8,8 @@ signature constructors
   Id : String -> TermId
   NoParent      : Parent
   UnknownParent : Parent
+  
+  // TODO: Add a UninitializedParent node to newly produced trees?
 
 strategies
 
