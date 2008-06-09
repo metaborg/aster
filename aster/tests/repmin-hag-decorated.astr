@@ -1,0 +1,52 @@
+module repmin-hag-decorated
+
+signature constructors
+  Fork : Leaf * Leaf -> Node
+  Leaf : Int         -> Node
+
+strategies
+
+  main-repmin-hag-decorated =
+    option-wrap(
+      verbose-option
+    ,
+      !Fork(
+        Fork(
+          Leaf(70)
+        , Fork(
+            Leaf(212)
+          , Leaf(83)
+          )
+        )
+      , Leaf(42)
+      ).init;
+      
+      id.rewrite.debug;
+      
+      where(
+        collect-all(?Leaf(<id>));
+        map(42)
+      )
+    )
+
+attributes
+  
+  inh root.global-min = id.min
+  
+  syn Fork(t1, t2).min := <min> (t1.min, t2.min)
+
+  syn Leaf(x).min      := x
+
+rules
+
+  `bottomup-rewrite` rewrite:
+    Leaf(x) -> Leaf(id.global-min)
+
+  local `bottomup-rewrite`(s) =
+    ?before;
+    id.eval(
+      s
+    , all(`bottomup-rewrite`(s));
+      verbose-msg(!"alled", !before, !"->", id, id.parent)
+    )
+

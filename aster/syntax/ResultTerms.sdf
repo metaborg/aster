@@ -29,12 +29,19 @@ exports
   
   syntax
   
-    %% <s>\n
+    %% <s>\n -> RootApp
     
     <StrategyAngle-CF> <SingleLineLayout*-LEX> <LineEnd-CF> -> <ResultTerm-CF> {ast("RootApp(<1>)")}
     
-    %% <s>A
+    %% <s>A -> App
     
     "<" <LAYOUT?-CF> <Strategy-CF> <LAYOUT?-CF> ">" <SingleLineLayout*-LEX>
-        <Term-CF>                                                          -> <ResultTerm-CF> {ast("App(<1>, <3>)")}
+        <Term-CF>                                                           -> <ResultTerm-CF> {ast("App(<1>, <3>)")}
 
+  %% UNDONE: Reject tail RootApp
+  %%
+  %% %% ...<s>\nA -> reject Def
+  %% 
+  %% <ANY*-LEX> "<" <LAYOUT?-CF> <Strategy-CF> <LAYOUT?-CF> ">" <SingleLineLayout*-LEX>
+  %%     <LineEnd-CF> <LAYOUT?-CF>
+  %%     <Term-CF>                                                          -> <Def-CF> {reject}

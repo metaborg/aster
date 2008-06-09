@@ -28,6 +28,15 @@ exports
     Circular
     Where
   
+  %% TODO: New syntax? Eliminate backticks.
+  %%
+  %% def collect-all foo // decl (or "eq" keyword?)
+  %% eq foo = 2         // <- error if no accompanying def
+  %%
+  %% def inh Pattern(x).bar = 3 // <- decl and def
+  %%
+  %% decorator inh collect-all(s) = id.collect-all(s) <+ ...
+  
   lexical syntax
   
     "`" Id "`" -> DecoratorId
@@ -156,4 +165,3 @@ exports
     "fail" -> Term {cons("FailTerm")}
  
     %% "extend" TermPrototype ":" { TermPrototype }+ -> ExtendId
-

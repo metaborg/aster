@@ -90,6 +90,13 @@ rules
        */
       `at-root` `collect`(d) =
         collect(d, concat)
+      
+      /**
+       * Maps over a list.
+       *
+       * `map`(id.attr) is cached per list, while map(id.s) is cached per item.
+       */
+      local `map`(d) = map(d)
   ]|
   
   ignore-trace-def =

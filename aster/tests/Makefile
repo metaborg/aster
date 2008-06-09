@@ -6,7 +6,7 @@ STRCFLAGS = \
 	--format-check 0 \
 	-Xcc -O0
 
-TESTS = empty find-minimum repmin repmin-anonymous binary-numbers caching cons-nil anonymous-rules circular-basic circular-liveness circular-liveness-rewrites decorators
+TESTS = empty find-minimum repmin repmin-anonymous repmin-hag repmin-hag-decorated binary-numbers caching cons-nil anonymous-rules circular-basic circular-liveness circular-liveness-rewrites decorators
 RUN_TESTS = $(TESTS:=.run)
 STR_TESTS = $(TESTS:=.str)
 EXE_TESTS = $(TESTS:=)

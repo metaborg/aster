@@ -1,0 +1,45 @@
+module repmin-hag
+
+signature constructors
+  Fork : Leaf * Leaf -> Node
+  Leaf : Int         -> Node
+
+strategies
+
+  main-repmin-hag =
+    option-wrap(
+      verbose-option
+    ,
+      !Fork(
+        Fork(
+          Leaf(70)
+        , Fork(
+            Leaf(212)
+          , Leaf(83)
+          )
+        )
+      , Leaf(42)
+      ).init;
+      
+      id.rewrite.debug;
+      
+      where(
+        collect-all(?Leaf(<id>));
+        map(42)
+      )
+    )
+
+attributes
+  
+  inh root.global-min = id.min
+  
+  syn Fork(t1, t2).min := <min> (t1.min, t2.min)
+
+  syn Leaf(x).min      := x
+
+rules
+
+  local rewrite:
+    Leaf(x)      -> Leaf(id.global-min)
+    Fork(t1, t2) -> Fork(t1.rewrite, t2.rewrite)
+
