@@ -59,7 +59,7 @@ strategies
     VarDec(x, _) -> SVar(x)
 
   params-to-args =
-    (alltd(param-to-svar), alltd(param-to-var))
+    (alltd(param-to-svar), alltd(param-to-var)) <+ map(param-to-var)
     
   arity-to-string =
     (0, 0); !""

@@ -31,9 +31,7 @@ rules // Decorator references
     with
       x_node         := <NodeVar>;
       x_cached       := <CachedVar>;
-      tiny-debug(!0);
       s_eval-default := <default-rule-call> attr
-      ; tiny-debug(!1)
   
 rules // Assimilation of decorator definitions
 
