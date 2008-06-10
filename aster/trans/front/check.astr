@@ -75,7 +75,7 @@ attributes
       <not(Inh + Syn)> type;
       <not(RootApp(Fail()))> pattern
     
-    /* TODO: Warning
+    /* TODO: Warning?
     AttributeDef(_, pattern, s) -> "Attribute definition overrides attribute propagation rules"
     where
       <not(is-recursive-definition)>;
@@ -156,8 +156,6 @@ attributes
     id.ancestor(?AttributeDef(_, _, <id>));
     ?AttributeDefStrategy(_, <id.pp>, _, _);
     <conc-strings> (" in attribute ", <as-string>)
-  <+
-    debug(!"No context"); fail
   
   inh def-type:
     AttributeDef(_, _, AttributeDefStrategy(_, attr, _, _)) ->  <get-attribute-type> attr
