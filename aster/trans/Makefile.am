@@ -3,6 +3,8 @@ include $(top_srcdir)/Makefile.xt
 bin_PROGRAMS                  = stratego-rerag
 nodist_stratego_rerag_SOURCES = stratego-rerag.c
 
+all : stratego-rerag.copy
+
 CLEANFILES=stratego-rerag stratego-rerag-no-check stratego-rerag.copy front/check.str
 
 SCFLAGS = \
@@ -27,17 +29,15 @@ bootclean :
 
 stratego-rerag.c : $(RTREES)
 	$(SCOMPILE) -c -i $< -o $@ $(SCFLAGS) $(STRINCLUDES) -m main-stratego-rerag
-
-#	@rm -f $@.c
-#	strc -i $< -o $@ -m main-`basename $*` $(STRCFLAGS) $(SCFLAGS) $(STRINCLUDES)
-#	@cp $@ $@.copy
-#	@rm $@.c
+	
+stratego-rerag.copy : stratego-rerag
+	cp stratego-rerag stratego-rerag.copy
 
 stratego-rerag-no-check : stratego-rerag.str
+	$(MAKE) -C .. all-local # ensure build-time XTC repository is complete at this point
 	[ -e stratego-rerag.copy ] && cp stratego-rerag.copy stratego-rerag-no-check ||\
 	( rm -f $@.c && \
 	  cp front/check.bootstrap.str front/check.str && \
-	  $(MAKE) -C .. all-local  && \
 	  $(SCOMPILE) -i $< -o $@ $(STRCFLAGS) $(SCFLAGS) -m main-stratego-rerag -Xcc -O0 -Xcc -DDEFAULT_XTC_REPOSITORY="\"$(top_srcdir)/BUILDTIME_XTC\"" $(STRINCLUDES) && \
 	  rm front/check.str $@.c )
 

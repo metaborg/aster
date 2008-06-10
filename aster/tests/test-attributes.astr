@@ -38,7 +38,14 @@ strategies
     , fetchtd(1; id.ancestor(?Fork(_, _)))
     , !Fork(Leaf(1), 2).init
     , ?Fork(_, _)
+    );
+    apply-and-check(
+      !"id.ancestor is not proper"
+    , id.ancestor(1)
+    , !1
+    , ?1
     )
+    
 
 strategies
   

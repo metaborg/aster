@@ -156,6 +156,8 @@ attributes
     id.ancestor(?AttributeDef(_, _, <id>));
     ?AttributeDefStrategy(_, <id.pp>, _, _);
     <conc-strings> (" in attribute ", <as-string>)
+  <+
+    debug(!"No context"); fail
   
   inh def-type:
     AttributeDef(_, _, AttributeDefStrategy(_, attr, _, _)) ->  <get-attribute-type> attr

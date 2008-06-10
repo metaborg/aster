@@ -28,8 +28,8 @@ rules
       
       inh tree-access-ancestors:
         id.root = try(id.root)
-        id.ancestor(p) = id.parent; p <+ id.ancestor(p)
-        id.ancestors(top,p) = id.parent; top <+ id.parent; p; id.ancestors(p, top)
+        id.ancestor(p) = p <+ id.ancestor(p)
+        id.ancestors(top,p) = top <+ p; id.ancestors(p, top)
       
       local path =
         id.path-list;
