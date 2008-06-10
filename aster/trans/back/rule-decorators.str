@@ -26,12 +26,14 @@ rules // Decorator references
   
   // Recursive decorator reference
   assimilate-decorator-self-ref(|attr, decorator, x_decorated):
-    DecoratorRef(decorator, Strat |[ x_decorated(|) ]|) ->
+    DecoratorRef(decorator, |[ x_decorated(|) ]|) ->
     |[ ?x_node < s_eval-default + x_cached ]|
     with
       x_node         := <NodeVar>;
       x_cached       := <CachedVar>;
+      tiny-debug(!0);
       s_eval-default := <default-rule-call> attr
+      ; tiny-debug(!1)
   
 rules // Assimilation of decorator definitions
 
@@ -61,7 +63,7 @@ rules // Assimilation of decorator definitions
  
   assimilate-decorator-body(|attr, decorator, decorated) =
     with(
-      Var(x_decorated) := <param-to-arg> decorated
+      Var(x_decorated) := <param-to-var> decorated
     );
     alltd(
       assimilate-decorator-self-ref(|attr, decorator, x_decorated)

@@ -46,16 +46,20 @@ strategies
   fold-lchoice =
     foldr(!Fail(), \(x,y) -> LChoice(x,y)\)
 
-  // TODO: Distinguish svars; make param-to-svar
-
-  param-to-arg:
+  param-to-var:
     DefaultVarDec(x) -> Var(x)
   
-  param-to-arg:
+  param-to-var:
     VarDec(x, _) -> Var(x)
 
+  param-to-svar:
+    DefaultVarDec(x) -> SVar(x)
+  
+  param-to-svar:
+    VarDec(x, _) -> SVar(x)
+
   params-to-args =
-    alltd(param-to-arg)
+    (alltd(param-to-svar), alltd(param-to-var))
     
   arity-to-string =
     (0, 0); !""
