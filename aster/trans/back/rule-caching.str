@@ -84,5 +84,5 @@ rules
       
       !NoAnnoList(Str(name'));
       if not([] := targs') then
-        !NoAnnoList(Tuple([<id>, targs']))
+        !NoAnnoList(Tuple([<id> | targs']))
       end => key
