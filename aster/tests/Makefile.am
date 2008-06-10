@@ -7,14 +7,6 @@ STRCFLAGS = \
 	-Xcc -O0
 
 TESTS = empty find-minimum repmin repmin-anonymous repmin-hag repmin-hag-decorated binary-numbers caching cons-nil anonymous-rules circular-basic circular-liveness circular-liveness-rewrites decorators
-RUN_TESTS = $(TESTS:=.run)
-STR_TESTS = $(TESTS:=.str)
-EXE_TESTS = $(TESTS:=)
-EXEEXT =
-
-check : Stratego-Attributes.runtestsuite \
-        test-stratego-rerag test-stratego-rerag.run test-stratego-rerag.str \
-        $(STR_TESTS) $(EXE_TESTS) $(RUN_TESTS)
 
 clean :
 	rm -f $(RUN_TESTS) $(STR_TESTS) test-stratego-rerag test-attributes.str

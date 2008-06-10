@@ -12,14 +12,12 @@ strategies
   // Using pack-stratego isn't really an option as long as
   // we want to support both .str/.rtree and .astr files
   
-  // FIXME: Proper -I path for parse table
-  
   input-stratego-file =
     xtc-ensure-file => FILE(file);
     parse-stratego-trm(
     | [ "-i", file
-      , "-I", "syntax", "-I", "../syntax"
       , "--default-syntax", "Stratego-Attributes"
+      , "-I", <xtc-find; dirname <+ !"../syntax"> "Stratego-Attributes.tbl"
       ]
     )
 

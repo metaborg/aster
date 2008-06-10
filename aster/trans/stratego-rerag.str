@@ -48,7 +48,7 @@ strategies // I/O
     xtc-multi-io-wrap(
       stratego-rerag-options
     ,
-      map(input-stratego-file);
+      map(input-stratego-file <+ <xtc-exit> 1);
       stratego-rerag;
       map(output-stratego-file)
     )
