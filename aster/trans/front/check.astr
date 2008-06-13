@@ -75,15 +75,6 @@ attributes
       <not(Inh + Syn)> type;
       <not(RootApp(Fail()))> pattern
     
-    /* TODO: Warning?
-    AttributeDef(_, pattern, s) -> "Attribute definition overrides attribute propagation rules"
-    where
-      <not(is-recursive-definition)>;
-      <(Wld + Var(id))> pattern;
-      <not(Local + Decorator(id))> id.def-type;
-      <not(oncetd(WhereClause(id)))> s
-   */
-    
     AttributeDef(_, Root(), _) -> "Synthesized attribute cannot have a root definition"
     where
       id.def-type-local => Syn()

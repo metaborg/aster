@@ -211,3 +211,9 @@ tests Disallow childless attribute strategy in block
      local 
   " -> _
 
+tests Attributes in pattern
+  "module foo
+   rules
+     eq Foo(id.eq(|baz)).bar(|baz) = id
+  " -> _
+

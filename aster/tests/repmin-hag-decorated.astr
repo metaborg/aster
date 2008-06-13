@@ -41,12 +41,3 @@ rules
 
   `bottomup-rewrite` rewrite:
     Leaf(x) -> Leaf(id.global-min)
-
-  local `bottomup-rewrite`(s) =
-    ?before;
-    id.eval(
-      s
-    , all(`bottomup-rewrite`(s));
-      verbose-msg(!"alled", !before, !"->", id, id.parent)
-    )
-

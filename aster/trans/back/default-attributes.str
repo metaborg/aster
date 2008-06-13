@@ -98,6 +98,59 @@ rules
        * `map`(id.attr) is cached per list, while map(id.s) is cached per item.
        */
       local `map`(d) = map(d)
+
+      local `bottomup-rewrite`(d) =
+        id.eval(
+          d
+        , all(`bottomup-rewrite`(d))
+        )
+      
+      local `inh`(d) =
+        id.eval(
+          d
+        , id.parent; `inh`(d)
+        )
+      
+      // TODO: Sane definition of `chained`
+      //       should semantic rules be applied only once per node,
+      //       not also on the second traversal in the chain?
+      //       better way to express this?
+      
+      local `chained-syn`(d) = // main chained attribute uses d and propagates upwards
+        id.eval(
+          d
+        ,
+          id.last-child; `chained-syn`(d)
+        <+
+          id.prev-sibling; `chained-syn`(d)
+        <+
+          id.parent; `chained-syn-helper`(d)
+        )
+      
+      local `chained-syn-helper`(d) = // helper chained attribute only propagates downwards
+        id.prev-sibling; `chained-syn`(d)
+      <+
+        id.parent; `chained-syn-helper`(d)
+      
+      local `chained-inh`(d) = // main chained attribute only propagates upwards
+          id.last-child; `chained-inh`(d)
+        <+
+          id.eval(
+            d
+          ,
+            id.prev-sibling; `chained-inh`(d)
+          <+
+            id.parent; `chained-inh-helper`(d)
+          )
+      
+      local `chained-inh-helper`(d) = // helper chained attribute uses d and propagates downwards
+        id.eval(
+          d
+        ,
+          id.prev-sibling; `chained-inh`(d)
+        <+
+          id.parent; `chained-inh-helper`(d)
+        )
   ]|
   
   ignore-trace-def =
