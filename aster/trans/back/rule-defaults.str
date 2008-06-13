@@ -75,21 +75,6 @@ rules // default semantic rules (or "copy rules")
       s_eval'     := <make-fail-once> s_eval;
       s_decorated := <foldr(!s_eval', make-decorated)> ds
 
-
-  /*
-  default-rule(|s_eval, def):
-    Decorated(ds) ->
-    |[ let x_cached =
-         s_eval'
-       in
-         s_decorated
-       end
-    ]|
-    with
-      x_cached    := <CachedVar>;
-      s_eval'     := <make-fail-once> s_eval;
-      s_decorated := <foldr(!Strat |[ x_cached ]|, make-decorated)> ds
-  */
   make-fail-once:
     s_eval ->
     |[ (id < id + ?x_failed-once); // ensure it's bound

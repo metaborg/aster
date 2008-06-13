@@ -47,7 +47,7 @@ attributes
     
     amb(_) -> "Internal error: ambiguity in input"
     
-    AttributeDef(_, _, _) -> "Chained attributes not yet supported"
+    AttributeDef(_, _, _) -> "Native chained attributes not (yet) supported"
     where
       Chained() := id.def-type
     

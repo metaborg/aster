@@ -33,27 +33,25 @@ rules // Evaluate attributes in AG context
         s := |[ x_eval(s* |<s_parent-desired>, x_all-parents, x_attr-cache, x_rewrite-mode, t*) ]|
       end
 
-  // TODO: Call default-rule-call for self references
-  
+  // TODO2: Optimize - don't redirect attribute self-references for child terms
+  //       	e.g., syn Fork(t1, t2).min := <min> (t1.min, t2.min)
+
   /**
-   * Adjust self-references to attributes to avoid circular references
-   * (e.g., 'inh foo = id.foo' becomes '... = id.parent.foo').
+   * Redirect attribute self-references.
+   *
+   * (e.g., 'inh foo = id.foo' effectively becomes 'inh foo = id.parent.foo').
    */
   assimilate-attr-self-ref-inside-ag(|sig, attr, s_parent, x_node):
-    s_eval ->
-    |[
-      (?x_node < s_parent; not(NoParent) + id);
-      s_eval
-    ]|
+    |[ <s> t ]| ->
+    |[ <?x_node < s_eval-default + s> t ]|
     where
-      <attribute-signature> attr => sig;
-      <get-attribute-type> attr => Inh()
-
-  // TODO: Similar special id.attr semantics for syn and chained attributes?
+      <attribute-signature> attr => sig
+    with
+      s_eval-default := <default-rule-call> attr
 
 rules // Evaluate attributes outside of AG context
 
-  // TODO: Don't eagerly get parent reference
+  // TODO2: Never eagerly get parent reference?
 
   assimilate-expr =
     assimilate-native-ref
