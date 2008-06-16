@@ -97,7 +97,7 @@ strategies
       );
       
       separate-by(|",");      
-      try(take(!6); <conc> (<id>, ["..."]));
+      try(take(!6); <conc> (<id>, [".."]));
       
       <conc-strings> (name, "(", <concat-strings>, ")")
     end

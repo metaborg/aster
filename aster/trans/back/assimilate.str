@@ -28,7 +28,7 @@ strategies
       assimilate-expr
     ));
     
-    map1(
+    one(
       add-default-rules;
       add-merged-rules;
       add-rewrites-enabled
