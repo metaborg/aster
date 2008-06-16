@@ -27,10 +27,12 @@ exports
     PatternDefBlockDef
     Circular
     Where
+    OptWhere
+    NoWhere
   
   %% TODO: New syntax? Eliminate backticks.
   %%
-  %% def collect-all foo // decl (or "eq" keyword?)
+  %% def collect-all foo // decl (or a different keyword; "eq"? "sem"?)
   %% eq foo = 2         // <- error if no accompanying def
   %%
   %% def inh Pattern(x).bar = 3 // <- decl and def
@@ -130,9 +132,9 @@ exports
     "attributes" Def* -> Decl {cons("Attributes")}    
 
     %% Single-line attribute definitions
-    AttributeType AttributeNameValue                   -> RuleDef {cons("AttributeDefNoPattern"), avoid}
-    AttributeType AttributeDecl Circular               -> RuleDef {cons("AttributeDeclNoPattern")}
-    OptChildDot AttributeDecl Circular ":=" Term Where -> AttributeNameValue {cons("AttributeDefTerm")}
+    AttributeType AttributeNameValue                      -> RuleDef {cons("AttributeDefNoPattern"), avoid}
+    AttributeType AttributeDecl Circular                  -> RuleDef {cons("AttributeDeclNoPattern")}
+    OptChildDot AttributeDecl Circular ":=" Term OptWhere -> AttributeNameValue {cons("AttributeDefTerm")}
     
     %% Attribute definition blocks/groups
     AttributeType Pattern Circular       ":"
@@ -141,16 +143,20 @@ exports
     PatternDefBlockDef+                      -> RuleDef {cons("PatternDefBlock")}
     
     %% Definitions grouped in a NameDefBlock
-    ChildDot AttributeDecl Circular ":=" Term Where -> NameDefBlockDef {cons("AttributeDefTerm")}
-    ChildDot AttributeDecl Circular "="  Strategy   -> NameDefBlockDef {cons("AttributeDefStrategy")}
+    ChildDot AttributeDecl Circular ":=" Term OptWhere -> NameDefBlockDef {cons("AttributeDefTerm")}
+    ChildDot AttributeDecl Circular "="  Strategy      -> NameDefBlockDef {cons("AttributeDefStrategy")}
 
     %% Definitions grouped in a PatternDefBlock
-    Pattern OptDotChild "->" ResultTerm Where -> PatternDefBlockDef {cons("AttributePDefTerm")}
+    Pattern OptDotChild "->" ResultTerm NoWhere -> PatternDefBlockDef {cons("AttributePDefTerm")}
+    Pattern OptDotChild "->" Term       Where   -> PatternDefBlockDef {cons("AttributePDefTerm")}
 
-                                     -> Where {cons("NoWhere")}
     "where" Strategy                 -> Where {cons("WhereClause")}
     "with" Strategy                  -> Where {cons("WithClause")}
     "where" Strategy "with" Strategy -> Where {cons("WhereWithClause")}
+
+            -> NoWhere {cons("NoWhere")}
+    NoWhere -> OptWhere
+    Where   -> OptWhere
 
   context-free syntax
       

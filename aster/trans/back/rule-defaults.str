@@ -28,7 +28,11 @@ strategies
     Module(x, decl*) -> Module(x, [decl*, defaults*])
     with
       bagof-AllRules;
-      map(default-rule <+ ![]);
+      map({
+        ?def;
+        default-rule;
+        try(add-empty-chained-rules(|def))
+      });
       flatten-list;
       defaults* := [Rules(<id>)]
   
@@ -43,7 +47,7 @@ strategies
     with
       type     := <get-attribute-type> def;
       (as*,a*) := <RuleParams> def;
-      (s*,t*)  := <params-to-args> (as*,a*);
+      (s*,t*)  := <params-to-vars> (as*,a*);
       x_eval   := <RuleAccessorName> def;
       s_call   := |[ x_eval(s*|t*) ]|;
       s_rule   := <default-rule(|s_call, def)> type;
@@ -55,27 +59,51 @@ strategies
         s_trace := <trace-default-rule> def
       end
 
-rules // default semantic rules (or "copy rules")
+rules
+   
+  /**
+   * Add default, empty semantic rules for chained attributes.
+   * (In case only synthesized or only inherited definitions were provided.)
+   */
+  add-empty-chained-rules(|def):
+    default-rule ->
+    Def* |[
+      ~default-rule
+      x_eval-inh(as*|a*) = fail
+      x_eval-syn(as*|a*) = fail
+    ]|
+    where
+      <get-attribute-type> def => Chained()
+    with
+      x_eval-inh := <attribute-accessor-name(|"inh")> def;
+      x_eval-syn := <attribute-accessor-name(|"syn")> def;
+      (as*,a*)   := <RuleParams> def;
+      (s*,t*)    := <params-to-vars> (as*,a*)
+
+rules // copy rules
 
   // Local has a default rule '!EVAL_FAILED' for caching of fails and proper tracing
   default-rule(|s_call, def):
     Local() -> |[ !EVAL_FAILED() ]|
 
-  default-rule(|s_eval, def):
+  default-rule(|s_call, def):
     Decorated(ds) ->
     |[ let x_cached =
-         s_eval // No caching w/ altered strat. argument
+         s_cache-read;
+         s_call // No cache writing w/ altered strat. argument
        in
          s_decorated;
          not(EVAL_FAILED)
        end
     ]|
     with
-      x_cached    := <CachedVar>;
-      s_eval'     := <make-fail-once> s_eval;
-      s_decorated := <foldr(!s_eval', make-decorated)> ds
+      x_cached      := <CachedVar>;
+      (s*, a*)      := <params-to-vars> <RuleParams> def;
+      s_cache-read  := <add-cache-read(|s*, a*)> def;
+      s_call'       := <add-one-soft-failure> s_call;
+      s_decorated   := <foldr(!s_call', make-decorated)> ds
 
-  make-fail-once:
+  add-one-soft-failure:
     s_eval ->
     |[ (id < id + ?x_failed-once); // ensure it's bound
        if !x_failed-once then
@@ -133,7 +161,8 @@ rules // default semantic rules (or "copy rules")
        + x_eval-inh(s* |x_parent, t*) // id.inh_attr
     ]|
     where
-      "syn"      := <RuleAccessorType> def; // context is a syn rule def
+      "syn" := <RuleAccessorType> def // context is a syn rule def
+    with
       !s_call    => |[ x_eval(s* |x_parent, t*) ]|;
       x_node     := <NodeVar>;
       x_eval-inh := <attribute-accessor-name(|"inh")> def
@@ -143,7 +172,7 @@ rules // default semantic rules (or "copy rules")
     ( DefaultRuleName
     <+
       ?Attribute(x_eval, _, _);
-      name := <conc-strings; newname> (x_eval, "-default");
+      name := <conc-strings; newname> ("eval-", x_eval, "-default");
       rules(
         DefaultRuleName: sig -> name
       )
@@ -157,7 +186,7 @@ rules // default semantic rules (or "copy rules")
   default-rule-call-from-attr =
     ?Attribute(_, as*, a*);
     x_eval-default := <default-rule-name> <attribute-signature>;
-    (s*, t*)       := <params-to-args> (as*, a*);
+    (s*, t*)       := <params-to-vars> (as*, a*);
     default-t*     := <default-args>;
     
     default-rule-call(|x_eval-default, s*, [default-t*, t*])
@@ -165,7 +194,7 @@ rules // default semantic rules (or "copy rules")
   default-rule-call-by-sig =
     attribute-signature => sig;
     x_eval-default := <default-rule-name> sig;
-    (s*, t*)       := <params-to-args> <RuleParams> sig;
+    (s*, t*)       := <params-to-vars> <RuleParams> sig;
     
     default-rule-call(|x_eval-default, s*, t*)
     

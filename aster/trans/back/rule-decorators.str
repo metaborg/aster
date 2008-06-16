@@ -15,13 +15,13 @@ rules // Decorator references
     DecoratorRef(x_decorator, s_decorated) ->
     |[ let x_cached =
          // Can't assume caching here, and is likely already performed inside
-         s_decorated
-       in
          s_eval
+       in
+         x_cached
        end
     ]|
     with
-      x_cached := <CachedVar>;
+      x_cached := <CachedVar>; // not actually cached
       s_eval   := <make-decorated> (x_decorator, s_decorated)
   
   // Recursive decorator reference
@@ -145,7 +145,7 @@ rules // Adding decorated rule logic
     where
       <get-attribute-type> def => Decorated(ds)
     with
-      t*      := <params-to-args> a*;
+      t*      := <params-to-vars> a*;
       s_body' := <foldr(!s_body, make-decorated-with-caching(|def, as*, t*))> ds
   
   make-decorated-with-caching(|def, s_arg*, t_arg*):

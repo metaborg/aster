@@ -44,7 +44,7 @@ strategies
       x_eval(as*|a*) =
         s_rewrite => x_node; // (join point)
         s_trace;
-        ( s // this scope ensures x_node is available to decorators 
+        ( s // the () ensure x_node is available to decorators 
         <+
           <s_trace-failed> x_node;
           !EVAL_FAILED()
@@ -52,7 +52,7 @@ strategies
     ]|
     with
       (as*, a*)      := <RuleParams> def;
-      (s*, t*)       := <params-to-args> (as*, a*);
+      (s*, t*)       := <params-to-vars> (as*, a*);
       x_all-parents  := <AllParentsVar>;
       x_attr-cache   := <AttrCacheVar>;
       x_node         := <NodeVar>;

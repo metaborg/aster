@@ -71,7 +71,7 @@ strategies
       x_old-value      := <newname> "old-value";
       s_ensure-init    := Strat |[ astr-initialize-attribute-value(|x_all-parents, x_attr-cache) ]|;
       s_trace          := <trace-fixpoint-rule> def;
-      ([], t*)         := <params-to-args> ([], a*);
+      ([], t*)         := <params-to-vars> ([], a*);
       t_name-args      := <make-cache-key(|t*)> def;
       s_cache-read     := <add-cache-read(|t*)> def;
       s_cache-write    := <add-cache-write(|t*)> def

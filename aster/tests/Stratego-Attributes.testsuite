@@ -205,6 +205,14 @@ test Attribute pattern definitions vs. <App> (8)
      eq inh:
        1 -> <s> /* foo */ A (2) -> 3" -> _ // just has to be unambiguous
 
+test Attribute pattern definitions vs. <App> (9)
+  "module foo
+   rules
+     eq inh: 1 -> <s1;
+                   s2> with foo
+     bar = 1
+  " -> _
+
 tests Disallow childless attribute strategy in block
   "module foo
    rules

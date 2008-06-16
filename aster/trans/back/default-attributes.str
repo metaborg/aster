@@ -133,23 +133,24 @@ rules
         id.parent; `chained-syn-helper`(d)
       
       local `chained-inh`(d) = // main chained attribute only propagates upwards
-          id.last-child; `chained-inh`(d)
-        <+
-          id.eval(
-            d
-          ,
-            id.prev-sibling; `chained-inh`(d)
-          <+
-            id.parent; `chained-inh-helper`(d)
-          )
-      
-      local `chained-inh-helper`(d) = // helper chained attribute uses d and propagates downwards
+        id.last-child; tiny-debug(!1); `chained-inh`(d)
+      <+
         id.eval(
           d
         ,
-          id.prev-sibling; `chained-inh`(d)
+          id.prev-sibling; tiny-debug(!3); `chained-inh`(d)
         <+
-          id.parent; `chained-inh-helper`(d)
+          id.parent; tiny-debug(!4); `chained-inh-helper`(d)
+        )
+      
+      local `chained-inh-helper`(d) = // helper chained attribute uses d and propagates downwards
+        tiny-debug(!5);
+        id.eval(
+          d
+        ,
+          id.prev-sibling; tiny-debug(!6); `chained-inh`(d)
+        <+
+          id.parent; tiny-debug(!7); `chained-inh-helper`(d)
         )
   ]|
   

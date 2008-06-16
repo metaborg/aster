@@ -30,7 +30,7 @@ strategies
   
   default-args =
     default-params;
-    params-to-args
+    params-to-vars
 
   assimilate-def:
     AttributeDef(
