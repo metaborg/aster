@@ -7,20 +7,31 @@ strategies
       verbose-option
     ,
       ![1,2,3,[4,5,1,2,6]].init;
-      id.collect-lt(|4);
+      !(id.collect-lt(|4), id._collect-lt(|4));
+
       id.debug;
-      ?[1,2,3,4,1,2]
+
+      id.eq => ([1,2,3,4,1,2], _)
     )
+
+rules // Using library decorators
   
   /**
    * Collects all values in the tree smaller than 'i'.
    */
-  `_collect` collect-lt(|i) = where(is-int; <lt> (id, i))
+  `collect-all` collect-lt(|i) = where(is-int; <lt> (id, i))
+
+rules // Using local decorators
+  
+  /**
+   * Collects all values in the tree smaller than 'i'.
+   */
+  `_collect-all` _collect-lt(|i) = where(is-int; <lt> (id, i))
   
   /**
    * Collects all nodes in the tree where the attribute can be applied.
    */
-  `_at-root` `_collect`(s) = collect(s)
+  `_at-root` `_collect-all`(s) = collect-all(s, conc)
   
   /**
    * Applies the attribute semantic rule at the root of the tree.

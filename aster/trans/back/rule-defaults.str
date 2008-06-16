@@ -60,6 +60,11 @@ strategies
       end
 
 rules
+
+  // TODO: Split up chained definitions to a new inh and syn part
+  //       each with its own signature for the two copy rules.
+  //       How would the copy rules fall back to their
+  //       counterpart on soft failure?
    
   /**
    * Add default, empty semantic rules for chained attributes.

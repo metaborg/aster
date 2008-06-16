@@ -84,13 +84,7 @@ rules
        * including subnodes of the results.
        */
       `at-root` `collect-all`(d) =
-        collect-all(d, concat)
-      
-      /**
-       * Collects all nodes in the tree where the attribute can be applied.
-       */
-      `at-root` `collect`(d) =
-        collect(d, concat)
+        collect-all(d, conc)
       
       /**
        * Maps over a list.
@@ -190,7 +184,7 @@ rules // Native attribute definitions
     Attribute("eq", [], [t]) -> |[ eq-ignore-annos(|t) ]|
 
   assimilate-native-attr:
-    Attribute("eq", [], []) -> |[ { x: ?(<id>, x); eq-ignore-annos(|x) } ]|
+    Attribute("eq", [], []) -> |[ where({ x: ?(<id>, x); eq-ignore-annos(|x) }) ]|
     where
       x := <new>
 
