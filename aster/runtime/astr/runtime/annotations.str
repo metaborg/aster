@@ -1,9 +1,9 @@
-module annotations
+module astr/runtime/annotations
 
 imports
   libstratego-lib
-  parents
-  lists
+  astr/runtime/parents
+  astr/runtime/lists
 
 strategies // Util
 

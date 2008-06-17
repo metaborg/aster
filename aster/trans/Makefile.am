@@ -5,7 +5,7 @@ nodist_stratego_rerag_SOURCES = stratego-rerag.c
 
 all : stratego-rerag.copy
 
-CLEANFILES=stratego-rerag stratego-rerag-no-check stratego-rerag.copy front/check.str
+CLEANFILES=stratego-rerag stratego-rerag-no-check stratego-rerag.copy front/check.str $(RTREES)
 
 SCFLAGS = \
 	--format-check 0 \

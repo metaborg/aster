@@ -2,7 +2,7 @@ include $(top_srcdir)/Makefile.xt
 
 ACLOCAL_AMFLAGS = -I .
 
-SUBDIRS           = syntax trans tests
+SUBDIRS           = syntax trans tests runtime
 BOOTCLEAN_SUBDIRS = $(SUBDIRS)
 DIST_SUBDIRS      = $(SUBDIRS)
 EXTRA_DIST        = bootstrap Makefile.xt

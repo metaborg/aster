@@ -22,6 +22,7 @@ AC_CONFIG_FILES([
   syntax/Makefile
   trans/Makefile
   tests/Makefile
+  runtime/Makefile
 ])
 AC_OUTPUT
 

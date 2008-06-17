@@ -1,10 +1,11 @@
-module rewrites
+module astr/runtime/rewrites
 
 imports
-  annotations
-  hashtables
-  parents
-  lists
+  libstratego-lib
+  astr/runtime/annotations
+  astr/runtime/hashtables
+  astr/runtime/parents
+  astr/runtime/lists
 
 strategies
 

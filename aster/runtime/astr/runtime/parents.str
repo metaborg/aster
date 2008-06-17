@@ -1,8 +1,8 @@
-module parents
+module astr/runtime/parents
 
 imports
   libstratego-lib
-  rewrites
+  astr/runtime/rewrites
 
 signature constructors
   Id : String -> TermId

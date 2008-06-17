@@ -7,7 +7,7 @@ imports
   back/assimilate
   front/check
   front/desugar
-  debug
+  astr/runtime/debug
   io
   lib/xtc-multi-options
 

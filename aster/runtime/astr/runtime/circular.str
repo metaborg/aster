@@ -5,11 +5,11 @@
  * @internal
  * @author Lennart Kats <lennart add lclnet.nl>
  */
-module circular
+module astr/runtime/circular
 
 imports
   libstratego-lib
-  hashtables
+  astr/runtime/hashtables
 
 signature constructors
   CIRCULAR_FINISHED : Term -> Term

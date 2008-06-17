@@ -1,8 +1,8 @@
-module attributes
+module astr/runtime/attributes
 
 imports
   libstratego-lib
-  hashtables
+  astr/runtime/hashtables
 
 signature constructors
   EVAL_FAILED : Term

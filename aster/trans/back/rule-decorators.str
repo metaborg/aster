@@ -145,8 +145,17 @@ rules // Adding decorated rule logic
     where
       <get-attribute-type> def => Decorated(ds)
     with
-      t*      := <params-to-vars> a*;
-      s_body' := <foldr(!s_body, make-decorated-with-caching(|def, as*, t*))> ds
+      (s*, t*) := <params-to-vars> (as*, a*);
+      s_body'  := <fold-decorated-with-caching(|ds, def, s*, t*)> s_body
+      
+  fold-decorated-with-caching(|decorators, def, s*, t*) =
+    ?s_body;
+    !decorators;
+    foldr(
+      !s_body
+    , make-decorated-with-caching(|def, s*, t*);
+      inc-cache-var
+    )
   
   make-decorated-with-caching(|def, s_arg*, t_arg*):
     (_, _) ->
@@ -154,10 +163,7 @@ rules // Adding decorated rule logic
          s_cache-read // could be EVAL_FAILED
        <+
          s_ref; s_cache-write
-       <+
-         // TODO: The default, decorated copy rule should be applied here
-         //       (for non-local decorated attributes)
-         !EVAL_FAILED(); s_cache-write
+         // TODO: Should the decorated copy rule be applied here??
        in
          x_cached;
          not(EVAL_FAILED)
@@ -172,11 +178,32 @@ rules // Adding decorated rule logic
   make-decorated:
     (x_decorator, s_decorated) ->
     <assimilate-attr-ref-inside-decorator> <desugar-all> Strat |[
-      id.x_decorator'(x_cached, s_decorated)
+      id.x_decorator'(x_cached, s_decorated')
     ]|
     with
       x_cached     := <CachedVar>;
+      s_decorated' := s_decorated;
       x_decorator' := <assimilate-decorator-id> Decorator(x_decorator)
+
+strategies // Provide new cache vars for each decorator application
+
+  // TODO2: Simplify this, seriously...
+  
+  inc-cache-var =
+    inc-cache-var-prepare(|<CachedVar>, 0);
+    alltd(IncCachedVar)
+  
+  // Rewrite cached0 to cached01, cached01 to cached02, etc.  
+  inc-cache-var-prepare(|before, count) =
+    where(
+      cached := <CachedVar>
+    );
+    rules(
+      IncCachedVar: before -> cached-count
+      where
+        cached-count := <conc-strings> (cached, <as-string> count);
+        inc-cache-var-prepare(|cached-count, <inc> count)
+    )
 
 strategies // Helpers
   

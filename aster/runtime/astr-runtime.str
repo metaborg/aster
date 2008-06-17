@@ -1,0 +1,12 @@
+module astr-runtime
+
+imports
+  astr/runtime/annotations
+  astr/runtime/attributes
+  astr/runtime/circular
+  astr/runtime/debug
+  astr/runtime/hashtables
+  astr/runtime/lists
+  astr/runtime/parents
+  astr/runtime/rewrites
+

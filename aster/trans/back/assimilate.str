@@ -50,4 +50,4 @@ strategies
   add-imports:
     Module(x, decl*) -> Module(x, [imports | decl*])
     with
-      imports := |[ imports annotations attributes circular parents lists rewrites debug ]|
+      imports := |[ imports astr-runtime ]|

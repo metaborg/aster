@@ -18,6 +18,7 @@ strategies
     | [ "-i", file
       , "--default-syntax", "Stratego-Attributes"
       , "-I", <xtc-find; dirname <+ !"../syntax"> "Stratego-Attributes.tbl"
+      , "-I", <xtc-find; dirname <+ !"../runtime"> "astr-runtime.str"
       ]
     )
 
