@@ -57,7 +57,7 @@ attributes
   
   local test-silly-circular circular 0 = !2
   
-  inh root.test-copy-root = id
+  local root.test-copy-root = id
   
   syn 1.test-copy-syn = id
   
