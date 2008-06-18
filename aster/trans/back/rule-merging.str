@@ -41,7 +41,7 @@ strategies
   make-merged-rule:
     def @ Attribute(_, sarity, tarity) ->
     <add-merged-rule-logic(|def)> |[
-      x_eval(as*|a*) =
+      x_eval(sa*|a*) =
         s_rewrite => x_node; // (join point)
         s_trace;
         ( s // the parentheses ensure x_node is available to decorators 
@@ -51,8 +51,8 @@ strategies
         )
     ]|
     with
-      (as*, a*)      := <RuleParams> def;
-      (s*, t*)       := <params-to-vars> (as*, a*);
+      (sa*, a*)      := <RuleParams> def;
+      (s*, t*)       := <params-to-vars> (sa*, a*);
       x_all-parents  := <AllParentsVar>;
       x_attr-cache   := <AttrCacheVar>;
       x_node         := <NodeVar>;
@@ -100,7 +100,7 @@ strategies
     end
   
   make-merged-def(|pattern, index):
-    |[ x_eval(as*|a*) = s ]| -> |[ x_eval'(as*|a*) = s ]|
+    |[ x_eval(sa*|a*) = s ]| -> |[ x_eval'(sa*|a*) = s ]|
     with
       sig     := <attribute-signature>;
       name    := <pattern-to-name-suffix> pattern;
@@ -112,7 +112,7 @@ strategies
       )
   
   make-merged-def-root:
-    |[ x_eval(as*|a*) = s ]| -> |[ x_eval-root(as*|a*) = s ]|
+    |[ x_eval(sa*|a*) = s ]| -> |[ x_eval-root(sa*|a*) = s ]|
     with
       sig         := <attribute-signature>;
       x_eval-root := <conc-strings; newname> (x_eval, "-root");
@@ -123,7 +123,7 @@ strategies
       )
   
   make-merged-def-default:
-    |[ x_eval(as*|a*) = s ]| -> |[ x_eval-default(as*|a*) = s ]|
+    |[ x_eval(sa*|a*) = s ]| -> |[ x_eval-default(sa*|a*) = s ]|
     with
       ?eval;
       sig            := <attribute-signature> eval;
@@ -141,7 +141,7 @@ strategies
     !""
   
   record-def(|accessor-type) =
-    ?|[ x_eval(as*|a*) = s ]|;
+    ?|[ x_eval(sa*|a*) = s ]|;
     sig := <attribute-signature>;
     
     if not(IsKnownRule) then
@@ -149,7 +149,7 @@ strategies
         AllRules         :+= sig
         IsKnownRule      :   sig
         RuleAccessorName :   sig -> x_eval
-        RuleParams       :   sig -> (as*, a*)
+        RuleParams       :   sig -> (sa*, a*)
         RuleAccessorType :   sig -> accessor-type
       )
     end

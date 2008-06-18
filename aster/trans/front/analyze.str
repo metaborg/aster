@@ -71,9 +71,9 @@ strategies // Providing information
     Attribute(id, is-int, is-int)
 
   attribute-signature:
-    |[ x_eval(as*|a*) = s ]| -> Attribute(x_eval', sarity, tarity)
+    |[ x_eval(sa*|a*) = s ]| -> Attribute(x_eval', sarity, tarity)
     with
-      sarity  := <length> as*;
+      sarity  := <length> sa*;
       tarity  := <subt> (<length> a*, DEFAULT_ARG_COUNT());
       x_eval' := <try(UndoAccessorName)> x_eval
   

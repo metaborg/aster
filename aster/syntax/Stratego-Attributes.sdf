@@ -33,10 +33,10 @@ exports
   
   %% TODO: New syntax? Eliminate backticks.
   %%
-  %% def collect-all foo // decl (or a different keyword; "eq"? "sem"?)
+  %% def collect-all foo // decl (or a different keyword? "eq"? "sem"?)
   %% eq foo = 2         // <- error if no accompanying def
   %%
-  %% def inh Pattern(x).bar = 3 // <- decl and def
+  %% def inh Pattern(x).bar = 3 // <- declaration and definition
   %%
   %% decorator inh collect-all(s) = id.collect-all(s) <+ ...
   
@@ -48,7 +48,8 @@ exports
     "some"     -> AttributeId %% reserved Id
  
   context-free syntax
-    Id         -> AttributeId {prefer}
+  
+    Id -> AttributeId {prefer}
   
   context-free syntax %% attributes
   

@@ -12,11 +12,11 @@ imports
 rules
 
   add-cached-rule-logic(|def):
-    |[ x_eval(as*|a*) =
+    |[ x_eval(sa*|a*) =
          s_rewrite => x_node;
          s_body
     ]| ->
-    |[ x_eval(as*|a*) =
+    |[ x_eval(sa*|a*) =
          s_cache-read
          < not(EVAL_FAILED)
          + s_rewrite => x_node;
@@ -40,8 +40,8 @@ rules
       x_attr-cache  := <AttrCacheVar>
   
   add-uncached-rule-logic:
-    |[ x_eval(as*|a*) = s ]| ->
-    |[ x_eval(as*|a*) =
+    |[ x_eval(sa*|a*) = s ]| ->
+    |[ x_eval(sa*|a*) =
          s;
          not(EVAL_FAILED);
          astr-initialize-attribute-value(|x_all-parents, x_attr-cache)

@@ -40,14 +40,14 @@ strategies
     def @ Attribute(_, sarity, tarity) ->
     <make-merged-def-default>
     |[
-      x_eval(as*|a*) =
+      x_eval(sa*|a*) =
         s_trace;
         s_rule'
     ]|
     with
       type     := <get-attribute-type> def;
-      (as*,a*) := <RuleParams> def;
-      (s*,t*)  := <params-to-vars> (as*,a*);
+      (sa*,a*) := <RuleParams> def;
+      (s*,t*)  := <params-to-vars> (sa*,a*);
       x_eval   := <RuleAccessorName> def;
       s_call   := |[ x_eval(s*|t*) ]|;
       s_rule   := <default-rule(|s_call, def)> type;
@@ -74,16 +74,16 @@ rules
     default-rule ->
     Def* |[
       ~default-rule
-      x_eval-inh(as*|a*) = fail
-      x_eval-syn(as*|a*) = fail
+      x_eval-inh(sa*|a*) = fail
+      x_eval-syn(sa*|a*) = fail
     ]|
     where
       <get-attribute-type> def => Chained()
     with
       x_eval-inh := <attribute-accessor-name(|"inh")> def;
       x_eval-syn := <attribute-accessor-name(|"syn")> def;
-      (as*,a*)   := <RuleParams> def;
-      (s*,t*)    := <params-to-vars> (as*,a*)
+      (sa*,a*)   := <RuleParams> def;
+      (s*,t*)    := <params-to-vars> (sa*,a*)
 
 rules // copy rules
 
@@ -208,9 +208,9 @@ rules // copy rules
     default-rule-call-by-sig
   
   default-rule-call-from-attr =
-    ?Attribute(_, as*, a*);
+    ?Attribute(_, sa*, a*);
     x_eval-default := <default-rule-name> <attribute-signature>;
-    (s*, t*)       := <params-to-vars> (as*, a*);
+    (s*, t*)       := <params-to-vars> (sa*, a*);
     default-t*     := <default-args>;
     
     default-rule-call(|x_eval-default, s*, [default-t*, t*])

@@ -117,8 +117,8 @@ rules // Assimilation of decorator definitions
 rules // Finishing decorator copy rules
 
   make-decorator-default-rule(|def):
-    |[ x_eval-default(as*|a*) = s  ]| ->
-    |[ x_eval-default(as*|a*) = s' ]|
+    |[ x_eval-default(sa*|a*) = s  ]| ->
+    |[ x_eval-default(sa*|a*) = s' ]|
     where
       <attribute-signature> def => Attribute(name, _, _);
       <IsDecoratorName> name
@@ -134,18 +134,18 @@ rules // Finishing decorator copy rules
 rules // Adding decoration logic to decorated rules
 
   add-decorated-rule-logic(|def):
-    |[ x_eval(as*|a*) =
+    |[ x_eval(sa*|a*) =
          s_rewrite => x_node;
          s_body
     ]| ->
-    |[ x_eval(as*|a*) =
+    |[ x_eval(sa*|a*) =
          s_rewrite => x_node;
          s_body'
     ]|
     where
       <get-attribute-type> def => Decorated(ds)
     with
-      (s*, t*) := <params-to-vars> (as*, a*);
+      (s*, t*) := <params-to-vars> (sa*, a*);
       s_body'  := <eliminate-copy-rule(|def);
                    fold-decorated-with-caching(|ds, def, s*, t*)> s_body
   
