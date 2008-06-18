@@ -21,7 +21,8 @@ strategies
       , Leaf(42)
       ).init;
       
-      id.rewrite.debug;
+      !(id.rewrite-td, id.rewrite-bu);
+      id.debug;
       
       where(
         collect-all(?Leaf(<id>));
@@ -39,5 +40,9 @@ attributes
 
 rules
 
-  `bottomup-rewrite` rewrite:
+  `rewrite-td` rewrite-td:
     Leaf(x) -> Leaf(id.global-min)
+
+  `rewrite-bu` rewrite-bu:
+    Leaf(x) -> Leaf(id.global-min)    
+

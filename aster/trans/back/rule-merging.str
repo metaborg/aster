@@ -47,7 +47,7 @@ strategies
         ( s // the parentheses ensure x_node is available to decorators 
         <+
           <s_trace-failed> x_node;
-          !EVAL_FAILED()
+          fail // UNDONE: !EVAL_FAILED()
         )
     ]|
     with

@@ -26,6 +26,11 @@ rules
         id.first-child = get-first-child(|id)
         id.last-child = get-last-child(|id)
       
+      local all(d) =
+        ?before;
+        all(d);
+        (?before <+ id.init)
+      
       inh tree-access-ancestors:
         id.root = try(id.root)
         id.ancestor(p) = p <+ id.ancestor(p)
@@ -92,12 +97,22 @@ rules
        * `map`(id.attr) is cached per list, while map(id.s) is cached per item.
        */
       local `map`(d) = map(d)
+      
+      /* TODO: Should `soft-try` be factored out again?
+               What does that mean for decorator definitions,
+               they are then basically the same as their strategy equivalents?
+      
+      local `stry`(d) =
+        id.eval(d, id)
+      */
+            
+      local `rewrite-td`(d) =
+        id.eval(d, id);
+        id.all(`rewrite-td`(d))
 
-      local `bottomup-rewrite`(d) =
-        id.eval(
-          d
-        , all(`bottomup-rewrite`(d))
-        )
+      local `rewrite-bu`(d) =
+        id.all(`rewrite-bu`(d));
+        id.eval(d, id)
       
       local `inh`(d) =
         id.eval(
@@ -105,7 +120,7 @@ rules
         , id.parent; `inh`(d)
         )
       
-      // TODO: Sane definition of `chained`
+      /* TODO: Sane definition of `chained`
       //       should semantic rules be applied only once per node,
       //       not also on the second traversal in the chain?
       //       better way to express this?
@@ -127,32 +142,32 @@ rules
         id.parent; `chained-syn-helper`(d)
       
       local `chained-inh`(d) = // main chained attribute only propagates upwards
-        id.last-child; tiny-debug(!1); `chained-inh`(d)
+        id.last-child; `chained-inh`(d)
       <+
         id.eval(
           d
         ,
-          id.prev-sibling; tiny-debug(!3); `chained-inh`(d)
+          id.prev-sibling; `chained-inh`(d)
         <+
-          id.parent; tiny-debug(!4); `chained-inh-helper`(d)
+          id.parent; `chained-inh-helper`(d)
         )
       
       local `chained-inh-helper`(d) = // helper chained attribute uses d and propagates downwards
-        tiny-debug(!5);
         id.eval(
           d
         ,
-          id.prev-sibling; tiny-debug(!6); `chained-inh`(d)
+          id.prev-sibling; `chained-inh`(d)
         <+
-          id.parent; tiny-debug(!7); `chained-inh-helper`(d)
+          id.parent; `chained-inh-helper`(d)
         )
+      */
   ]|
   
   ignore-trace-def =
     // traces on path attributes cause looping
     "path" + "path-list" + "path-and-node" 
     // helper attributes where tracing is undesirable
-  + "debug" + "enable-warnings"
+  + "debug" + "enable-warnings" + "all"
   + "next-sibling" + "prev-sibling" + "first-sibling" + "last-sibling"
   + "root" + "first-child" + "last-child"
     // attributes dealing with uninitialized terms
@@ -175,8 +190,7 @@ rules // Native attribute definitions
       s := <assimilate-native-attr> attr
   
   assimilate-native-ref-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
-    AttributeRef(t, attr) ->
-    |[ !t; s ]|
+    AttributeRef(t, attr) -> |[ !t; s ]|
     where
       s := <assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache)> attr
    
@@ -198,10 +212,10 @@ rules // Native attribute definitions
     Attribute("disable-warnings", [], []) -> |[ rules(AstrWarningsDisabled: _) ]|
 
   assimilate-native-attr:
-    Attribute("parent", [], []) -> Strat |[ get-parent(|<all-parents>); not(NoParent) ]|
+    Attribute("parent", [], []) -> |[ get-parent(|<all-parents>); not(NoParent) ]|
 
   assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
-    Attribute("parent", [], []) -> Strat |[ s_parent; not(NoParent) ]|
+    Attribute("parent", [], []) -> |[ s_parent; not(NoParent) ]|
   
   assimilate-native-attr:
     Attribute("path-list", [], []) -> |[ get-ancestor-list(|<all-parents>) ]|
@@ -210,16 +224,16 @@ rules // Native attribute definitions
     Attribute("path-list", [], []) -> |[ get-ancestor-list(|x_all-parents) ]|
 
   assimilate-native-attr:
-    Attribute("uninit", [], []) -> Strat |[ astr-remove-annos-persist(|<attr-cache>) ]|
+    Attribute("uninit", [], []) -> |[ astr-remove-annos-persist(|<attr-cache>) ]|
 
   assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
-    Attribute("uninit", [], []) -> Strat |[ astr-remove-annos-persist(|x_attr-cache) ]|
+    Attribute("uninit", [], []) -> |[ astr-remove-annos-persist(|x_attr-cache) ]|
   
   assimilate-native-attr:
-    Attribute("init", [], []) -> Strat |[ astr-initialize-node(|<all-parents>, <attr-cache>) ]|
+    Attribute("init", [], []) -> |[ astr-initialize-node(|<all-parents>, <attr-cache>) ]|
   
   assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
-    Attribute("init", [], []) -> Strat |[ astr-initialize-node(|x_all-parents, x_attr-cache) ]|
+    Attribute("init", [], []) -> |[ astr-initialize-node(|x_all-parents, x_attr-cache) ]|
   
   // TODO: id.eval() for regular attributes
   
@@ -227,7 +241,8 @@ rules // Native attribute definitions
     Attribute("eval", [s, s-default], []) -> |[ fatal-err(|"id.eval() not fully implemented yet") ]|
   
   assimilate-native-attr:
-    Attribute("ensure-init", [], []) -> Strat |[ astr-initialize-node-ensure(|<all-parents>, <attr-cache>) ]|
+    Attribute("ensure-init", [], []) -> |[ astr-initialize-node-ensure(|<all-parents>, <attr-cache>) ]|
   
   assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
-    Attribute("ensure-init", [], []) -> Strat |[ astr-initialize-node-ensure(|x_all-parents, x_attr-cache) ]|
+    Attribute("ensure-init", [], []) -> |[ astr-initialize-node-ensure(|x_all-parents, x_attr-cache) ]|
+    

@@ -12,11 +12,16 @@ imports
 rules
 
   add-cached-rule-logic(|def):
-    |[ x_eval(as*|a*) = s ]| ->
+    |[ x_eval(as*|a*) =
+         s_rewrite => x_node;
+         s_body
+    ]| ->
     |[ x_eval(as*|a*) =
          s_cache-read
          < not(EVAL_FAILED)
-         + s; // does ?x_node after rewrite
+         + s_rewrite => x_node;
+           (s_body <+ !EVAL_FAILED());
+           
            if EVAL_FAILED then
              s_cache-write;
              fail

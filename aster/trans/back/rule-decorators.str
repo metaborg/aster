@@ -69,7 +69,8 @@ rules // Assimilation of decorator definitions
       assimilate-decorated-svar(|attr, x_decorated)
     )
 
-  // TODO: Add try-eval to default-attributes, check.astr
+  // TODO: Add eval to default-attributes, check.astr
+  // TODO: Should id.eval(s) be `eval`(s)? What with the new syntax?
   
   /**
    * Assimilate a id.eval() decorator call, which
@@ -79,8 +80,7 @@ rules // Assimilation of decorator definitions
   assimilate-decorated-svar(|attr, x_decorated):
     Strat |[ t.eval(x_decorated(|), s_default|) ]| ->
     |[ !t;
-       (x_decorated <+ s_default);
-       not(EVAL_FAILED)
+       (x_decorated < not(EVAL_FAILED) + s_default)
     ]|
 
   assimilate-decorated-svar(|attr, x_decorated):
@@ -131,7 +131,7 @@ rules // Finishing decorator copy rules
         CallDecoratorDefaultRule: name -> |[ x_eval-default(s*|t*) ]|
       )
 
-rules // Adding decorated rule logic
+rules // Adding decoration logic to decorated rules
 
   add-decorated-rule-logic(|def):
     |[ x_eval(as*|a*) =
@@ -146,8 +146,21 @@ rules // Adding decorated rule logic
       <get-attribute-type> def => Decorated(ds)
     with
       (s*, t*) := <params-to-vars> (as*, a*);
-      s_body'  := <fold-decorated-with-caching(|ds, def, s*, t*)> s_body
-      
+      s_body'  := <eliminate-copy-rule(|def);
+                   fold-decorated-with-caching(|ds, def, s*, t*)> s_body
+  
+  /**
+   * Eliminate copy rules merged in at an earlier stage.
+   * (The default rule of decorated rules is only used for recursion.)
+   */
+  eliminate-copy-rule(|def) =
+    where(
+      default-rule := <default-rule-name> def
+    );
+    oncetd(
+      (CallT(<oncetd(?default-rule)>, _, _) -> Fail())
+    )
+  
   fold-decorated-with-caching(|decorators, def, s*, t*) =
     ?s_body;
     !decorators;

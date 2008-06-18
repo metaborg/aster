@@ -19,6 +19,7 @@ exports
     ChildDot
     DotChild
     DecoratorId
+    AttributeId
     AttributeDeclId
     OptChildDot
     OptDotChild
@@ -42,19 +43,23 @@ exports
   lexical syntax
   
     "`" Id "`" -> DecoratorId
+   Id          -> AttributeId {prefer}
+   "all"       -> AttributeId %% reserved Id
+   "one"       -> AttributeId %% reserved Id
+   "some"      -> AttributeId %% reserved Id
   
   context-free syntax %% attributes
   
-    Id          -> AttributeDeclId
+    AttributeId -> AttributeDeclId
     DecoratorId -> AttributeDeclId {cons("Decorator")}
     
     AttributeDeclId "(" { Typedid "," }* "|" { Term "," }* ")" -> AttributeDecl {cons("Attribute")}
     AttributeDeclId "(" { Typedid "," }*                   ")" -> AttributeDecl {cons("AttributeNoTerms")}
     AttributeDeclId                                            -> AttributeDecl {cons("AttributeNoArgs")}
     
-    Id "(" { Strategy "," }* "|" { Term "," }* ")" -> AttributeRef {cons("Attribute")}
-    Id "(" { Strategy "," }*                   ")" -> AttributeRef {cons("AttributeNoTerms")}
-    Id                                             -> AttributeRef {cons("AttributeNoArgs")}
+    AttributeId "(" { Strategy "," }* "|" { Term "," }* ")" -> AttributeRef {cons("Attribute")}
+    AttributeId "(" { Strategy "," }*                   ")" -> AttributeRef {cons("AttributeNoTerms")}
+    AttributeId                                             -> AttributeRef {cons("AttributeNoArgs")}
 
     AttributeCallLHS "." AttributeRef -> AttributeCall {cons("AttributeRef")}
     Term                              -> AttributeCallLHS

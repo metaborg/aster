@@ -8,6 +8,8 @@ STRCFLAGS = \
 
 TESTS = empty find-minimum repmin repmin-anonymous repmin-hag repmin-hag-decorated binary-numbers caching cons-nil anonymous-rules circular-basic circular-liveness circular-liveness-rewrites decorators
 
+CLEANFILES = $(tests)
+
 clean :
 	rm -f $(RUN_TESTS) $(STR_TESTS) test-stratego-rerag test-attributes.str
 

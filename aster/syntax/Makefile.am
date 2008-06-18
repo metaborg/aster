@@ -1,10 +1,10 @@
 include $(top_srcdir)/Makefile.xt
 include $(wildcard *.dep)
 
-
 TBLS_DEFS = Stratego-Attributes.tbl \
             Stratego-Attributes.def \
             Stratego-Attributes.str \
+            Stratego-Attributes-in-Stratego.def \
             Stratego-Attributes-in-Stratego.tbl
 
 SIGS = Stratego-Attributes.str

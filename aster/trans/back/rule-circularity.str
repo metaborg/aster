@@ -8,7 +8,10 @@ imports
 strategies
 
   add-circular-rule-logic(|def):
-    |[ x_eval(as*|a*) = s ]| ->
+    |[ x_eval(as*|a*) =
+         s_rewrite => x_node;
+         s_body
+    ]| ->
     Def* |[
       /**
        * Read from cache, or enqueue into fixpoint with initial value
@@ -47,7 +50,10 @@ strategies
           ?x_node;
           <s_cache-write> CIRCULAR_BUSY(x_old-value)
         });
-        s;
+        
+        s_rewrite => x_node;
+        (s_body <+ !EVAL_FAILED());
+        
         if eq-ignore-annos(|x_old-value) then
           // verbose-msg(!"  [circ.] No change @", <strip-annos> x_node, !"with", strip-annos);
           circular-add-participant(|x_attr-cache, x_node, t_name-args, x_old-value);
