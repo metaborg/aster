@@ -16,17 +16,3 @@ exports
   
     "as"[0-9\']* "*"                     -> {Typedid ","}+ {prefer}
 
-  variables
-  
-    %% HACK: Redefinitions for variables on injections
-    %%       (could this be fixed using a context-free definition of AttributeId?)
-  
-    [xyzfglc][0-9\']* -> AttributeId {prefer}
-    
-    [xyzfglc] "_" [A-Za-z0-9\'\-\_]+     -> AttributeId {prefer}
-    [xyzfglc] "_" [A-Za-z0-9\'\-\_]+ "*" -> AttributeId* {prefer}
-
-  context-free syntax
-
-    "~id:" StrategoTerm -> AttributeId {cons("FromTerm")}
-

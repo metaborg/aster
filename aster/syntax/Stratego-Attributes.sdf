@@ -41,12 +41,14 @@ exports
   %% decorator inh collect-all(s) = id.collect-all(s) <+ ...
   
   lexical syntax
-  
+
     "`" Id "`" -> DecoratorId
-   Id          -> AttributeId {prefer}
-   "all"       -> AttributeId %% reserved Id
-   "one"       -> AttributeId %% reserved Id
-   "some"      -> AttributeId %% reserved Id
+    "all"      -> AttributeId %% reserved Id
+    "one"      -> AttributeId %% reserved Id
+    "some"     -> AttributeId %% reserved Id
+ 
+  context-free syntax
+    Id         -> AttributeId {prefer}
   
   context-free syntax %% attributes
   
