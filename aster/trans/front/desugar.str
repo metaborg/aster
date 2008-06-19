@@ -57,17 +57,19 @@ rules
 rules // where and with clause
 
   // These are inlined as strategies above,
-  // but only the WhereClause remains in the core language
-  // for special treatment by the assimilation phase.
+  // but need to be rewritten to regular statements
   
   desugar-where-with:
-    Seq(WithClause(s1), s2) -> |[ where(s1); s2 ]|
+    Seq(WhereClause(s1), s2) -> |[ where(s1); s2 ]|
+  
+  desugar-where-with:
+    Seq(WithClause(s1), s2) -> |[ with(s1); s2 ]|
   
   desugar-where-with:
     NoWhere() -> Id()
   
   desugar-where-with:
-    Seq(WhereWithClause(s1, s2), s3) -> Seq(WhereClause(s1), Seq(Where(s2), s3))
+    Seq(WhereWithClause(s1, s2), s3) -> |[ where(s1); with(s2); s3 ]|
   
   desugar-where-with:
     AnonymousRewriteRuleNoWhere(t1, t2) -> AnonymousRewriteRule(t1, t2, Id())

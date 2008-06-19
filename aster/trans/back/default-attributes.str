@@ -93,6 +93,9 @@ rules
       inh `at-root`(d) =
         `at-root`(d) <+ d
       
+      // TODO: Should collect-all et al accept only soft failure?
+      //       (and how to express that nicely?)
+      
       /**
        * Collects all nodes in the tree where the attribute can be applied,
        * including subnodes of the results.

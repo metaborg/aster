@@ -164,6 +164,8 @@ exports
     "with" Strategy                  -> Where {cons("WithClause")}
     "where" Strategy "with" Strategy -> Where {cons("WhereWithClause")}
 
+    %% TODO: Allow lists of where/with clauses
+
             -> NoWhere {cons("NoWhere")}
     NoWhere -> OptWhere
     Where   -> OptWhere
