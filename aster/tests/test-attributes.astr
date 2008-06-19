@@ -59,7 +59,7 @@ attributes
   
   local root.test-copy-root = id
   
-  syn 1.test-copy-syn = id
+  syn 1.is-one = id
   
   local Fork(a@1, 2).a.child-def = id
   
@@ -91,9 +91,15 @@ attributes
     , ?Fork(1, 3)
     );
     apply-and-check(
-      !"synthesized copy rule"
-    , id.test-copy-syn
+      !"synthesized copy rule (1)"
+    , id.is-one
     , !Fork(1, 3).init
+    , ?1
+    );
+    apply-and-check(
+      !"synthesized copy rule (2)"
+    , id.is-one
+    , !Fork(3, 1).init
     , ?1
     );
     apply-and-check(

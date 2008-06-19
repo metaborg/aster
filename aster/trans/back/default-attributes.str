@@ -25,16 +25,22 @@ rules
         id.last-sibling = get-last-child(|id.parent)
         id.first-child = get-first-child(|id)
         id.last-child = get-last-child(|id)
+        id.child(d) = one(d; ?it); !it
       
-      local all(d) =
+      local /*plain*/ all(d) =
         ?before;
         all(d);
+        (?before <+ id.init)
+      
+      local /*plain*/ some(d) =
+        ?before;
+        some(d);
         (?before <+ id.init)
       
       inh tree-access-ancestors:
         id.root = try(id.root)
         id.ancestor(p) = p <+ id.ancestor(p)
-        id.ancestors(top,p) = top <+ p; id.ancestors(p, top)
+        // id.ancestors(p,path) = p <+ id.parent; path; id.ancestors(p, path)
       
       local path =
         id.path-list;
@@ -78,13 +84,11 @@ rules
       
       // Decorators
       
-      /*
+      /* TODO: eval with hard-fail argument (once the syntax allows it)
+      
       local `eval`(s, soft-fail, hard-fail) =
-        ( id.eval(s, soft-fail <+ ?is-soft-fail)
-        <+
-          hard-fail
-        );
-        not(!is-soft-fail)
+        id.eval(s, soft-fail <+ ?soft-fail) < not(!soft-fail)
+                                            + hard-fail
       */
       
       /**
@@ -125,6 +129,17 @@ rules
       local `rewrite-bu`(d) =
         id.all(`rewrite-bu`(d));
         id.eval(d, id)
+      
+      /**
+       * Terminate with a fatal error if the decorated attribute results in a hard failure.
+       */
+      local `hard-fail-fatal`(d):
+        id -> result 
+        where
+          id.eval(d, ?soft-fail) => result
+          < not(!soft-fail)
+          + id.uninit;
+            fatal-err(|"Hard failure not expected in decorated attribute")
       
       local `inh`(d) =
         id.eval(

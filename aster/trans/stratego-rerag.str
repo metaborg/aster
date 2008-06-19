@@ -20,7 +20,7 @@ strategies
   // TODO: Add switch for run-time checks, e.g., for circularity and tree concistency
   
   stratego-rerag =
-    map1(add-default-attributes);
+    one(add-default-attributes);
     desugar-all;
     
     // init-check; // TODO: init-check, if working w/ dyn. rules...?

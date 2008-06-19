@@ -38,8 +38,8 @@ attributes
     decorator -> "Undefined attribute decorator referenced"
     where
       is-string;
-      id.ancestors(?Decorated(_), is-list);
-      not(<get-attribute-type> Attribute(<id>, [1], []))
+      id.ancestor(?Decorated(_));
+      not(<get-attribute-type> Attribute(Decorator(decorator), [1], []))
     
     AttributeDef(_, _, _) -> "Attribute type not declared"
     where

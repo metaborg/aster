@@ -45,6 +45,8 @@ exports
   %% TODO: Typed declarations?
   %%
   %% def collect-all foo : Sort [ => Sort ] [ := ... | ... ]
+  %%
+  %% or def Sort.[pattern.]collect-all (confusing for sort 'List(x)' or pattern 'Foo')
   
   lexical syntax
 

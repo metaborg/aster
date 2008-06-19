@@ -156,8 +156,8 @@ rules // copy rules
     Syn() ->
     |[
        ?x_node;
-       get-first-child(|x_node);
-       x_eval(s* |x_node, t*)
+       one(x_eval(s* |x_node, t*) => x_value);
+       !x_value
     ]|
     with
       x_node  := <NodeVar>;
