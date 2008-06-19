@@ -1,29 +1,25 @@
 testsuite Stratego-Attributes
-topsort Module
+topsort Decl
 
 test Rules block
-   "module foo rules" -> Module("foo",[Rules([])])
+   "rules" -> Rules([])
 
 test Assignment in pattern definition block
-  "module foo
-   rules
+  "rules
     eq attribute:
       Pattern(x) -> 2 where Foo() :=  x"
 ->  _
   
 test Rule definition vs. attribute pattern definition block
-  "module foo
-   rules eq foo: 1 -> 2 eq bar : 3 -> 4"
+  "rules eq foo: 1 -> 2 eq bar : 3 -> 4"
 -> _
 
 test Rule definition vs. attribute pattern definition block (2)
-  "module foo
-   rules eq foo: 1 -> 2 syn bar : 3 -> 4"
+  "rules eq foo: 1 -> 2 syn bar : 3 -> 4"
 -> _
 
 test Attribute pattern block with strategy definitions
-  "module foo
-   rules
+  "rules
      eq Pattern(child):
        child.bar = !1
        id.baz = !2
@@ -31,8 +27,7 @@ test Attribute pattern block with strategy definitions
 -> _
 
 test Empty pattern block and strategy definition
-  "module foo
-   rules
+  "rules
      eq Pattern(child):
      
      bar = !1 // not to be confused with id.bar = !1
@@ -40,8 +35,7 @@ test Empty pattern block and strategy definition
 fails
 
 test Non-empty pattern block and strategy definition
-  "module foo
-   rules
+  "rules
      eq Pattern(child):
        id.bar = !1
      
@@ -50,125 +44,110 @@ test Non-empty pattern block and strategy definition
 -> _
 
 test Decorated rule (1)
-  "module foo
-   rules
+  "rules
      s = ?a 
      
      `custom` rule : 2 -> 3
   " -> _
 
 test Decorated rule (2)
-  "module foo
-   rules
+  "rules
      `custom` Pattern(s): s.x := 3
   " -> _  
 
 test Attribute definition block with variable pattern
-  "module foo
-   rules
+  "rules
      local foo:
        id.bar = id
        id.baz = id
   " -> _
   
 test Attribute definition block with single strategy
-  "module foo
-   rules
+  "rules
      local foo(s):
        id.bar = s
   " -> _
   
 test Attribute reference in match
-  "module foo
-   rules
+  "rules
      s = ?1.bar
   " -> _
   
 test Attribute defined on tuple
-  "module foo
-   rules
+  "rules
      eq (1,2,3).foo = !1
   " -> _
 
 test Attribute localfoo
-  "module foo
-   rules
+  "rules
      local foo = !1
   " -> _
 
 test Pattern rootfoo
-  "module foo
-   rules
+  "rules
      eq rootfoo.bar = !1
   " -> _
 
 test Attribute block defined on tuple
-  "module foo
-   rules
+  "rules
      local (a,b):
         a.x := 1
   " -> _
 
 test Attribute on term 'eq'
-  "module foo
-   rules
+  "rules
      eq eq = 1
   " -> _
 
 test AttributeDecl and AttributeDefNoPattern
-  "module foo rules
+  "rules
      syn x
      eq B(a): id.x = 1
    " -> _
 
 test Attribute definition vs. <App> (1)
-  "module foo
-   rules
+  "rules
      s = x := <Foo>
      eq bar = 1
   " -> _
 
 test Attribute definition vs. <App> (2)
-  "module foo
-   rules
+  "rules
      s = x := <Foo>
      syn bar = 1
   " -> _
 
 test Attribute reference vs. <App> (1)
-  "module foo rules
+  "rules
      s = <foo> 1.bar
-  " -> Module("foo",[Rules([SDefNoArgs("s",BA(CallNoArgs(SVar("foo")),NoAnnoList(AttributeTerm(AttributeRef(NoAnnoList(Int("1")),AttributeNoArgs("bar"))))))])])
+  " -> Rules([SDefNoArgs("s",BA(CallNoArgs(SVar("foo")),NoAnnoList(AttributeTerm(AttributeRef(NoAnnoList(Int("1")),AttributeNoArgs("bar"))))))])
   
 test Attribute reference vs. <App> (2)
-  "module foo rules
+  "rules
      s = <foo> foo.bar
-  " -> Module("foo",[Rules([SDefNoArgs("s",BA(CallNoArgs(SVar("foo")),NoAnnoList(AttributeTerm(AttributeRef(Var("foo"),AttributeNoArgs("bar"))))))])])
+  " -> Rules([SDefNoArgs("s",BA(CallNoArgs(SVar("foo")),NoAnnoList(AttributeTerm(AttributeRef(Var("foo"),AttributeNoArgs("bar"))))))])
 
 test Attribute as annotation list
-  "module foo rules
+  "rules
     s = !1{^id.annos}
   " -> _
 
 test Attribute pattern definitions vs. <App> (1)
-  "module foo
-   rules
+  "rules
      eq inh:
        1 -> <s>
        A(2) -> 3
-  " -> Module("foo",[Rules([PatternDefBlock(NoType,AttributeNoArgs("inh"),NotCircular,[AttributePDefTerm(NoAnnoList(Int("1")),NoChild,RootApp(CallNoArgs(SVar("s"))),NoWhere),AttributePDefTerm(NoAnnoList(Op("A",[NoAnnoList(Int("2"))])),NoChild,NoAnnoList(Int("3")),NoWhere)])])])
+  " -> Rules([PatternDefBlock(NoType,AttributeNoArgs("inh"),NotCircular,[AttributePDefTerm(NoAnnoList(Int("1")),NoChild,RootApp(CallNoArgs(SVar("s"))),NoWhere),AttributePDefTerm(NoAnnoList(Op("A",[NoAnnoList(Int("2"))])),NoChild,NoAnnoList(Int("3")),NoWhere)])])
 
 test Attribute pattern definitions vs. <App> (2)
-  "module foo
-   rules
+  "rules
      eq inh:
        1 -> <s> A
        (2) -> 3
-  " -> Module("foo",[Rules([PatternDefBlock(NoType,AttributeNoArgs("inh"),NotCircular,[AttributePDefTerm(NoAnnoList(Int("1")),NoChild,App(CallNoArgs(SVar("s")),Var("A")),NoWhere),AttributePDefTerm(NoAnnoList(Tuple([NoAnnoList(Int("2"))])),NoChild,NoAnnoList(Int("3")),NoWhere)])])])
+  " -> Rules([PatternDefBlock(NoType,AttributeNoArgs("inh"),NotCircular,[AttributePDefTerm(NoAnnoList(Int("1")),NoChild,App(CallNoArgs(SVar("s")),Var("A")),NoWhere),AttributePDefTerm(NoAnnoList(Tuple([NoAnnoList(Int("2"))])),NoChild,NoAnnoList(Int("3")),NoWhere)])])
 
 test Attribute pattern definitions vs. <App> (3)
-  "module foo
-   rules
+  "rules
      eq inh:
        1 -> <s>
        A
@@ -176,52 +155,49 @@ test Attribute pattern definitions vs. <App> (3)
   " -> _ // just has to be unambiguous
 
 test Attribute pattern definitions vs. <App> (4)
-  "module foo
-   rules
+  "rules
      eq inh:
        1 -> <s> A (2) -> 3" -> _ // just has to be unambiguous
 
 test Attribute pattern definitions vs. <App> (5)
-  "module foo
-   rules
+  "rules
      eq inh:
        1 -> <s> 2 -> 3" fails // not so nice, but just has to be unambiguous
 
 
 test Attribute pattern definitions vs. <App> (6)
-  "module foo
-   rules
+  "rules
      eq inh: 1 -> 2 3 -> 4" -> _
 
 test Attribute pattern definitions vs. <App> (7)
-  "module foo
-   rules
+  "rules
      eq inh:
        1 -> <s> A /* foo */ (2) -> 3" -> _ // just has to be unambiguous
 
 test Attribute pattern definitions vs. <App> (8)
-  "module foo
-   rules
+  "rules
      eq inh:
        1 -> <s> /* foo */ A (2) -> 3" -> _ // just has to be unambiguous
 
 test Attribute pattern definitions vs. <App> (9)
-  "module foo
-   rules
+  "rules
      eq inh: 1 -> <s1;
                    s2> with foo
      bar = 1
   " -> _
 
-tests Disallow childless attribute strategy in block
-  "module foo
-   rules
-     local 
-  " -> _
+test Disallow childless attribute strategy in block
+  "rules
+     local Pattern(x, y):
+       attribute := 3
+  " fails
 
-tests Attributes in pattern
-  "module foo
-   rules
+test Attributes in pattern
+  "rules
      eq Foo(id.eq(|baz)).bar(|baz) = id
   " -> _
+
+test Mixture of attribute keywords and identifiers
+  "rules
+     eq `eq` eq = 1" -> _ // could break with future syntax
 

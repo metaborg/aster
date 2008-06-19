@@ -78,6 +78,15 @@ rules
       
       // Decorators
       
+      /*
+      local `eval`(s, soft-fail, hard-fail) =
+        ( id.eval(s, soft-fail <+ ?is-soft-fail)
+        <+
+          hard-fail
+        );
+        not(!is-soft-fail)
+      */
+      
       /**
        * Applies the attribute semantic rule at the root of the tree.
        */

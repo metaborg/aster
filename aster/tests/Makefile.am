@@ -6,7 +6,7 @@ STRCFLAGS = \
 	--format-check 0 \
 	-Xcc -O0
 
-TESTS = empty find-minimum repmin repmin-anonymous repmin-hag repmin-hag-decorated binary-numbers caching cons-nil anonymous-rules circular-basic circular-liveness circular-liveness-rewrites decorators
+TESTS = Stratego-Attributes.runtestsuite empty find-minimum repmin repmin-anonymous repmin-hag repmin-hag-decorated binary-numbers caching cons-nil anonymous-rules circular-basic circular-liveness circular-liveness-rewrites decorators
 
 CLEANFILES = $(tests)
 
