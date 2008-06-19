@@ -11,6 +11,14 @@ strategies // Util
 
   debug' = where(strip-annos; debug)
   
+  with'(s) =
+    s
+  <+
+    astr-remove-annos;
+    log(|Critical(), "Internal error: with clause failed unexpectedly", <id>);
+    prim("SSL_stacktrace_get_all_frame_names");
+    report-failure
+  
   // TODO2: Optimize - eq-ignore-annos is expensive
   
   eq-ignore-annos(|term) =

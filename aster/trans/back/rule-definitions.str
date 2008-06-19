@@ -44,7 +44,7 @@ strategies
         ?x_node;
         where(s_init-args);
         s_pattern;
-        (s' <+ !EVAL_FAILED())
+        s'
     ]|
     with
       x_parent           := <ParentVar>;
@@ -75,7 +75,7 @@ strategies
       topdown(try(
         assimilate-expr-inside-ag(|sig, s_parent, s_parent-desired, x_node, x_all-parents, x_attr-cache)
       ));
-      ?s'
+      add-eval-failed => s'
     
   assimilate-def:
     AttributeDecl(_, _, _, _) -> []
@@ -111,6 +111,14 @@ rules // Argument patterns
     ]| 
 
 rules // Semantic rule definition helpers
+
+  add-eval-failed:
+    Seq(WhereClause(s1), s2) -> |[ where(s1); (s2 <+ !EVAL_FAILED()) ]|
+  
+  add-eval-failed:
+    s -> |[ s <+ !EVAL_FAILED() ]|
+    where
+      not(?Seq(WhereClause(c), _))
   
   /**
    * Match based on an ancestor (e.g., for inh Foo(Bar(x)).x).

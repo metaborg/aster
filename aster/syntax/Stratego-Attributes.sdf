@@ -42,13 +42,17 @@ exports
   %%
   %% decorator inh collect-all(s) = id.collect-all(s) <+ ...
   
+  %% TODO: Typed declarations?
+  %%
+  %% def collect-all foo : Sort [ => Sort ] [ := ... | ... ]
+  
   lexical syntax
 
     "`" Id "`" -> DecoratorId
     "all"      -> AttributeId %% reserved Id
     "one"      -> AttributeId %% reserved Id
     "some"     -> AttributeId %% reserved Id
- 
+  
   context-free syntax
   
     Id -> AttributeId {prefer}

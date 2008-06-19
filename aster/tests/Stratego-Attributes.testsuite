@@ -26,13 +26,18 @@ test Attribute pattern block with strategy definitions
   "
 -> _
 
-test Empty pattern block and strategy definition
+test Disallow childless attribute definition in block (1)
   "rules
      eq Pattern(child):
      
      bar = !1 // not to be confused with id.bar = !1
-  "
-fails
+  " fails
+
+test Disallow childless attribute definition in block (2)
+  "rules
+     local Pattern(x, y):
+       attribute := 3
+  " fails
 
 test Non-empty pattern block and strategy definition
   "rules
@@ -185,12 +190,6 @@ test Attribute pattern definitions vs. <App> (9)
                    s2> with foo
      bar = 1
   " -> _
-
-test Disallow childless attribute strategy in block
-  "rules
-     local Pattern(x, y):
-       attribute := 3
-  " fails
 
 test Attributes in pattern
   "rules
