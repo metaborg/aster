@@ -58,8 +58,42 @@ strategies
       all(
         ?child; ?found-previous
       <+
-        where(!found-previous);
+        where(!found-previous); // start at the current term
         ?next
+      <+
+        id
+      );
+      !next
+    end
+  
+  get-prev-sibling(pattern|parent) =
+    ?child;
+    !parent;
+    if is-list then
+      ?[<pattern> | child] // consnil semantics
+    else
+      (id < id + ?match);
+      one(
+        pattern => match
+      <+
+        ?child
+      );
+      !match
+    end
+  
+  get-next-sibling(pattern|parent) =
+    ?child;
+    !parent;
+    if is-list then
+      ?[child | <pattern>] // consnil semantics
+    else
+      (id < id + ?found-self; ?next); // not unbound
+      all(
+        ?child; ?found-self
+      <+
+        where(!found-self); // start at the current term
+        not(!next);
+        pattern => next
       <+
         id
       );

@@ -18,13 +18,15 @@ rules
     attributes
       local enable-warnings = rules(AstrWarningsDisabled :- _)
       
-      local tree-access:
+      local /*plain*/ tree-access:
         id.prev-sibling  = get-prev-sibling(|id.parent)
         id.next-sibling  = get-next-sibling(|id.parent)
         id.first-sibling = get-first-child(|id.parent)
         id.last-sibling = get-last-child(|id.parent)
         id.first-child = get-first-child(|id)
         id.last-child = get-last-child(|id)
+        id.prev-sibling(d) = get-prev-sibling(d|id.parent)
+        id.next-sibling(d) = get-next-sibling(d|id.parent)
         id.child(d) = one(d; ?it); !it
       
       local /*plain*/ all(d) =
@@ -40,7 +42,7 @@ rules
       inh tree-access-ancestors:
         id.root = try(id.root)
         id.ancestor(p) = p <+ id.ancestor(p)
-        // id.ancestors(p,path) = p <+ id.parent; path; id.ancestors(p, path)
+        // id.ancestors(p,path) := <p <+ path; id.ancestors(p, path)>
       
       local path =
         id.path-list;
@@ -138,8 +140,9 @@ rules
         where
           id.eval(d, ?soft-fail) => result
           < not(!soft-fail)
-          + id.uninit;
-            fatal-err(|"Hard failure not expected in decorated attribute")
+          + log(|Critical(), "Hard failure not expected in decorated attribute", id.uninit);
+            print-stacktrace;
+            <exit> 1
       
       local `inh`(d) =
         id.eval(

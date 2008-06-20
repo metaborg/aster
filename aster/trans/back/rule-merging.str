@@ -18,8 +18,23 @@ overlays
 
 strategies
   
-  // TODO: Cheap circularity detection using counter argument?
+  // TODO: Runtime circularity detection using counter argument?
+
   // TODO2: Optimize - inline rule defs in ordered rule defs?
+
+  // TODO: Fallthrough to alternatives on hard failure
+  //
+  // We now have: alt1 <+ alt2 <+ ... <+ default
+  //
+  // We want:
+  //  
+  //   alt1 // = alt1 <+ !EVAL_FAILED);
+  //   (not(EVAL_FAILED); ?success <+ try(?hard-failure));
+  //   (!success
+  //    <+ alt2
+  //       ...
+  //       not(!hard-failure); default
+  //   
   
   add-merged-rules:
     Module(x, decl*) -> Module(x, [decl*, ordered*])

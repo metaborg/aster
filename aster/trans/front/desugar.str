@@ -39,13 +39,15 @@ rules
      
   desugar-attribute-def:
     AttributePDefTerm(pattern, child, term, condition) ->
-    AttributePDefStrategy(pattern, child, strategy)
-    where strategy := Seq(condition, Build(term))
+    AttributePDefStrategy(pattern, child, s)
+    where
+      s := Seq(condition, Build(term))
   
   desugar-attribute-def:
     AttributeDefTerm(child, attribute, circular, term, condition) ->
     AttributeDefStrategy(child, attribute, circular, s)
-    where s := Seq(condition, Build(term))
+    where
+      s := Seq(condition, Build(term))
   
   desugar-attribute-def:
     AttributeDefNoPattern(type, value) ->
@@ -61,7 +63,6 @@ rules // where and with clause
   // for special treatment by the assimilation phase.
   
   desugar-where-with:
-
     Seq(WithClause(s1), s2) -> |[ with'(s1); s2 ]|
   
   desugar-where-with:

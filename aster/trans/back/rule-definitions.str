@@ -16,6 +16,10 @@ overlays
 
 strategies
 
+  // TODO: Reconsider hard failure for attribute strategies
+  //       id.ancestor(p) = p <+ id.ancestor(p) isn't nice to write,
+  //       but it's consistent with the := operator
+
   // TODO2: runtime check for anotated terms used for/by dynamic rules
   
   default-params =
@@ -42,8 +46,8 @@ strategies
     Def |[
       x_eval(sa* |x_parent, x_all-parents, x_attr-cache, x_rewrite-mode, a'*) =
         ?x_node;
-        where(s_init-args);
         s_pattern;
+        where(s_init-args); // TODO: init args first if built in pattern?
         s'
     ]|
     with
@@ -98,16 +102,15 @@ rules // Argument patterns
     (id, fold-seq)
   
   extract-arg-pattern:
-    t -> (DefaultVarDec(x_name), |[ t' := x_name ]|)
+    t -> (DefaultVarDec(x_name), |[ !x_name; s ]|)
     with
-      t'     := <alltd(match-var-ignore-annos)> t; // don't care about annos
+      s      := <alltd(match-var-ignore-annos)> t; // don't care about annos
       x_name := <newname> "arg"
   
   match-var-ignore-annos:
     Var(x) ->
-    Term |[
-      <(id < id + ?x); // x may be bound or not; turn off compiler complaints
-       (?x <+ eq-ignore-annos(|x))>
+    |[ (id < id + ?x); // x may be bound or not; avoid compiler complaints
+       (?x <+ eq-ignore-annos(|x))
     ]| 
 
 rules // Semantic rule definition helpers

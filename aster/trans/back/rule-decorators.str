@@ -147,7 +147,15 @@ rules // Adding decoration logic to decorated rules
     with
       (s*, t*) := <params-to-vars> (sa*, a*);
       s_body'  := <eliminate-copy-rule(|def);
+                   add-ensure-init;
                    fold-decorated-with-caching(|ds, def, s*, t*)> s_body
+  
+  add-ensure-init:
+    s ->
+    |[ s; (EVAL_FAILED <+ astr-initialize-attribute-value(|x_all-parents, x_attr-cache)) ]|
+    with
+      x_all-parents := <AllParentsVar>;
+      x_attr-cache  := <AttrCacheVar>
   
   /**
    * Eliminate copy rules merged in at an earlier stage.
