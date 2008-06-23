@@ -11,7 +11,7 @@ strategies
       verbose-option
     ,
       make-input;
-      id.debug => [Assign("x","value"), While("x", [Assign("x","value")]), Return("x")]
+      id.debug => Block([Assign("x","value"), While("x", Block([Assign("x","value")])), Return("x")])
     )
   
 rules
