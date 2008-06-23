@@ -6,6 +6,7 @@ imports
 
 strategies
 
+  /*
   attribute-type-name(|local-type) =
     if NoType() := local-type then
       get-attribute-type // globally declared type
@@ -19,14 +20,17 @@ strategies
       case Decorated(id): !"decorated"
       otherwise:          !"syn"
     end
+  */
 
-  attribute-accessor-name(|type) =
+  attribute-accessor-name(|decorators) =
     attribute-signature => Attribute(name, _, _);
-    accessor := <conc-strings> ("eval-", type, "-", name);
+    decorators' := <conc-strings> <separate-by(|"-")> decorators;
+    accessor := <conc-strings> ("eval-", decorators', "-", name);
     rules(
       UndoAccessorName: accessor -> name
     )
   
+  /*
   preferred-attribute-accessor-type =
     attribute-type-name(|NoType())
-
+  */

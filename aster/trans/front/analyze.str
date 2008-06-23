@@ -9,8 +9,9 @@ imports
 strategies // Analysis
 
   analyze =
-    ( ?AttributeDef(type, _, AttributeDefStrategy(_, attribute, circular, s))
-    + ?AttributeDecl(type, _, attribute, circular)
+    ( ?AttributeDef(type, decorators, AttributeDefStrategy(_, attribute, s))
+    + ?AttributeDecl(decorators, attribute) => is-decorator
+    + ?DecoratorDef(type, decorators, AttributeDefStrategy(_, attribute, s))
     );
     with(
       sig     := <attribute-signature> attribute;
@@ -20,6 +21,12 @@ strategies // Analysis
       if Circular(value) := circular then
         rules(
           AttributeCircular: sig -> value
+        )
+      end;
+      
+      if !is-decorator then
+        rules(
+          IsDecorator: sig
         )
       end;
       
