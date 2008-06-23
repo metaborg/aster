@@ -40,7 +40,8 @@ rules // Assimilation of decorator definitions
   
   assimilate-decorator-def =
     AttributeDef(
-      id
+      Decorator()
+    , id
     , id
     , AttributeDefStrategy(
         id
@@ -103,7 +104,8 @@ rules // Assimilation of decorator definitions
         AttributeType: sig' -> <AttributeType> sig
       )
     )
-    
+  
+  /*
   assimilate-decorator-id:
     Decorator(x) -> x'
     with
@@ -113,6 +115,7 @@ rules // Assimilation of decorator definitions
       rules(
         IsDecoratorName: x'
       )
+  */
 
 rules // Finishing decorator copy rules
 
@@ -237,4 +240,3 @@ strategies // Helpers
       s_parent       := |[ ?x_node < !x_parent + !UnknownParent() ]|
     );
     assimilate-attr-ref-inside-ag(|s_parent, s_parent, x_all-parents, x_node, x_attr-cache)
-      

@@ -133,23 +133,21 @@ rules
     not(?before)
 
   at-match(s) =
-    Match(s) + NameDefBlock(id, s, id, id) + RuleNoCond(s, id) + Rule(s, id, id) + AM(id, s) + Assign(s, id)
-  + AttributeDefStrategy(id, Attribute(id, id, map(s)), id, id) + AnonymousRewriteRule(s, id, id)
+    Match(s) + NameDefBlock(id, id, s, id) + RuleNoCond(s, id) + Rule(s, id, id) + AM(id, s) + Assign(s, id)
+  + AttributeDefStrategy(id, Attribute(id, id, map(s)), id) + AnonymousRewriteRule(s, id, id)
      
 rules // flatten block definitions to individual definitions
 
   astr-flatten-block-def =
-    ?NameDefBlock(type, pattern, circular1, <id>);
+    ?NameDefBlock(type, decorators, pattern, <id>);
     map(
-      \AttributeDefStrategy(child, attr, circular2, s) ->
-       AttributeDef(type, pattern, AttributeDefStrategy(child, attr, circular3, s))
-       with
-         circular3 := <if(NotCircular, !circular1)> circular2\
+      \AttributeDefStrategy(child, attr, s) ->
+       AttributeDef(type, decorators, pattern, AttributeDefStrategy(child, attr, s))\
     )
   
   astr-flatten-block-def =
-    ?PatternDefBlock(type, attribute, circular, <id>);
+    ?PatternDefBlock(type, decorators, attribute, circular, <id>);
     map(
       \AttributePDefStrategy(pattern, child, s) ->
-       AttributeDef(type, pattern, AttributeDefStrategy(child, attribute, circular, s))\
+       AttributeDef(type, decorators, pattern, AttributeDefStrategy(child, attribute, s))\
     )

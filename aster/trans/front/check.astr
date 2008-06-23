@@ -29,7 +29,7 @@ rules
 
 attributes
   
-  local error:
+  def error:
     Attribute(name, _, _) -> "Undefined attribute referenced"
     where
       not(get-attribute-type + is-native-attribute);
@@ -88,7 +88,7 @@ attributes
     AttributeDef(_, _, AttributeDefStrategy(_, Attribute([_ | _], _, _), Circular(_), _)) ->
     "Circular attributes cannot have strategy arguments" 
 
-  local warning:
+  def warning:
     Var(x) -> "Performing match using annotated term - use id.eq instead"
     where
       id.in-match;
@@ -104,12 +104,13 @@ attributes
   // - inh foo(x) = .... ?x -> Warning: should not use annotated terms in match?
   // - congruence in attribute strategy: Foo().x = Bar() always results in a hard failure
   // - inh x := y -> "set default value using root.x := y"
+  // - decorators have no sort or pattern spec
 
 attributes
 
   is-recursive-definition = id // TODO2: is-recursive-definition
   
-  inh in-match:
+  def inh in-match:
     Match(t).t         -> id
     Assign(t, _).t     -> id
     AM(_, t).t         -> id
@@ -122,32 +123,32 @@ attributes
     AnonymousRewriteRule(s, _, _).s -> id
     AttributeDefStrategy(_, Attribute(_, _, t), _, _).t -> id
   
-  inh in-pattern:
+  def inh in-pattern:
     AttributeDef(_, pattern, _).pattern -> id
   
-  inh is-pattern-var(|var):
+  def inh is-pattern-var(|var):
     AttributeDef(_, pattern, _) -> <oncetd(id.eq(|Var(var)))> pattern
   
-  inh is-def-arg(|var):
+  def inh is-def-arg(|var):
     AttributeDef(_, _, AttributeDefStrategy(_, attr, _, _)) -> <oncetd(id.eq(|Var(var)))> attr
 
   local is-def-param:
     AttributeDefStrategy(_, Attribute(_, _, t), _, _).t -> id
   
   // TODO2: Proper error pp
-  local pp:
+  def pp:
     id                   -> <try(attribute-signature); id.uninit>
     Attribute(n, [], []) -> n
   
-  local pp-context =
+  def pp-context =
     id.ancestor(?AttributeDef(_, _, <id>));
     ?AttributeDefStrategy(_, <id.pp>, _, _);
     <conc-strings> (" in attribute ", <as-string>)
   
-  inh def-type:
+  def inh def-type:
     AttributeDef(_, _, AttributeDefStrategy(_, attr, _, _)) ->  <get-attribute-type> attr
   
-  inh def-type-local:
+  def inh def-type-local:
     AttributeDef(type, _, _) ->  type
   
-  // inh root.has-root-def(|name) = oncetd(AttributeDef(...
+  // def inh root.has-root-def(|name) = oncetd(AttributeDef(...

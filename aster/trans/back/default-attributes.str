@@ -16,9 +16,9 @@ rules
 
   default-attributes = !|[
     attributes
-      local enable-warnings = rules(AstrWarningsDisabled :- _)
+      def enable-warnings = rules(AstrWarningsDisabled :- _)
       
-      local /*plain*/ tree-access:
+      def plain tree-access:
         id.prev-sibling  = get-prev-sibling(|id.parent)
         id.next-sibling  = get-next-sibling(|id.parent)
         id.first-sibling = get-first-child(|id.parent)
@@ -29,29 +29,29 @@ rules
         id.next-sibling(d) = get-next-sibling(d|id.parent)
         id.child(d) = one(d; ?it); !it
       
-      local /*plain*/ all(d) =
+      def plain all(d) =
         ?before;
         all(d);
         (?before <+ id.init)
       
-      local /*plain*/ some(d) =
+      def plain some(d) =
         ?before;
         some(d);
         (?before <+ id.init)
       
-      inh tree-access-ancestors:
+      def inh tree-access-ancestors:
         id.root = try(id.root)
         id.ancestor(p) = p <+ id.ancestor(p)
         // id.ancestors(p,path) := <p <+ path; id.ancestors(p, path)>
       
-      local path =
+      def path =
         id.path-list;
         reverse;
         map(get-constructor; as-string);
         separate-by(|".");
         concat-strings
       
-      local path-and-node =
+      def path-and-node =
         where(node := <to-tiny-string>);
         id.path;
         (?"" < !node + <conc-strings> (<id>, ".", node));
@@ -78,7 +78,7 @@ rules
       // TODO: Could the language indicate that these operate on uninitialized terms?
       // TODO: Could the language indicate that these don't require caching?
       //       (maybe a modifier 'plain' for both these, as not caching is still expensive if you have to init the term)
-      local set:
+      def set:
         id.union = union(id.eq) <+ foldr(![], union(id.eq))
         id.diff = diff(id.eq)   <+ foldr(![], diff(id.eq))
         id.isect = isect(id.eq) <+ foldr(![], isect(id.eq))
@@ -96,8 +96,8 @@ rules
       /**
        * Applies the attribute semantic rule at the root of the tree.
        */
-      inh `at-root`(d) =
-        `at-root`(d) <+ d
+      decorator inh at-root(d) =
+        id.at-root(d) <+ d
       
       // TODO: Should collect-all et al accept only soft failure?
       //       (and how to express that nicely?)
@@ -106,7 +106,7 @@ rules
        * Collects all nodes in the tree where the attribute can be applied,
        * including subnodes of the results.
        */
-      `at-root` `collect-all`(d) =
+      def at-root collect-all(d) =
         collect-all(d, conc)
       
       /**
@@ -114,40 +114,40 @@ rules
        *
        * `map`(id.attr) is cached per list, while map(id.s) is cached per item.
        */
-      local `map`(d) = map(d)
+      decorator map(d) = map(d)
       
       /* TODO: Should `soft-try` be factored out again?
                What does that mean for decorator definitions,
                they are then basically the same as their strategy equivalents?
       
-      local `stry`(d) =
+      decorator stry(d) =
         id.eval(d, id)
       */
             
-      local `rewrite-td`(d) =
+      decorator rewrite-td(d) =
         id.eval(d, id);
-        id.all(`rewrite-td`(d))
+        id.all(id.rewrite-td(d))
 
-      local `rewrite-bu`(d) =
-        id.all(`rewrite-bu`(d));
+      decorator rewrite-bu(d) =
+        id.all(id.rewrite-bu(d));
         id.eval(d, id)
       
       /**
        * Terminate with a fatal error if the decorated attribute results in a hard failure.
        */
-      local `hard-fail-fatal`(d):
+      decorator hard-fail-fatal(d):
         id -> result 
         where
           id.eval(d, ?soft-fail) => result
           < not(!soft-fail)
-          + log(|Critical(), "Hard failure not expected in decorated attribute", id.uninit);
+          + log(|Critical(), ["Hard failure not expected in decorated attribute at", id.path], id.uninit);
             print-stacktrace;
             <exit> 1
       
-      local `inh`(d) =
+      decorator inh(d) =
         id.eval(
           d
-        , id.parent; `inh`(d)
+        , id.parent; id.inh(d)
         )
       
       /* TODO: Sane definition of `chained`
