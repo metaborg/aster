@@ -22,9 +22,10 @@ rules // Evaluate attributes in AG context
   assimilate-attr-ref-inside-ag(|s_parent, s_parent-desired, x_all-parents, x_node, x_attr-cache):
     AttributeRef(t, attr @ Attribute(name, s*, t*)) ->
     Strat |[ <s> t ]|
+    where
+      not(<is-decorator> attr)
     with
-      type           := <preferred-attribute-accessor-type> attr;
-      x_eval         := <attribute-accessor-name(|type)> attr;
+      x_eval         := <attribute-accessor-name> attr;
       x_rewrite-mode := <RewriteModeVar>;
       if "inh" := type then
         s := |[ x_eval(s* |<s_parent>,         x_all-parents, x_attr-cache, x_rewrite-mode, t*) ]|
@@ -73,9 +74,10 @@ rules // Evaluate attributes outside of AG context
       );
       x_eval(s* |UnknownParent(), x_all-parents, x_attr-cache, <get-rewrite-mode(|x_attr-cache)>, t*)
     ]|
+    where
+      not(<is-decorator> attr)
     with
-      type           := <attribute-type-name(|NoType())> attr;
-      x_eval         := <attribute-accessor-name(|type)> attr;
+      x_eval         := <attribute-accessor-name> attr;
       x_all-parents  := <AllParentsVar>;
       x_attr-cache   := <AttrCacheVar>;
       name'          := name

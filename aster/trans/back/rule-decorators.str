@@ -12,7 +12,7 @@ imports
 rules // Decorator references
       
   assimilate-decorator-ref:
-    DecoratorRef(x_decorator, s_decorated) ->
+    AttributeRef(t, attr) ->
     |[ let x_cached =
          // Can't assume caching here, and is likely already performed inside
          s_eval
@@ -20,14 +20,18 @@ rules // Decorator references
          x_cached
        end
     ]|
+    where
+      <is-decorator> attr
     with
       x_cached := <CachedVar>; // not actually cached
-      s_eval   := <make-decorated> (x_decorator, s_decorated)
+      s_eval   := <make-decorated> (attr, t)
   
   // Recursive decorator reference
-  assimilate-decorator-self-ref(|attr, decorator, x_decorated):
-    DecoratorRef(decorator, |[ x_decorated(|) ]|) ->
-    |[ ?x_node < s_eval-default + x_cached ]|
+  assimilate-decorator-self-ref(|attr, x_decorator, s_arg*, t_arg*):
+    |[ t.x_decorator(s_arg* |t_arg*) ]| ->
+    |[ !t;
+       ?x_node < s_eval-default + x_cached
+    ]|
     with
       x_node         := <NodeVar>;
       x_cached       := <CachedVar>;
@@ -40,32 +44,30 @@ rules // Assimilation of decorator definitions
   
   assimilate-decorator-def =
     AttributeDef(
-      Decorator()
-    , id
+      Type(Decorator(), id, id)
     , id
     , AttributeDefStrategy(
         id
       , record-decorator-type-wrap(
           Attribute(
-            ?Decorator(name);
-            assimilate-decorator-id
-          , ?[decorated | _];
+            ?x_decorator
+          , ?[decorated | as*];
             ![DefaultVarDec(<CachedVar>) | <id>]
-          , id
+          , ?a*
           ) => attr
         )
-      , id
-      , assimilate-decorator-body(|attr, name, decorated)
+      , assimilate-decorator-body(|attr, x_decorator, a*, t*, a_decorated)
       )
     );
     assimilate-def
  
-  assimilate-decorator-body(|attr, decorator, decorated) =
+  assimilate-decorator-body(|attr, x_decorator, a*, t*, a_decorated) =
     with(
-      Var(x_decorated) := <param-to-var> decorated
+      Var(x_decorated) := <param-to-var> a_decorated;
+      (s_arg*, t_arg*) := <params-to-vars> (a*, t*)
     );
     alltd(
-      assimilate-decorator-self-ref(|attr, decorator, x_decorated)
+      assimilate-decorator-self-ref(|attr, x_decorator, s_arg*, t_arg*)
     <+
       assimilate-decorated-svar(|attr, x_decorated)
     )
@@ -90,7 +92,7 @@ rules // Assimilation of decorator definitions
   /**
    * Record the type of a decorator rule.
    * (Must be done again after assimilation changes
-   * the signature.)
+   *  the signature.)
    */
   record-decorator-type-wrap(process-attribute) =
     ?attr-before;
@@ -101,7 +103,7 @@ rules // Assimilation of decorator definitions
       sig  := <attribute-signature> attr-before;
       sig' := <attribute-signature> attr-after;
       rules(
-        AttributeType: sig' -> <AttributeType> sig
+        AttributeDecorators: sig' -> <AttributeDecorators> sig
       )
     )
   
@@ -123,9 +125,9 @@ rules // Finishing decorator copy rules
     |[ x_eval-default(sa*|a*) = s  ]| ->
     |[ x_eval-default(sa*|a*) = s' ]|
     where
-      <attribute-signature> def => Attribute(name, _, _);
-      <IsDecoratorName> name
+      <is-decorator> def
     with
+      <attribute-signature> def => Attribute(name, _, _);
       x_cached := <CachedVar>;
       s' := <alltd(
         (|[ x_eval(s*|t*) ]| -> Strat |[ x_cached ]|)
@@ -146,7 +148,7 @@ rules // Adding decoration logic to decorated rules
          s_body'
     ]|
     where
-      <get-attribute-type> def => Decorated(ds)
+      <get-attribute-decorators> def => Decorated(ds)
     with
       (s*, t*) := <params-to-vars> (sa*, a*);
       s_body'  := <eliminate-copy-rule(|def);
@@ -202,12 +204,11 @@ rules // Adding decoration logic to decorated rules
   make-decorated:
     (x_decorator, s_decorated) ->
     <assimilate-attr-ref-inside-decorator> <desugar-all> Strat |[
-      id.x_decorator'(x_cached, s_decorated')
+      id.x_decorator(x_cached, s_decorated')
     ]|
     with
       x_cached     := <CachedVar>;
-      s_decorated' := s_decorated;
-      x_decorator' := <assimilate-decorator-id> Decorator(x_decorator)
+      s_decorated' := s_decorated
 
 strategies // Provide new cache vars for each decorator application
 

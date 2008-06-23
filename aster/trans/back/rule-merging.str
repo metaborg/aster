@@ -165,7 +165,6 @@ strategies
         IsKnownRule      :   sig
         RuleAccessorName :   sig -> x_eval
         RuleParams       :   sig -> (sa*, a*)
-        RuleAccessorType :   sig -> accessor-type
       )
     end
   

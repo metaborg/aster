@@ -9,14 +9,13 @@ imports
 strategies // Analysis
 
   analyze =
-    ( ?AttributeDef(type, decorators, AttributeDefStrategy(_, attribute, s))
-    + ?AttributeDecl(decorators, attribute) => is-decorator
-    + ?DecoratorDef(type, decorators, AttributeDefStrategy(_, attribute, s))
+    ( ?AttributeDef(Type(type, decorators, sort), _, AttributeDefStrategy(_, attribute, _))
+    + ?AttributeDecl(Type(type, decorators, sort), attribute)
     );
     with(
-      sig     := <attribute-signature> attribute;
-      oldtype := <!sig; AttributeType <+ !type>;
-      type'   := <unify-attribute-type> (type, oldtype);
+      sig            := <attribute-signature> attribute;
+      old-decorators := <AttributeDecorators <+ !type> sig;
+      decorators'    := <unify-decorators> (decorators, old-decorators);
 
       if Circular(value) := circular then
         rules(
@@ -24,14 +23,15 @@ strategies // Analysis
         )
       end;
       
-      if !is-decorator then
-        rules(
-          IsDecorator: sig
-        )
+      switch !type
+        case Decorator():
+          rules(IsDecorator: sig)
+        case Def():
+          rules(HasDeclaration: sig)
       end;
       
       rules(
-        AttributeType: sig -> type'
+        AttributeDecorators: sig -> type'
       )
     )
   
@@ -41,33 +41,25 @@ strategies // Analysis
       UsesAnonymousRewriteRules: _
     )
   
-  unify-attribute-type =
-    \(t, t) -> t\
-  <+
-    \(Decorated(t), _) -> Decorated(t)\
-  <+
-    \(_, Decorated(t)) -> Decorated(t)\
-  <+
-    \(Local(), _) -> Local()\
-  <+
-    \(_, Local()) -> Local()\
-  <+
-    \(t, NoType()) -> t\
-  <+
-    \(NoType(), t) -> t\
-  <+
-    !Chained()
+  unify-decorators =
+    concat // TODO: Smart decorator unification
     
 strategies // Providing information
   
-  get-attribute-type =
+  get-attribute-decorators =
     attribute-signature;
-    AttributeType
+    AttributeDecorators
   
   get-attribute-circular =
     attribute-signature;
     AttributeCircular
-  
+
+  is-decorator =
+    where(
+      attribute-signature;
+      IsDecorator
+    )
+
   // TODO: Explicit constructors / tuples for attribute signatures
   
   attribute-signature:

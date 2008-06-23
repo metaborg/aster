@@ -32,18 +32,18 @@ attributes
   def error:
     Attribute(name, _, _) -> "Undefined attribute referenced"
     where
-      not(get-attribute-type + is-native-attribute);
+      not(get-attribute-decorators + is-native-attribute);
       not(<?Decorator(_)> name)
     
     decorator -> "Undefined attribute decorator referenced"
     where
       is-string;
       id.ancestor(?Decorated(_));
-      not(<get-attribute-type> Attribute(Decorator(decorator), [1], []))
+      not(<get-attribute-decorators> Attribute(Decorator(decorator), [1], []))
     
-    AttributeDef(_, _, _) -> "Attribute type not declared"
+    AttributeDefStrategy(_ attr, _) -> "Semantic rule type not declared using 'def'"
     where
-      NoType() := id.def-type
+      not(<HasDeclaration> attr)
     
     amb(_) -> "Internal error: ambiguity in input"
     
@@ -51,20 +51,22 @@ attributes
     where
       not(id.is-pattern-var(|x))
     
-    AttributeDefStrategy(_, Attribute(_, _, args), _, _) -> "Strategy applications not allowed in attribute argument patterns"
+    AttributeDefStrategy(_, Attribute(_, _, args), _) -> "Strategy applications not allowed in attribute argument patterns"
     where
       <oncetd(?RootApp(_))> args
 
-    AttributeDefStrategy(_, _, Circular(_), _) -> "Circular attributes cannot be decorated"
+    AttributeDefStrategy(_, attr, _) -> "Circular attributes cannot be decorated"
     where
-      id.def-type => Decorated(_)
+      id.def-type => [_ | _];
+      <AttributeCircular> attr
 
-    AttributeDefStrategy(_, Attribute(Decorator(_), [], _), _, _) -> "Circular attributes must specify a target strategy argument."
+    AttributeDefStrategy(_, Attribute(Decorator(_), [], _), _) -> "Circular attributes must specify a target strategy argument."
         
     AttributeRef(_, _) -> "Illegal attribute reference in match pattern"
     where
       id.in-match
     
+    /*
     AttributeDef(type, pattern, s) -> "Chained attributes must specify type inh or syn for each definition"
     where
       Chained() := id.def-type;
@@ -74,19 +76,16 @@ attributes
     AttributeDef(_, Root(), _) -> "Synthesized attribute cannot have a root definition"
     where
       id.def-type-local => Syn()
+    */
     
-    AttributeDef(_, Root(), AttributeDefStrategy(Some(_), _, _, _)) -> "Illegal child pattern on root node definition"
+    AttributeDef(_, Root(), AttributeDefStrategy(Some(_), _, _)) -> "Illegal child pattern on root node definition"
     
     AttributeDefStrategy(_, <is-native-attribute>,_ , _) -> "Cannot redefine a native attribute"
     
-    // TODO: report error at the declaration site? (id.def-type.parent)
-    AttributeDef(not-Local, _, _) -> "Can only assign local definitions to local attribute"
+    AttributeDef(_, _, AttributeDefStrategy(_, attr @ Attribute([_ | _], _, _), _)) ->
+    "Circular attributes cannot have strategy arguments"
     where
-      <not(Local + NoType)> not-Local;
-      <Local> id.def-type
-    
-    AttributeDef(_, _, AttributeDefStrategy(_, Attribute([_ | _], _, _), Circular(_), _)) ->
-    "Circular attributes cannot have strategy arguments" 
+      <AttributeCircular> attr
 
   def warning:
     Var(x) -> "Performing match using annotated term - use id.eq instead"
@@ -119,9 +118,9 @@ attributes
     RuleNoCond(t, _).t -> id
     RootApp(s).s       -> fail
     App(s, _).s        -> fail
-    NameDefBlock(_, t, _, _).t      -> id
+    NameDefBlock(_, t, _).t      -> id
     AnonymousRewriteRule(s, _, _).s -> id
-    AttributeDefStrategy(_, Attribute(_, _, t), _, _).t -> id
+    AttributeDefStrategy(_, Attribute(_, _, t), _).t -> id
   
   def inh in-pattern:
     AttributeDef(_, pattern, _).pattern -> id
@@ -130,10 +129,10 @@ attributes
     AttributeDef(_, pattern, _) -> <oncetd(id.eq(|Var(var)))> pattern
   
   def inh is-def-arg(|var):
-    AttributeDef(_, _, AttributeDefStrategy(_, attr, _, _)) -> <oncetd(id.eq(|Var(var)))> attr
+    AttributeDef(_, _, AttributeDefStrategy(_, attr, _)) -> <oncetd(id.eq(|Var(var)))> attr
 
   local is-def-param:
-    AttributeDefStrategy(_, Attribute(_, _, t), _, _).t -> id
+    AttributeDefStrategy(_, Attribute(_, _, t), _).t -> id
   
   // TODO2: Proper error pp
   def pp:
@@ -142,11 +141,11 @@ attributes
   
   def pp-context =
     id.ancestor(?AttributeDef(_, _, <id>));
-    ?AttributeDefStrategy(_, <id.pp>, _, _);
+    ?AttributeDefStrategy(_, <id.pp>, _);
     <conc-strings> (" in attribute ", <as-string>)
   
   def inh def-type:
-    AttributeDef(_, _, AttributeDefStrategy(_, attr, _, _)) ->  <get-attribute-type> attr
+    AttributeDef(_, _, AttributeDefStrategy(_, attr, _)) ->  <get-attribute-decorators> attr
   
   def inh def-type-local:
     AttributeDef(type, _, _) ->  type

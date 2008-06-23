@@ -17,6 +17,7 @@ exports
     AttributeCall
     AttributeCallLHS
     AttributeDecl
+    AttributeType
     AttributeKeyword
     ChildDot
     DotChild
@@ -62,8 +63,10 @@ exports
    
   context-free syntax %% semantic rules: core syntax
 
-    "def"   Id* OptSortDot AttributeDecl                  -> RuleDef {cons("AttributeDecl")}
-    DefType Id* OptSortDot Pattern "." AttributeNameValue -> RuleDef {cons("AttributeDef")}
+    AttributeType AttributeDecl                  -> RuleDef {cons("AttributeDecl")}
+    AttributeType Pattern "." AttributeNameValue -> RuleDef {cons("AttributeDef")}
+    
+    DefType Id* OptSortDot -> AttributeType {cons("Type")}
     
     OptChildDot AttributeDecl "="  Strategy -> AttributeNameValue {cons("AttributeDefStrategy")}
     
@@ -96,12 +99,12 @@ exports
     "attributes" Def* -> Decl {cons("Attributes")}    
 
     %% Single-line attribute definitions
-    DefType Id* AttributeNameValue             -> RuleDef {cons("AttributeDefNoPattern"), avoid}
+    AttributeType AttributeNameValue             -> RuleDef {cons("AttributeDefNoPattern"), avoid}
     OptChildDot AttributeDecl ":=" Term Where* -> AttributeNameValue {cons("AttributeDefTerm")}
     
     %% Attribute definition blocks/groups
-    DefType Id* Pattern       ":" NameDefBlockDef+    -> RuleDef {cons("NameDefBlock")}
-    DefType Id* AttributeDecl ":" PatternDefBlockDef+ -> RuleDef {cons("PatternDefBlock")}
+    AttributeType Pattern       ":" NameDefBlockDef+    -> RuleDef {cons("NameDefBlock")}
+    AttributeType AttributeDecl ":" PatternDefBlockDef+ -> RuleDef {cons("PatternDefBlock")}
     
     %% Definitions grouped in a NameDefBlock
     ChildDot AttributeDecl ":=" Term     Where* -> NameDefBlockDef {cons("AttributeDefTerm")}

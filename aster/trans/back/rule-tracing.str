@@ -45,10 +45,11 @@ strategies
         ))
       ]|
     with
-      type          := <RuleAccessorType> def;
+      decorators    := <get-attribute-decorators> def;
+      decorators'   := <separate-by(|" "); concat-strings> decorators;
       arity'        := <arity-to-string> (sarity, tarity);
       circular      := <get-attribute-circular < !"circular " + !""> def;
-      message       := <conc-strings> ("  [trace] ", circular, type, " ", real-name, arity', " @ ");
+      message       := <conc-strings> ("  [trace] ", circular, decorators', " ", real-name, arity', " @ ");
       x_parent      := <ParentVar>;
       x_all-parents := <AllParentsVar>;
       x_attr-cache  := <AttrCacheVar>;

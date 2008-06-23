@@ -38,7 +38,8 @@ strategies
 
   assimilate-def:
     AttributeDef(
-      type
+      _
+    , decorators
     , t_pattern
     , AttributeDefStrategy(child, attr @ Attribute(name, sa*, a*), _, s)
     ) ->
@@ -56,9 +57,8 @@ strategies
       x_all-parents      := <AllParentsVar>;
       x_attr-cache       := <AttrCacheVar>;
       x_rewrite-mode     := <RewriteModeVar>;
-      type-name          := <attribute-type-name(|type)> attr;
       sig                := <attribute-signature> attr;
-      x_eval             := <attribute-accessor-name(|type-name)> attr;
+      x_eval             := <attribute-accessor-name> attr;
       (a'*, s_init-args) := <extract-arg-patterns> a*;
      
       s_parent         := |[ ?x_node; !x_parent; not(UnknownParent)

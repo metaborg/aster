@@ -21,7 +21,7 @@ STRINCLUDES = \
 	-I ../syntax \
 	-I ../runtime
 
-STRS=stratego-rerag.str  $(wildcard *.str) $(wildcard **/*.str) $(wildcard ../runtime/*.str) $(wildcard ../runtime/**/*.str) front/check.str
+STRS=stratego-rerag.str  $(wildcard *.str) $(wildcard */*.str) $(wildcard ../runtime/*.str) $(wildcard ../runtime/*/*.str) front/check.str
 RTREES=$(STRS:.str=.rtree)
 
 bootclean :
