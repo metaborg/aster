@@ -67,10 +67,12 @@ rules // Assimilation of decorator definitions
       assimilate-decorator-self-ref(|attr, decorator, x_decorated)
     <+
       assimilate-decorated-svar(|attr, x_decorated)
+    <+
+      assimilate-native-decoration-ref(|x_decorated)
     )
 
   // TODO: Add eval to default-attributes, check.astr
-  // TODO: Should id.eval(s) be `eval`(s)? What with the new syntax?
+  // TODO: Remove id.eval(s)
   
   /**
    * Assimilate a id.eval() decorator call, which

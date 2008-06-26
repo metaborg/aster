@@ -7,6 +7,8 @@ imports
 
 strategies
 
+  // TODO: Remove "native" circular attributes?
+
   add-circular-rule-logic(|def):
     |[ x_eval(sa*|a*) =
          s_rewrite => x_node;
@@ -18,14 +20,11 @@ strategies
        */
       x_eval(|a*) =
         switch s_cache-read
-          case ?CIRCULAR_FINISHED(x_cached):
+          case ?CIRCULAR_FINISHED(x_cached) + ?CIRCULAR_BUSY(x_cached):
             <not(EVAL_FAILED)> x_cached
-          
-          case ?CIRCULAR_BUSY(x_cached):
-            <not(EVAL_FAILED)> x_cached
+            // TODO: Don't fall back to outer choice for this failure
           
           case ?x_cached: // re-eval once per iteration
-            ?x_node;
             x_eval-recompute(|x_cached, t*)
         end
       <+
@@ -33,7 +32,6 @@ strategies
           x_eval-recompute(|x_old-value, t*)
         in
           where(
-            ?x_node;
             x_old-value := <s_ensure-init <+ !EVAL_FAILED()> t_initial
           );
           circular-fixpoint(eval |x_attr-cache, x_old-value);
@@ -81,3 +79,5 @@ strategies
       t_name-args      := <make-cache-key(|t*)> def;
       s_cache-read     := <add-cache-read(|t*)> def;
       s_cache-write    := <add-cache-write(|t*)> def
+
+      

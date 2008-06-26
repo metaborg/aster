@@ -293,3 +293,24 @@ rules // Native attribute definitions
   assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
     Attribute("ensure-init", [], []) -> |[ astr-initialize-node-ensure(|x_all-parents, x_attr-cache) ]|
     
+rules // Native attributes on decorated evaluation functions
+
+  is-native-attribute =
+    where(assimilate-decoration-native-attr(|"d")) // TODO: Proper native attr checks for decoration attrs
+
+  assimilate-native-decoration-ref(|x_decorated):
+    AttributeRef(Var(x_decorated), attr) -> <assimilate-decoration-native-attr(|x_decorated)> attr
+
+  // TODO: Ideally, "d.defined" wouldn't evaluate d
+  assimilate-decoration-native-attr(|x_decorated):
+    Attribute("defined", [], []) -> |[ where(x_decorated) ]|
+  
+  // FIXME: Decorator reflection
+  
+  assimilate-decoration-native-attr(|x_decorated):
+    Attribute("name", [], []) -> |[ !"<decorated-attribute-name>" ]|
+  
+  assimilate-decoration-native-attr(|x_decorated):
+    Attribute("unique-id", [], []) -> |[ !~str:key ]|
+    with
+      key := <conc-strings> ("<decorated-attribute-unique-id-", x_decorated, ">")

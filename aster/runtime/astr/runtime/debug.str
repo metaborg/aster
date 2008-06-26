@@ -1,5 +1,5 @@
 /**
- * Debugging strategies.
+ * Debugging strategies, originally defined in dryad-compiler/lib-ext/debug.
  *
  * @author Lennart Kats <lennart add lclnet.nl>
  */

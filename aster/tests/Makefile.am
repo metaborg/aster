@@ -7,7 +7,7 @@ STRCFLAGS = \
 	-Xcc -O0
 
 RUNTESTS = test-stratego-rerag \
-           empty find-minimum repmin repmin-anonymous repmin-hag repmin-hag-decorated binary-numbers caching cons-nil anonymous-rules circular-basic circular-liveness circular-liveness-rewrites decorators
+           empty find-minimum repmin repmin-anonymous repmin-hag repmin-hag-decorated binary-numbers caching cons-nil anonymous-rules circular-basic circular-basic-decorators circular-liveness circular-liveness-rewrites decorators
 
 check : Stratego-Attributes.runtestsuite $(RUNTESTS:=.str) $(RUNTESTS:=.run)
 

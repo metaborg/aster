@@ -1,0 +1,85 @@
+module circular-basic-decorators
+
+imports
+  libstratego-lib
+
+strategies
+
+  main-circular-basic-decorators =
+    option-wrap(
+      verbose-option
+    ,
+      !(1, 5, 7).init;
+      (id.avg-others, id.avg-others, id.avg-others);
+      id.debug
+    )
+
+attributes
+
+  `circular-id` (A, B, C):
+    A.avg-others = <round-avg> (B.avg-others, C.avg-others); debug'(!"A=")
+    B.avg-others = <round-avg> (A.avg-others, C.avg-others); debug'(!"B=")
+    C.avg-others = <round-avg> (A.avg-others, B.avg-others); debug'(!"C=")
+
+strategies
+
+  round-avg = <div> (<add>, 2); round-real
+  
+  round-real = <mul> (<id>, 10); int; real; <div> (<id>, 10)
+
+attributes
+
+  local `plain`(s) = s // HACK: plain should be an built-in annotation
+
+  `plain` `circular-id`(s) =
+    let recompute(|old-value) =
+      recompute-circular-def(`plain`(s)|s.unique-id, old-value)
+    in
+      if last-value := <get-last-value(|s.unique-id)> then
+        if !last-value; (?CIRCULAR_FINISHED(value) + ?CIRCULAR_BUSY(value)) then
+          <not(EVAL_FAILED)> value
+        else
+          tiny-debug(!4);
+          verbose-msg(!"unbusy:", id);
+          recompute(|last-value)
+        end
+      else
+        // where(
+        //   old-value := <s_ensure-init <+ !EVAL_FAILED()> t_initial
+        // );
+        where(old-value := <id>);
+        circular-fixpoint(recompute|<attr-cache>, old-value);
+        not(EVAL_FAILED)
+      end
+    end
+  
+  /**
+   * Uncached evaluator for use in fixpoint loop.
+   *
+   * @returns The initialized value produced by the semantic function, or EVAL_FAILED.
+   */
+  recompute-circular-def(s|cache, old-value) =
+    set-last-value(|cache, <id>, CIRCULAR_BUSY(old-value));
+    verbose-msg(!"busy:", id);
+    
+    ?node;
+    tiny-debug(!2);
+    (s <+ !EVAL_FAILED());
+    tiny-debug(!3);
+    
+    if eq-ignore-annos(|old-value) then
+      verbose-msg(!"  [circ.] No change @", <strip-annos> node, !"with", strip-annos);
+      circular-add-participant(|<attr-cache>, node, cache, old-value);
+      set-last-value(|cache, node, old-value) // remove CIRCULAR_BUSY
+    else
+      verbose-msg(!"  [circ.] Changed @", <strip-annos> node, !"with", strip-annos, !"was", <strip-annos> old-value);
+      astr-initialize-attribute-value(|<all-parents>, <attr-cache>);
+      circular-set-has-changed(|<attr-cache>);
+      set-last-value(|cache, node, <id>)
+    end
+  
+  get-last-value(|cache) =
+    <Cache> (cache, <id>)
+  
+  set-last-value(|cache, key, value) =
+    rules(Cache: (cache, key) -> value) 
