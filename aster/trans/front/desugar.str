@@ -32,6 +32,9 @@ rules
 
   desugar-attribute-def:
     Attributes(def*) -> Rules(def*)
+
+  desugar-attribute-def:
+    Decorators(def*) -> Rules(def*)
   
   desugar-attribute-def:
     AttributeDeclNoPattern(type, attr, circular) ->

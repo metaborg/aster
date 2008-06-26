@@ -97,6 +97,7 @@ exports
   context-free syntax %% semantic rules: syntactic sugar
  
     "attributes" Def* -> Decl {cons("Attributes")}    
+    "decorators" Def* -> Decl {cons("Decorators")}    
 
     %% Single-line attribute definitions
     AttributeType AttributeNameValue             -> RuleDef {cons("AttributeDefNoPattern"), avoid}
