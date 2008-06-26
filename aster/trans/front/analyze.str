@@ -61,6 +61,16 @@ strategies // Providing information
     attribute-signature;
     AttributeCircular
   
+  // HACK: work-around to get `plain` attributes for now
+  is-plain-decorator =
+    where(
+      "`plain`"
+    <+
+      !Attribute(Decorator(<id>), 1, 0);
+      AttributeType;
+      Decorated(getfirst(?"`plain`"))
+    )
+  
   // TODO: Explicit constructors / tuples for attribute signatures
   
   attribute-signature:

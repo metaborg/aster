@@ -39,8 +39,6 @@ attributes
         if !last-value; (?CIRCULAR_FINISHED(value) + ?CIRCULAR_BUSY(value)) then
           <not(EVAL_FAILED)> value
         else
-          tiny-debug(!4);
-          verbose-msg(!"unbusy:", id);
           recompute(|last-value)
         end
       else
@@ -48,7 +46,7 @@ attributes
         //   old-value := <s_ensure-init <+ !EVAL_FAILED()> t_initial
         // );
         where(old-value := <id>);
-        circular-fixpoint(recompute|<attr-cache>, old-value);
+        circular-fixpoint'(recompute|old-value);
         not(EVAL_FAILED)
       end
     end
@@ -60,26 +58,45 @@ attributes
    */
   recompute-circular-def(s|cache, old-value) =
     set-last-value(|cache, <id>, CIRCULAR_BUSY(old-value));
-    verbose-msg(!"busy:", id);
     
     ?node;
-    tiny-debug(!2);
     (s <+ !EVAL_FAILED());
-    tiny-debug(!3);
     
-    if eq-ignore-annos(|old-value) then
-      verbose-msg(!"  [circ.] No change @", <strip-annos> node, !"with", strip-annos);
+    if id.eq(|old-value) then
+      // verbose-msg(!"  [circ.] No change @", <strip-annos> node, !"with", strip-annos);
       circular-add-participant(|<attr-cache>, node, cache, old-value);
       set-last-value(|cache, node, old-value) // remove CIRCULAR_BUSY
     else
-      verbose-msg(!"  [circ.] Changed @", <strip-annos> node, !"with", strip-annos, !"was", <strip-annos> old-value);
+      // verbose-msg(!"  [circ.] Changed @", <strip-annos> node, !"with", strip-annos, !"was", <strip-annos> old-value);
       astr-initialize-attribute-value(|<all-parents>, <attr-cache>);
       circular-set-has-changed(|<attr-cache>);
       set-last-value(|cache, node, <id>)
     end
   
+  circular-fixpoint'(eval : t * a -> a |old-value) =
+    if is-fixpoint-running then
+      eval(|old-value)
+    else
+      ?node;
+      eval(|old-value);
+      set-fixpoint-running(
+        while(circular-get-remove-has-changed(|<attr-cache>),
+          { o: ?o; <eval(|o)> node }
+        );
+        circular-mark-participants-finished(|<attr-cache>)
+      )
+    end
+  
+  is-fixpoint-running = not(hashtable-get(|<attr-cache>, "$circular-lock"))
+  
+  set-fixpoint-running(s) =
+    hashtable-put(|<attr-cache>, "$circular-lock", ());
+    s;
+    hashtable-remove(|<attr-cache>, "$circular-lock")
+  
   get-last-value(|cache) =
     <Cache> (cache, <id>)
   
   set-last-value(|cache, key, value) =
-    rules(Cache: (cache, key) -> value) 
+    rules(Cache: (cache, key) -> value)
+ 

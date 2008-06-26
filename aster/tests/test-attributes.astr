@@ -156,7 +156,7 @@ attributes
     apply-and-check(
       !"patterns in attribute arguments"
     , id.tuple-first(|(1, 2))
-    , !1
+    , !1.init
     , ?1
     )
 

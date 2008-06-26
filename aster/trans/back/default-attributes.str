@@ -151,6 +151,8 @@ rules
           d
         , id.parent; `inh`(d)
         )
+     
+      local `plain`(d) = d
       
       /* TODO: Sane definition of `chained`
       //       should semantic rules be applied only once per node,

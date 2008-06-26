@@ -32,6 +32,7 @@ strategies
       while(
         circular-get-remove-has-changed(|attr-cache)
       ,
+        // TODO: aren't participants trashed without a chance of getting re-added?
         circular-reset-participants(|attr-cache);
           
         { old-value:

@@ -6,8 +6,22 @@ strategies
     option-wrap(
       verbose-option
     ,
-      id.init;
-      <eq> (id.random, id.random)
+      root := "root".init;
+      <debug(!1); eq>      (root.get-new-1, root.get-new-1);
+      <debug(!2); eq>      (root.get-new-2, root.get-new-2);
+      <debug(!3); not(eq)> (root.get-new-3, root.get-new-3)
     )
+
+attributes
   
-  local random = next-random
+  local get-new-1 = new
+  
+  `noop` get-new-2 = new
+  
+  `uncached` get-new-3 = new
+  
+attributes
+
+  local `noop`(s) = s
+
+  `plain` `uncached`(s) = s; debug(!" uncached")

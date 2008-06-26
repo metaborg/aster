@@ -181,7 +181,7 @@ rules // Adding decoration logic to decorated rules
     )
   
   make-decorated-with-caching(|def, s_arg*, t_arg*):
-    (_, _) ->
+    (x_decorator, _) ->
     |[ let x_cached =
          s_cache-read // could be EVAL_FAILED
        <+
@@ -195,8 +195,14 @@ rules // Adding decoration logic to decorated rules
     with
       s_ref         := <make-decorated>;
       x_cached      := <CachedVar>;
-      s_cache-read  := <add-cache-read(|s_arg*, t_arg*)> def;
-      s_cache-write := <add-cache-write(|s_arg*, t_arg*)> def
+      
+      if <is-plain-decorator> x_decorator then
+        s_cache-read  := Fail();
+        s_cache-write := Id()
+      else
+        s_cache-read  := <add-cache-read(|s_arg*, t_arg*)> def;
+        s_cache-write := <add-cache-write(|s_arg*, t_arg*)> def
+      end
   
   make-decorated:
     (x_decorator, s_decorated) ->
