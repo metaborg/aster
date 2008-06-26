@@ -71,6 +71,8 @@ attributes
   local new-fork = \_#(kids) -> "Fork2"#(kids)\
   
   local x.is(|x) = id
+  
+  local x.tuple-first(|(x, y)) = id
  
   test-attribute-behavior =
     apply-and-check(
@@ -149,6 +151,12 @@ attributes
       !"attribute parameter used in pattern (2)"
     , not(id.is(|2))
     , !1.init
+    , ?1
+    );
+    apply-and-check(
+      !"patterns in attribute arguments"
+    , id.tuple-first(|(1, 2))
+    , !1
     , ?1
     )
 

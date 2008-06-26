@@ -64,6 +64,8 @@ strategies // Node initialization
   astr-initialize-attribute-value(|all-parents, attr-cache) =
     get-keep-uninitialized(|attr-cache, <id>)
   <+
+    // TODO: What if the user was building a standard list?
+    // Support reference collections
     map(astr-initialize-node-ensure(|all-parents, attr-cache))
   <+
     where(get-constructor => ""); // is-tuple

@@ -7,7 +7,7 @@ imports
 
 rules
 
-  // TODO: Remove default attributes to /runtime/ dir
+  // TODO: Remove attribute library to /runtime/ dir
 
   add-default-attributes:
     Module(name, decl*) -> Module(name, [decl*, attrs*])
@@ -28,6 +28,8 @@ rules
         id.prev-sibling(d) = get-prev-sibling(d|id.parent)
         id.next-sibling(d) = get-next-sibling(d|id.parent)
         id.child(d) = one(d; ?it); !it
+      
+      local root.is-root = id
       
       local /*plain*/ all(d) =
         ?before;
@@ -135,7 +137,7 @@ rules
       /**
        * Terminate with a fatal error if the decorated attribute results in a hard failure.
        */
-      local `hard-fail-fatal`(d):
+      local `fail-fatal`(d):
         id -> result 
         where
           id.eval(d, ?soft-fail) => result
@@ -191,6 +193,21 @@ rules
           id.parent; `chained-inh-helper`(d)
         )
       */
+        
+      inh `lookup-ordered`(d) =
+        d
+      <+
+        ?[<d> | id] // inspect list item to the left
+      <+
+        `lookup-ordered`(d)
+      
+      inh `lookup-unordered`(d) =
+        d
+      <+
+        where(id.is-root + not(<is-list> id.parent)); // search lists only from their head
+        getfirst(d) <+ `lookup-unordered`(d)
+      <+
+        `lookup-unordered`(d)
   ]|
   
   ignore-trace-def =

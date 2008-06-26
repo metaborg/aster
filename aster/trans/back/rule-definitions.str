@@ -102,16 +102,18 @@ rules // Argument patterns
     (id, fold-seq)
   
   extract-arg-pattern:
-    t -> (DefaultVarDec(x_name), |[ !x_name; s ]|)
+    t -> (DefaultVarDec(x_name), |[ !x_name => t' ]|)
     with
-      s      := <alltd(match-var-ignore-annos)> t; // don't care about annos
+      t'     := <alltd(match-var-ignore-annos)> t; // don't care about annos
       x_name := <newname> "arg"
   
   match-var-ignore-annos:
     Var(x) ->
-    |[ (id < id + ?x); // x may be bound or not; avoid compiler complaints
-       (?x <+ eq-ignore-annos(|x))
-    ]| 
+    |[ <(id < id + ?x); // x may be bound or not; avoid compiler complaints
+        (?x <+ eq-ignore-annos(|x))>
+    ]|
+  
+   
 
 rules // Semantic rule definition helpers
 
