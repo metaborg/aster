@@ -8,14 +8,13 @@ imports
 signature constructors
   // used in intermediate syntax
   AttributePDefStrategy : Pattern * OptDotChild * Strategy -> PatternDefBlockDef
-
+  InlineWhereClause     : List(Strategy) * Strategy        -> Strategy
 rules
 
   desugar-all =
     topdown(repeat(
       desugar-attribute-ref
     + desugar-attribute-def
-    + desugar-where-with
     + desugar-id-term
     + desugar-fail-term
     + desugar-attribute-child
@@ -35,47 +34,22 @@ rules
 
   desugar-attribute-def:
     Decorators(def*) -> Rules(def*)
-  
-  desugar-attribute-def:
-    AttributeDeclNoPattern(type, attr, circular) ->
-    AttributeDecl(type, Id(), attr, circular)
      
   desugar-attribute-def:
     AttributePDefTerm(pattern, child, term, condition) ->
     AttributePDefStrategy(pattern, child, s)
-    where
-      s := Seq(condition, Build(term))
+    with
+      s := InlineWhereClause(condition, Build(term))
   
   desugar-attribute-def:
-    AttributeDefTerm(child, attribute, circular, term, condition) ->
-    AttributeDefStrategy(child, attribute, circular, s)
-    where
-      s := Seq(condition, Build(term))
+    AttributeDefTerm(child, attribute, term, condition) ->
+    AttributeDefStrategy(child, attribute, s)
+    with
+      s := InlineWhereClause(condition, Build(term))
   
   desugar-attribute-def:
     AttributeDefNoPattern(type, value) ->
     AttributeDef(type, Wld(), value)
-  
-  desugar-attribute-def:
-    CircularFail() -> Circular(FailTerm())
-
-rules // where and with clause
-
-  // These are inlined as strategies above,
-  // but only the WhereClause remains in the core language
-  // for special treatment by the assimilation phase.
-  
-  desugar-where-with:
-    Seq(WithClause(s1), s2) -> |[ with'(s1); s2 ]|
-  
-  desugar-where-with:
-    NoWhere() -> Id()
-  
-  desugar-where-with:
-    Seq(WhereWithClause(s1, s2), s3) -> Seq(WhereClause(s1), |[ with'(s2); s3 ]|)
-  
-  desugar-where-with:
-    AnonymousRewriteRuleNoWhere(t1, t2) -> AnonymousRewriteRule(t1, t2, Id())
 
 rules
 
@@ -149,7 +123,7 @@ rules // flatten block definitions to individual definitions
     )
   
   astr-flatten-block-def =
-    ?PatternDefBlock(type, attribute, circular, <id>);
+    ?PatternDefBlock(type, attribute, <id>);
     map(
       \AttributePDefStrategy(pattern, child, s) ->
        AttributeDef(type, pattern, AttributeDefStrategy(child, attribute, s))\

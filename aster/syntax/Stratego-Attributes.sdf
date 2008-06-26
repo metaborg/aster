@@ -100,7 +100,7 @@ exports
     "decorators" Def* -> Decl {cons("Decorators")}    
 
     %% Single-line attribute definitions
-    AttributeType AttributeNameValue             -> RuleDef {cons("AttributeDefNoPattern"), avoid}
+    AttributeType AttributeNameValue           -> RuleDef {cons("AttributeDefNoPattern"), avoid}
     OptChildDot AttributeDecl ":=" Term Where* -> AttributeNameValue {cons("AttributeDefTerm")}
     
     %% Attribute definition blocks/groups
@@ -115,8 +115,8 @@ exports
     Pattern OptDotChild "->" ResultTerm NoWhere* -> PatternDefBlockDef {cons("AttributePDefTerm")}
     Pattern OptDotChild "->" Term       Where*   -> PatternDefBlockDef {cons("AttributePDefTerm")}
 
-    "where" Strategy -> Where {cons("WhereClause")}
-    "with" Strategy  -> Where {cons("WithClause")}
+    "where" Strategy -> Where {cons("Where")}
+    "with" Strategy  -> Where {cons("With")}
     UNDEFINED        -> NoWhere
 
   context-free syntax %% Misc.

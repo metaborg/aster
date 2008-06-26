@@ -38,19 +38,20 @@ strategies
 
   assimilate-def:
     AttributeDef(
-      _
-    , decorators
+      Type(type, decorators, _)
     , t_pattern
     , AttributeDefStrategy(child, attr @ Attribute(name, sa*, a*), _, s)
     ) ->
-    <make-merged-def(|t_pattern, child, type-name)>
+    <make-merged-def(|t_pattern, child)>
     Def |[
       x_eval(sa* |x_parent, x_all-parents, x_attr-cache, x_rewrite-mode, a'*) =
         ?x_node;
         s_pattern;
-        where(s_init-args); // TODO: init args first if built in pattern?
+        where(s_init-args); // TODO: init args first if built-in pattern?
         s'
     ]|
+    where
+      <not(Def)> type
     with
       x_parent           := <ParentVar>;
       x_node             := <NodeVar>;
@@ -82,7 +83,7 @@ strategies
       add-eval-failed => s'
     
   assimilate-def:
-    AttributeDecl(_, _, _, _) -> []
+    AttributeDef(Type(Def(), _, _), _, _) -> []
    
   root-pattern(|x_parent, x_all-parents) =
     !|[ where(
@@ -94,6 +95,13 @@ strategies
          end
         )
     ]|
+  
+  assimilate-where-with =
+    map(
+      ?Where(s)
+    + \With(s) -> Strat |[ with'(s) ]|\
+    );
+    fold-seq
 
 rules // Argument patterns
   
@@ -116,12 +124,12 @@ rules // Argument patterns
 rules // Semantic rule definition helpers
 
   add-eval-failed:
-    Seq(WhereClause(s1), s2) -> |[ where(s1); (s2 <+ !EVAL_FAILED()) ]|
+    InlineWhereClause(c, s) -> |[ where(c'); (s <+ !EVAL_FAILED()) ]|
+    with
+      c' := <assimilate-where-with> c
   
   add-eval-failed:
-    s -> |[ s <+ !EVAL_FAILED() ]|
-    where
-      not(?Seq(WhereClause(c), _))
+    <not(?InlineWhereClause(_, _))> -> |[ s <+ !EVAL_FAILED() ]|
   
   /**
    * Match based on an ancestor (e.g., for inh Foo(Bar(x)).x).
