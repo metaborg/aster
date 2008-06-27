@@ -1,0 +1,143 @@
+module circular-propconst
+
+imports
+  libstratego-lib
+
+// Extended definition of the small toy language
+
+signature constructors
+  While  : Var * Stm       -> Stm
+  Block  : List(Stm)       -> Stm
+  If     : Var * Stm * Stm -> Stm
+  Assign : Var * Expr      -> Stm
+  Return : Var             -> Stm
+  Int    : INT             -> Expr
+  Var    : STRING          -> Expr
+  
+  NOT_CONSTANT : Term
+
+strategies // Set-up, testing
+
+  main-circular-propconst =
+    option-wrap(
+      verbose-option
+    ,
+      input := <make-input>;
+      oncetd(?Assign("bogus2", _) => it);
+      it.pred.debug
+    )
+  
+  make-input =
+    !Block([
+       Assign("bogus1", "value")
+     , Assign("bogus2", "bogus1")
+     , Assign("x", "value")
+     , While("x", Block([
+         Assign("x", "bogus3")
+       , Assign("x", "value")
+       ]))
+     , Return("x")
+    ]).init;
+    
+    test-propconst
+  
+  test-propconst =
+    topdown(
+      if(id.is-stm, !id{^id.constant-before})
+    );
+    
+    debug;
+    
+    ?Block([
+       Assign("bogus1", "value")   {          "bogus3", "value"}
+     , Assign("bogus2", "bogus1")  {"bogus1", "bogus3", "value"}
+     , Assign("x", "value")        {          "bogus3", "value"}
+     , While("x", Block([
+         Assign("x", "bogus3")     {          "bogus3", "value"}
+       , Assign("x", "value")      {          "bogus3", "value"}
+      ]))                          {"x",      "bogus3", "value"}
+     , Return("x")                 {"x"}
+     ])
+  
+  local [stm | _].stm.is-stm = not(is-list) // statements are contained by lists
+  
+  local `apply-to-stm`(s) = id.is-stm; s
+
+attributes // Control flow (also defined in circular-liveness)
+  
+  inh succ-enclosing: // next statement as determined by the enclosing control structures  
+    root            -> []
+    [s1, s2 | _].s1 -> [s2]
+
+  `apply-to-stm` succ = id.succ-enclosing // default next statement for a particular statement
+  
+  eq Block([s | _]).succ := [s]
+  
+  eq If(e, s1, s2).succ := [s1, s2]
+     
+  eq While(e, s):
+    id.succ           := [s | id.succ-enclosing]
+    id.succ-enclosing := [id]
+  
+  eq Return(e).succ := []
+
+attributes // Reverse control flow
+  
+  // for each id.succ: pred = id  
+  `collect-foreach-idsucc` pred = id
+  
+  // TODO: id.succ should not be hardcoded in here, but should be a strategy argument 'targets'
+  local `collect-foreach-idsucc`(s) =
+    verbose-msg(!"about to git it", <CompletedSweep> s.unique-id);
+    
+    if not(<CompletedSweep> s.unique-id) then
+      rules(CompletedSweep: s.unique-id);
+      verbose-msg(!"completed", s.unique-id, <CompletedSweep> s.unique-id);
+      
+      where(`at-root`(topdown(where(try(
+        { contributor:
+          ?contributor;
+          id.succ; // targets
+          verbose-msg(!"adding ", !contributor, !" to ", id);
+          map({ target:
+            ?target;
+            rules(
+              CollectForeachContributors :+ (s.unique-id, target) -> contributor
+            )
+          })
+        }
+      )))))
+    end;
+    
+    verbose-msg(!"getting it for", !(s.unique-id, id), <bagof-CollectForeachContributors> (s.unique-id, id));
+    <bagof-CollectForeachContributors> (s.unique-id, id);
+    map(s)
+
+attributes // Extract constant values
+
+  // TODO: cover(|"Expr")
+  local constant-value:
+    id           -> NOT_CONSTANT()
+    Int(i)       -> id
+    Var(v)       -> <id.lookup> (v, id.constant-before)
+
+  // Add nodes that define new constant values
+  local constant-updates:
+    Assign(var, e) -> [(var, e)]
+
+attributes // Data flow
+
+  local stm circular []:
+    id.constant-before =
+      id.pred;
+      map(id.constant-after)
+  
+    id.constant-after =
+      <id.table-union> (id.constant-updates, id.constant-before)
+
+attributes // Utility
+
+  local maps:
+    id.table-union := <union((Fst, Fst); id.eq)>
+    id.table-diff  := <diff((Fst, Fst); id.eq)>
+

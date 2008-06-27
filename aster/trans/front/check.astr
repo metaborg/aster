@@ -106,6 +106,7 @@ attributes
   // - inh x := y -> "set default value using root.x := y"
   // - warn for "name1: name1 -> ... name2 -> ..." if name1 and name2 aren't used
   //   (should probably be := instead!)
+  // - warn for rules(...id... -> foo); id does not bind to the current term but acts as a wild card
 
 attributes
 
