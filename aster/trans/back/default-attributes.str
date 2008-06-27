@@ -151,6 +151,14 @@ rules
           d
         , id.parent; `inh`(d)
         )
+      
+      local `syn`(d) =
+        if d.defined then
+          d
+        else
+          one(d.defined; result := `syn`(d));
+          !result
+        end
      
       local `plain`(d) = d
       

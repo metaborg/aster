@@ -38,9 +38,10 @@ rules // Using local decorators
    */
   `_inh` `_at-root`(s) = `_at-root`(s) <+ s
 
-  local `_inh`(s) =
-    id.eval(
-      s
-    , id.parent; `_inh`(s)
-    )
+  local `_inh`(a) =
+    if a.defined then
+      a
+    else
+      id.parent; `_inh`(a)
+    end
 
