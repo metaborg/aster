@@ -200,3 +200,13 @@ test Mixture of attribute keywords and identifiers
   "rules
      eq `eq` eq = 1" -> _ // could break with future syntax
 
+
+test Simple local definition after pattern block
+  "rules
+     
+     local set:
+        id.make-set = foldr(![], id.union, ![<id>])
+      
+     local lookup(s) = lookup(s)
+  " -> Rules([_, AttributeDefNoPattern(Local,AttributeDefStrategy(NoChild,AttributeNoTerms("lookup",[DefaultVarDec("s")]),NotCircular,Call(SVar("lookup"),[CallNoArgs(SVar("s"))])))])
+

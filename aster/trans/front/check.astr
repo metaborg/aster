@@ -104,6 +104,8 @@ attributes
   // - inh foo(x) = .... ?x -> Warning: should not use annotated terms in match?
   // - congruence in attribute strategy: Foo().x = Bar() always results in a hard failure
   // - inh x := y -> "set default value using root.x := y"
+  // - warn for "name1: name1 -> ... name2 -> ..." if name1 and name2 aren't used
+  //   (should probably be := instead!)
 
 attributes
 

@@ -11,6 +11,8 @@ signature constructors
 
 rules
 
+  // TODO: Desugar variable scopes, to fix "parent0 not found in { id.parent }"
+
   desugar-all =
     topdown(repeat(
       desugar-attribute-ref

@@ -86,7 +86,9 @@ rules
         id.isect = isect(id.eq) <+ foldr(![], isect(id.eq))
         id.make-set = foldr(![], id.union, ![<id>])
       
-      // Decorators
+      local lookup = lookup(id.eq)
+      
+    // Decorators
       
       /* TODO: eval with hard-fail argument (once the syntax allows it)
       
@@ -159,8 +161,6 @@ rules
           one(d.defined; result := `syn`(d));
           !result
         end
-     
-      local `plain`(d) = d
       
       /* TODO: Sane definition of `chained`
       //       should semantic rules be applied only once per node,
@@ -218,6 +218,12 @@ rules
         getfirst(d) <+ `lookup-unordered`(d)
       <+
         `lookup-unordered`(d)
+     
+    // Annotations
+     
+      local `plain`(d) = d
+      
+      // TODO: local `covers`(d|sort) = d
   ]|
   
   ignore-trace-def =

@@ -55,6 +55,10 @@ exports
     "one"      -> AttributeId %% reserved Id
     "some"     -> AttributeId %% reserved Id
   
+  context-free restrictions
+  
+    AttributeId   -/- [a-zA-Z0-9\'\-\_\*]
+  
   context-free syntax
   
     Id -> AttributeId {prefer}
