@@ -103,8 +103,8 @@ attributes // Control flow for specific statements
   eq If(e, s1, s2).succ := [s1, s2]
      
   eq While(e, s):
-    id.succ           := [s | id.succ-enclosing]
-    id.succ-enclosing := [id]
+    id.succ          := [s | id.succ-enclosing]
+    s.succ-enclosing := [id]
   
   eq Return(e).succ := []
 

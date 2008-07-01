@@ -7,7 +7,7 @@ imports
 
 rules
 
-  // TODO: Remove attribute library to /runtime/ dir
+  // FIXME: Remove attribute library to /runtime/ dir
 
   add-default-attributes:
     Module(name, decl*) -> Module(name, [decl*, attrs*])
@@ -86,7 +86,8 @@ rules
         id.isect = isect(id.eq) <+ foldr(![], isect(id.eq))
         id.make-set = foldr(![], id.union, ![<id>])
       
-      local lookup = lookup(id.eq)
+      local (key,list).lookup = lookup(id.eq)
+      local list.lookup(|key) = <lookup(id.eq)> (key, list)
       
     // Decorators
       
