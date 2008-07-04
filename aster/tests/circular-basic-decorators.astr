@@ -29,7 +29,7 @@ strategies
 
 attributes
 
-  local `plain`(s) = s // HACK: plain should be an built-in annotation
+  // TODO: Promote circular-id to a library decorator circular(|t_initial)
 
   `plain` `circular-id`(s) =
     let recompute(|old-value) =

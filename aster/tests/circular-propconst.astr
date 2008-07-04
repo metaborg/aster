@@ -87,32 +87,28 @@ attributes // Reverse control flow
   // for each id.succ: pred = id  
   `collect-foreach-idsucc` pred = id
   
-  // TODO: id.succ should not be hardcoded in here, but should be a strategy argument 'targets'
-  local `collect-foreach-idsucc`(s) =
-    verbose-msg(!"about to git it", <CompletedSweep> s.unique-id);
-    
-    if not(<CompletedSweep> s.unique-id) then
-      rules(CompletedSweep: s.unique-id);
-      verbose-msg(!"completed", s.unique-id, <CompletedSweep> s.unique-id);
+  // TODO: promote collect-foreach-idsucc to a library decorator
+  //       id.succ should not be hardcoded in here, but should be a strategy argument 'targets'
+  local node.`collect-foreach-idsucc`(s) =
+    if not(<CompletedSurvey> s.unique-id) then
+      rules(CompletedSurvey: s.unique-id);
       
-      where(`at-root`(topdown(where(try(
-        { contributor:
-          ?contributor;
+      id.root;
+      topdown(where(try(
+        { contribution:
+          ?contribution;
           id.succ; // targets
-          verbose-msg(!"adding ", !contributor, !" to ", id);
           map({ target:
             ?target;
             rules(
-              CollectForeachContributors :+ (s.unique-id, target) -> contributor
+              CollectForeachContributions :+ (s.unique-id, target) -> contribution
             )
           })
         }
-      )))))
+      )))
     end;
     
-    verbose-msg(!"getting it for", !(s.unique-id, id), <bagof-CollectForeachContributors> (s.unique-id, id));
-    <bagof-CollectForeachContributors> (s.unique-id, id);
-    map(s)
+    <bagof-CollectForeachContributions; s> (s.unique-id, node)
 
 attributes // Extract constant values
 

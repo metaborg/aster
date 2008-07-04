@@ -23,5 +23,3 @@ attributes
 attributes
 
   local `noop`(s) = s
-
-  `plain` `uncached`(s) = s; debug(!" uncached")

@@ -126,7 +126,9 @@ strategies // Adding/removing node annotations
       end
   
   astr-remove-annos =
-    leaves-consnil(astr-remove-anno)
+    // leaves-consnil should suffice in most cases, but this
+    // should handle more at about the same overhead
+    topdown-consnil(astr-remove-anno)
   
   astr-remove-anno =
     try(
@@ -140,8 +142,9 @@ strategies // Adding/removing node annotations
     )
   
   is-astr-annotation =
-    // explode-string => ['@' | _] // too expensive me thinks
     is-string
+    // TODO: Is this a sensible optimization?
+    // ; explode-string => ['@' | _] 
 
 strategies // Hash table storage for init/uninit
 

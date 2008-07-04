@@ -18,7 +18,7 @@ rules
     attributes
       local enable-warnings = rules(AstrWarningsDisabled :- _)
       
-      local /*plain*/ tree-access:
+      `plain` tree-access:
         id.prev-sibling  = get-prev-sibling(|id.parent)
         id.next-sibling  = get-next-sibling(|id.parent)
         id.first-sibling = get-first-child(|id.parent)
@@ -31,12 +31,12 @@ rules
       
       local root.is-root = id
       
-      local /*plain*/ all(d) =
+      `plain` all(d) =
         ?before;
         all(d);
         (?before <+ id.init)
       
-      local /*plain*/ some(d) =
+      `plain` some(d) =
         ?before;
         some(d);
         (?before <+ id.init)
@@ -204,6 +204,14 @@ rules
           id.parent; `chained-inh-helper`(d)
         )
       */
+      
+      /**
+       * Plain attributes do not have the default behavior of
+       * caching and re-annotating a result term for re-attribution
+       */
+      local `plain`(d) = d // note that this is a special, built-in decorator
+      
+      `plain` `uncached`(d) = d; id.ensure-init
         
       inh `lookup-ordered`(d) =
         d
