@@ -2,24 +2,23 @@ testsuite Stratego-Attributes
 topsort Decl
 
 test Rules block
-   "rules" -> Rules([])
+   "attributes" -> Attributes([])
+
+test Decorators block
+   "decorators" -> Decorators([])
 
 test Assignment in pattern definition block
-  "rules
+  "attributes
     eq attribute:
       Pattern(x) -> 2 where Foo() :=  x"
 ->  _
   
 test Rule definition vs. attribute pattern definition block
-  "rules eq foo: 1 -> 2 eq bar : 3 -> 4"
--> _
-
-test Rule definition vs. attribute pattern definition block (2)
-  "rules eq foo: 1 -> 2 syn bar : 3 -> 4"
+  "attributes eq foo: 1 -> 2 eq bar: 3 -> 4"
 -> _
 
 test Attribute pattern block with strategy definitions
-  "rules
+  "attributes
      eq Pattern(child):
        child.bar = !1
        id.baz = !2
@@ -27,100 +26,110 @@ test Attribute pattern block with strategy definitions
 -> _
 
 test Disallow childless attribute definition in block (1)
-  "rules
+  "attributes
      eq Pattern(child):
      
      bar = !1 // not to be confused with id.bar = !1
   " fails
 
 test Disallow childless attribute definition in block (2)
-  "rules
-     local Pattern(x, y):
+  "attributes
+     def Pattern(x, y):
        attribute := 3
   " fails
 
+/*
 test Non-empty pattern block and strategy definition
-  "rules
+  "attributes
      eq Pattern(child):
        id.bar = !1
      
      baz = !1
   "
 -> _
+*/
 
 test Decorated rule (1)
-  "rules
-     s = ?a 
-     
-     `custom` rule : 2 -> 3
+  "attributes
+     def custom rule : 2 -> 3
   " -> _
 
 test Decorated rule (2)
-  "rules
-     `custom` Pattern(s): s.x := 3
+  "attributes
+     def custom Pattern(s): s.x := 3
   " -> _  
 
 test Attribute definition block with variable pattern
-  "rules
-     local foo:
+  "attributes
+     def foo:
        id.bar = id
        id.baz = id
   " -> _
   
 test Attribute definition block with single strategy
-  "rules
-     local foo(s):
+  "attributes
+     def foo(s):
        id.bar = s
   " -> _
   
 test Attribute reference in match
-  "rules
+  "strategies
      s = ?1.bar
   " -> _
   
 test Attribute defined on tuple
-  "rules
+  "attributes
      eq (1,2,3).foo = !1
   " -> _
 
 test Attribute localfoo
-  "rules
-     local foo = !1
+  "attributes
+     def foo = !1
   " -> _
 
 test Pattern rootfoo
-  "rules
+  "attributes
      eq rootfoo.bar = !1
   " -> _
 
 test Attribute block defined on tuple
-  "rules
-     local (a,b):
+  "attributes
+     def (a,b):
         a.x := 1
   " -> _
 
 test Attribute on term 'eq'
-  "rules
+  "attributes
      eq eq = 1
   " -> _
 
+test Mixture of attribute keywords and identifiers
+  "attributes
+     eq eq eq = 1" -> _ // could break with future syntax
+
 test AttributeDecl and AttributeDefNoPattern
-  "rules
-     syn x
+  "attributes
+     def bu x
      eq B(a): id.x = 1
    " -> _
 
 test Attribute definition vs. <App> (1)
-  "rules
-     s = x := <Foo>
-     eq bar = 1
+  "attributes
+     def s = x := <Foo>
+     eq eq bar = 1
   " -> _
 
 test Attribute definition vs. <App> (2)
-  "rules
-     s = x := <Foo>
-     syn bar = 1
+  "attributes def s = x := <Foo> eq eq bar = 1" -> _
+
+test Attribute definition vs. <App> (3)
+  "attributes
+     def s = x := <Foo>
+     def eq bar = 1
   " -> _
+
+test Attribute definition vs. <App> (4)
+  "attributes def s = x := <Foo> def eq bar = 1" -> _
 
 test Attribute reference vs. <App> (1)
   "rules
@@ -138,21 +147,21 @@ test Attribute as annotation list
   " -> _
 
 test Attribute pattern definitions vs. <App> (1)
-  "rules
-     eq inh:
+  "attributes
+     eq td:
        1 -> <s>
        A(2) -> 3
-  " -> Rules([PatternDefBlock(NoType,AttributeNoArgs("inh"),NotCircular,[AttributePDefTerm(NoAnnoList(Int("1")),NoChild,RootApp(CallNoArgs(SVar("s"))),NoWhere),AttributePDefTerm(NoAnnoList(Op("A",[NoAnnoList(Int("2"))])),NoChild,NoAnnoList(Int("3")),NoWhere)])])
+  " -> Attributes([PatternDefBlock(Type(Eq,[],NoSort),AttributeNoArgs("td"),[AttributePDefTerm(NoAnnoList(Int("1")),NoChild,RootApp(CallNoArgs(SVar("s"))),[]),AttributePDefTerm(NoAnnoList(Op("A",[NoAnnoList(Int("2"))])),NoChild,NoAnnoList(Int("3")),[])])])
 
 test Attribute pattern definitions vs. <App> (2)
-  "rules
-     eq inh:
+  "attributes
+     eq td:
        1 -> <s> A
        (2) -> 3
-  " -> Rules([PatternDefBlock(NoType,AttributeNoArgs("inh"),NotCircular,[AttributePDefTerm(NoAnnoList(Int("1")),NoChild,App(CallNoArgs(SVar("s")),Var("A")),NoWhere),AttributePDefTerm(NoAnnoList(Tuple([NoAnnoList(Int("2"))])),NoChild,NoAnnoList(Int("3")),NoWhere)])])
+  " -> Attributes([PatternDefBlock(Type(Eq,[],NoSort),AttributeNoArgs("td"),[AttributePDefTerm(NoAnnoList(Int("1")),NoChild,App(CallNoArgs(SVar("s")),Var("A")),[]),AttributePDefTerm(NoAnnoList(Tuple([NoAnnoList(Int("2"))])),NoChild,NoAnnoList(Int("3")),[])])])
 
 test Attribute pattern definitions vs. <App> (3)
-  "rules
+  "attributes
      eq inh:
        1 -> <s>
        A
@@ -160,43 +169,38 @@ test Attribute pattern definitions vs. <App> (3)
   " -> _ // just has to be unambiguous
 
 test Attribute pattern definitions vs. <App> (4)
-  "rules
+  "attributes
      eq inh:
        1 -> <s> A (2) -> 3" -> _ // just has to be unambiguous
 
 test Attribute pattern definitions vs. <App> (5)
-  "rules
+  "attributes
      eq inh:
        1 -> <s> 2 -> 3" fails // not so nice, but just has to be unambiguous
 
 
 test Attribute pattern definitions vs. <App> (6)
-  "rules
+  "attributes
      eq inh: 1 -> 2 3 -> 4" -> _
 
 test Attribute pattern definitions vs. <App> (7)
-  "rules
+  "attributes
      eq inh:
        1 -> <s> A /* foo */ (2) -> 3" -> _ // just has to be unambiguous
 
 test Attribute pattern definitions vs. <App> (8)
-  "rules
+  "attributes
      eq inh:
        1 -> <s> /* foo */ A (2) -> 3" -> _ // just has to be unambiguous
 
 test Attribute pattern definitions vs. <App> (9)
-  "rules
+  "attributes
      eq inh: 1 -> <s1;
                    s2> with foo
-     bar = 1
   " -> _
 
 test Attributes in pattern
-  "rules
+  "attributes
      eq Foo(id.eq(|baz)).bar(|baz) = id
   " -> _
-
-test Mixture of attribute keywords and identifiers
-  "rules
-     eq `eq` eq = 1" -> _ // could break with future syntax
 

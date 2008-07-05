@@ -13,11 +13,14 @@ exports
   sorts
     DefType
     Pattern
+    AttributeDef
     AttributeRef
     AttributeCall
     AttributeCallLHS
     AttributeDecl
     AttributeType
+    DecoratorRef
+    DecoratorId
     AttributeKeyword
     ChildDot
     DotChild
@@ -31,6 +34,7 @@ exports
     PatternDefBlockDef
     Where
     NoWhere
+    UNDEFINED %% matches nothing
   
   lexical syntax
 
@@ -40,7 +44,10 @@ exports
   
   context-free syntax
   
-    Id -> AttributeId {prefer}
+    Id          -> AttributeId {prefer}
+    AttributeId -> DecoratorId
+    "*"         -> DecoratorId
+    "plain"     -> DecoratorId {prefer} %% treat as keyword
   
   context-free syntax %% attributes
   
@@ -53,6 +60,10 @@ exports
     AttributeId "(" { Strategy "," }* "|" { Term "," }* ")" -> AttributeRef {cons("Attribute")}
     AttributeId "(" { Strategy "," }*                   ")" -> AttributeRef {cons("AttributeNoTerms")}
     AttributeId                                             -> AttributeRef {cons("AttributeNoArgs")}
+    
+    DecoratorId "(" { Strategy "," }* "|" { Term "," }* ")" -> DecoratorRef {cons("Decorator")}
+    DecoratorId "(" { Strategy "," }*                   ")" -> DecoratorRef {cons("DecoratoreNoTerms")}
+    DecoratorId                                             -> DecoratorRef {cons("DecoratorNoArgs")}
 
     AttributeCallLHS "." AttributeRef -> AttributeCall {cons("AttributeRef")}
     Term                              -> AttributeCallLHS
@@ -63,10 +74,10 @@ exports
    
   context-free syntax %% semantic rules: core syntax
 
-    AttributeType AttributeDecl                  -> RuleDef {cons("AttributeDecl")}
-    AttributeType Pattern "." AttributeNameValue -> RuleDef {cons("AttributeDef")}
+    AttributeType AttributeDecl "."              -> AttributeDef {cons("AttributeDecl")}
+    AttributeType Pattern "." AttributeNameValue -> AttributeDef {cons("AttributeDef")}
     
-    DefType Id* OptSortDot -> AttributeType {cons("Type")}
+    DefType DecoratorRef* OptSortDot -> AttributeType {cons("Type")}
     
     OptChildDot AttributeDecl "="  Strategy -> AttributeNameValue {cons("AttributeDefStrategy")}
     
@@ -96,16 +107,16 @@ exports
 
   context-free syntax %% semantic rules: syntactic sugar
  
-    "attributes" Def* -> Decl {cons("Attributes")}    
-    "decorators" Def* -> Decl {cons("Decorators")}    
+    "attributes" AttributeDef* -> Decl {cons("Attributes")}    
+    "decorators" AttributeDef* -> Decl {cons("Decorators")}    
 
     %% Single-line attribute definitions
-    AttributeType AttributeNameValue           -> RuleDef {cons("AttributeDefNoPattern"), avoid}
+    AttributeType AttributeNameValue           -> AttributeDef {cons("AttributeDefNoPattern"), avoid}
     OptChildDot AttributeDecl ":=" Term Where* -> AttributeNameValue {cons("AttributeDefTerm")}
     
     %% Attribute definition blocks/groups
-    AttributeType Pattern       ":" NameDefBlockDef+    -> RuleDef {cons("NameDefBlock")}
-    AttributeType AttributeDecl ":" PatternDefBlockDef+ -> RuleDef {cons("PatternDefBlock")}
+    AttributeType Pattern       ":" NameDefBlockDef+    -> AttributeDef {cons("NameDefBlock")}
+    AttributeType AttributeDecl ":" PatternDefBlockDef+ -> AttributeDef {cons("PatternDefBlock")}
     
     %% Definitions grouped in a NameDefBlock
     ChildDot AttributeDecl ":=" Term     Where* -> NameDefBlockDef {cons("AttributeDefTerm")}
@@ -113,7 +124,7 @@ exports
 
     %% Definitions grouped in a PatternDefBlock
     Pattern OptDotChild "->" ResultTerm NoWhere* -> PatternDefBlockDef {cons("AttributePDefTerm")}
-    Pattern OptDotChild "->" Term       Where*   -> PatternDefBlockDef {cons("AttributePDefTerm")}
+    Pattern OptDotChild "->" Term       Where+   -> PatternDefBlockDef {cons("AttributePDefTerm")}
 
     "where" Strategy -> Where {cons("Where")}
     "with" Strategy  -> Where {cons("With")}
@@ -121,7 +132,7 @@ exports
 
   context-free syntax %% Misc.
     
-    "eq" Pattern "->" Term Where* -> RuleDef {cons("AnonymousRewriteRule")}
+    "eq" Pattern "->" Term Where* -> AttributeDef {cons("AnonymousRewriteRule")}
       
     "id"   -> PreTerm {cons("IdTerm")}
     "fail" -> Term {cons("FailTerm")}
@@ -145,4 +156,6 @@ exports
     "root"
     "decorator"
     "attributes" -/- [a-zA-Z0-9\'\-\_]
+
+    DecoratorId -/- [\(]
 
