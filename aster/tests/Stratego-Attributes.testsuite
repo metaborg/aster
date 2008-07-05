@@ -103,9 +103,13 @@ test Attribute on term 'eq'
      eq eq = 1
   " -> _
 
-test Mixture of attribute keywords and identifiers
+test Mixture of attribute keywords and identifiers (1)
   "attributes
-     eq eq eq = 1" -> _ // could break with future syntax
+     eq eq eq eq = 1" -> Attributes([_, _])
+
+test Mixture of attribute keywords and identifiers (2)
+  "attributes
+     eq eq eq a = 1" -> Attributes([_, _])
 
 test AttributeDecl and AttributeDefNoPattern
   "attributes
@@ -116,20 +120,20 @@ test AttributeDecl and AttributeDefNoPattern
 test Attribute definition vs. <App> (1)
   "attributes
      def s = x := <Foo>
-     eq eq bar = 1
+     eq bar = 1
   " -> _
 
 test Attribute definition vs. <App> (2)
-  "attributes def s = x := <Foo> eq eq bar = 1" -> _
+  "attributes def s = x := <Foo> eq bar = 1" -> _
 
 test Attribute definition vs. <App> (3)
   "attributes
      def s = x := <Foo>
-     def eq bar = 1
+     eq bar = 1
   " -> _
 
 test Attribute definition vs. <App> (4)
-  "attributes def s = x := <Foo> def eq bar = 1" -> _
+  "attributes def s = x := <Foo> eq bar = 1" -> _
 
 test Attribute reference vs. <App> (1)
   "rules

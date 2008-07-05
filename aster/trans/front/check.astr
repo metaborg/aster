@@ -50,6 +50,11 @@ attributes
     AttributeDefStrategy(Child(x), _, _, _) -> "Child variable not defined by rule pattern"
     where
       not(id.is-pattern-var(|x))
+
+  
+    AttributeDef(Type(Decorator(), _, _), _, AttributeDefStrategy(_, Attribute(name, _, _), _)) -> "Illegal name for decorator"
+    where
+      <"def" + "eq" + "decorator"> name
     
     AttributeDefStrategy(_, Attribute(_, _, args), _) -> "Strategy applications not allowed in attribute argument patterns"
     where
@@ -144,6 +149,7 @@ attributes
     ?AttributeDefStrategy(_, <id.pp>, _);
     <conc-strings> (" in attribute ", <as-string>)
   
+  // TODO: Rename def-type, def-type-local
   def inh def-type:
     AttributeDef(_, _, AttributeDefStrategy(_, attr, _)) ->  <get-attribute-decorators> attr
   

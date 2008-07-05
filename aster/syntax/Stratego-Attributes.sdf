@@ -44,10 +44,12 @@ exports
   
   context-free syntax
   
-    Id          -> AttributeId {prefer}
-    AttributeId -> DecoratorId
-    "*"         -> DecoratorId
-    "plain"     -> DecoratorId {prefer} %% treat as keyword
+    Id               -> AttributeId {prefer}
+
+    AttributeKeyword -> DecoratorId {reject}
+    AttributeId      -> DecoratorId
+    "*"              -> DecoratorId
+    "plain"          -> DecoratorId {prefer} %% treat as keyword
   
   context-free syntax %% attributes
   
@@ -74,7 +76,7 @@ exports
    
   context-free syntax %% semantic rules: core syntax
 
-    AttributeType AttributeDecl "."              -> AttributeDef {cons("AttributeDecl")}
+    AttributeType AttributeDecl                  -> AttributeDef {cons("AttributeDecl")}
     AttributeType Pattern "." AttributeNameValue -> AttributeDef {cons("AttributeDef")}
     
     DefType DecoratorRef* OptSortDot -> AttributeType {cons("Type")}
