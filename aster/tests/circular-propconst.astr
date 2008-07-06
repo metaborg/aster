@@ -77,8 +77,8 @@ attributes // Control flow (also defined in circular-liveness)
   eq If(e, s1, s2).succ := [s1, s2]
      
   eq While(e, s):
-    id.succ          := [s | id.succ-enclosing] where verbose-msg(!"while succ:", id.succ-enclosing.uninit)
-    s.succ-enclosing := [id]
+    id.succ          := [s | s.succ-enclosing]
+    s.succ-enclosing := [s]
   
   eq Return(e).succ := []
 

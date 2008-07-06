@@ -56,6 +56,7 @@ strategies
       x_all-parents      := <AllParentsVar>;
       x_attr-cache       := <AttrCacheVar>;
       x_rewrite-mode     := <RewriteModeVar>;
+      s_pattern          := <assimilate-pattern(|child)> t_pattern;
       type-name          := <attribute-type-name(|type)> attr;
       sig                := <attribute-signature> attr;
       x_eval             := <attribute-accessor-name(|type-name)> attr;
@@ -64,16 +65,6 @@ strategies
       s_parent         := |[ ?x_node; !x_parent; not(UnknownParent)
                              <+ get-parent(|x_all-parents) ]|;
       s_parent-desired := |[ ?x_node < !x_parent + !UnknownParent() ]|;
-     
-      if NoChild() := child then
-        Root()    := t_pattern;
-        s_pattern := <root-pattern(|x_parent, x_all-parents)>
-      <+
-        s_pattern := |[ ?t_pattern ]|
-      else
-        Child(child') := child;
-        s_pattern     := <ancestor-check(|child', x_parent, x_all-parents)> t_pattern
-      end;
       
       !s;
       topdown(try(
@@ -83,20 +74,9 @@ strategies
     
   assimilate-def:
     AttributeDecl(_, _, _, _) -> []
-   
-  root-pattern(|x_parent, x_all-parents) =
-    !|[ where(
-         ?root;
-         if UnknownParent() := x_parent then
-           get-parent(|x_all-parents); NoParent
-         else
-           <NoParent> x_parent
-         end
-        )
-    ]|
 
 rules // Argument patterns
-  
+   
   extract-arg-patterns =
     unzip(extract-arg-pattern);
     (id, fold-seq)
@@ -112,8 +92,6 @@ rules // Argument patterns
     |[ <(id < id + ?x); // x may be bound or not; avoid compiler complaints
         (?x <+ eq-ignore-annos(|x))>
     ]|
-  
-   
 
 rules // Semantic rule definition helpers
 
@@ -124,20 +102,46 @@ rules // Semantic rule definition helpers
     s -> |[ s <+ !EVAL_FAILED() ]|
     where
       not(?Seq(WhereClause(c), _))
+   
+  assimilate-pattern(|child) =
+    ?t_pattern;
+    switch !child
+      case Root() := t_pattern:
+        !|[ where(~<root-pattern>) ]|
+      
+      case NoChild:
+        !|[ where(?t_pattern) ]|
+      
+      case ?Child(child'):
+         // if the attribute is specified on a pattern child, it becomes the current term (x_node)
+         <ancestor-pattern(|child')> t_pattern
+    end
+   
+  root-pattern =
+    with(
+      x_parent      := <ParentVar>;
+      x_all-parents := <AllParentsVar>
+    );
+    !|[ ?root;
+        if UnknownParent() := x_parent then
+          get-parent(|x_all-parents); NoParent
+        else
+          <NoParent> x_parent
+        end
+    ]|
   
   /**
-   * Match based on an ancestor (e.g., for inh Foo(Bar(x)).x).
+   * Match based on an ancestor (e.g., for def td Foo(Bar(x)).x).
    */
-  ancestor-check(|x_child, x_parent, x_all-parents):
+  ancestor-pattern(|x_child):
     t_pattern ->
     |[ ?x_child;
-       where(
-         (!x_parent; not(UnknownParent) <+ s_traverse-up);
-         s_traverse-up';
-         ?t_pattern
-       )
+       (!x_parent; not(UnknownParent + NoParent) <+ s_traverse-up);
+       s_traverse-up' => t_pattern
     ]|
     with
+      x_parent       := <ParentVar>;
+      x_all-parents  := <AllParentsVar>;
       depth          := <dec> <term-depth(|Var(x_child))> t_pattern;
       s_traverse-up  := |[ get-parent(|x_all-parents); not(NoParent) ]|;
       s_traverse-up' := <copy; fold-seq> (depth, s_traverse-up)

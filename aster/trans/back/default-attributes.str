@@ -87,7 +87,7 @@ rules
         id.make-set = foldr(![], id.union, ![<id>])
       
       local (key,list).lookup = lookup(id.eq)
-      local list.lookup(|key) = <lookup(id.eq)> (key, list)
+      local list.lookup(|keyb) = <lookup(id.eq)> (keyb, list)
       
     // Decorators
       

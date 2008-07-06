@@ -113,20 +113,20 @@ attributes
   is-recursive-definition = id // TODO2: is-recursive-definition
   
   inh in-match:
-    Match(t).t         -> id
-    Assign(t, _).t     -> id
-    AM(_, t).t         -> id
-    As(t, _).t         -> id
-    Rule(t, _, _).t    -> id
-    RuleNoCond(t, _).t -> id
+    Match(t).t         -> t
+    Assign(t, _).t     -> t
+    AM(_, t).t         -> t
+    As(t, _).t         -> t
+    Rule(t, _, _).t    -> t
+    RuleNoCond(t, _).t -> t
     RootApp(s).s       -> fail
     App(s, _).s        -> fail
-    NameDefBlock(_, t, _, _).t      -> id
-    AnonymousRewriteRule(s, _, _).s -> id
-    AttributeDefStrategy(_, Attribute(_, _, t), _, _).t -> id
+    NameDefBlock(_, t, _, _).t      -> t
+    AnonymousRewriteRule(s, _, _).s -> s
+    AttributeDefStrategy(_, Attribute(_, _, t), _, _).t -> t
   
   inh in-pattern:
-    AttributeDef(_, pattern, _).pattern -> id
+    AttributeDef(_, pattern, _).pattern -> pattern
   
   inh is-pattern-var(|var):
     AttributeDef(_, pattern, _) -> <oncetd(id.eq(|Var(var)))> pattern
@@ -135,7 +135,7 @@ attributes
     AttributeDef(_, _, AttributeDefStrategy(_, attr, _, _)) -> <oncetd(id.eq(|Var(var)))> attr
 
   local is-def-param:
-    AttributeDefStrategy(_, Attribute(_, _, t), _, _).t -> id
+    AttributeDefStrategy(_, Attribute(_, _, t), _, _).t -> t
   
   // TODO2: Proper error pp
   local pp:
@@ -148,7 +148,7 @@ attributes
     <conc-strings> (" in attribute ", <as-string>)
   
   inh def-type:
-    AttributeDef(_, _, AttributeDefStrategy(_, attr, _, _)) ->  <get-attribute-type> attr
+    AttributeDef(_, _, AttributeDefStrategy(_, attr, _, _)) -> <get-attribute-type> attr
   
   inh def-type-local:
     AttributeDef(type, _, _) ->  type

@@ -39,7 +39,7 @@ strategies // Set-up, testing
   
   test-live-before =
     topdown(
-      if(id.is-stm, !id{^id.live-before})
+      if(is-Stm, !id{^id.live-before})
     );
     
     ?Block([
@@ -57,7 +57,7 @@ strategies // Set-up, testing
   
   test-live-after =
     topdown(
-      if(id.is-stm, !id{^id.live-after})
+      if(is-Stm, !id{^id.live-after})
     );
       
     ?Block([
@@ -73,7 +73,8 @@ strategies // Set-up, testing
      
      say(!"live-after matches")
   
-  local [stm | _].stm.is-stm = not(is-list) // statements are contained by lists
+  // is-Stm can normally be generated from the grammar, but is simply hardcoded here
+  is-Stm = ?Block(_) + ?While(_, _) + ?If(_, _, _) + ?Assign(_, _) + ?Return(_)
 
 attributes // Local variable use and define sites
 
@@ -103,7 +104,7 @@ attributes // Control flow for specific statements
   eq If(e, s1, s2).succ := [s1, s2]
      
   eq While(e, s):
-    id.succ          := [s | id.succ-enclosing]
+    id.succ          := [s | s.succ-enclosing]
     s.succ-enclosing := [id]
   
   eq Return(e).succ := []
