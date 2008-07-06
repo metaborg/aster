@@ -40,7 +40,7 @@ strategies
     AttributeDef(
       Type(type, decorators, _)
     , t_pattern
-    , AttributeDefStrategy(child, attr @ Attribute(name, sa*, a*), _, s)
+    , AttributeDefStrategy(child, attr @ Attribute(name, sa*, a*), s)
     ) ->
     <make-merged-def(|t_pattern, child)>
     Def |[
@@ -129,7 +129,9 @@ rules // Semantic rule definition helpers
       c' := <assimilate-where-with> c
   
   add-eval-failed:
-    <not(?InlineWhereClause(_, _))> -> |[ s <+ !EVAL_FAILED() ]|
+    s -> |[ s <+ !EVAL_FAILED() ]|
+    where
+      not(?InlineWhereClause(_, _))
   
   /**
    * Match based on an ancestor (e.g., for inh Foo(Bar(x)).x).

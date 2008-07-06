@@ -76,7 +76,7 @@ exports
    
   context-free syntax %% semantic rules: core syntax
 
-    AttributeType AttributeDecl                  -> AttributeDef {cons("AttributeDecl")}
+    AttributeType { AttributeDecl "," } +        -> AttributeDef {cons("AttributeDecl")}
     AttributeType Pattern "." AttributeNameValue -> AttributeDef {cons("AttributeDef")}
     
     DefType DecoratorRef* OptSortDot -> AttributeType {cons("Type")}

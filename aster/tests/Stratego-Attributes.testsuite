@@ -7,6 +7,12 @@ test Rules block
 test Decorators block
    "decorators" -> Decorators([])
 
+test Attribute declarations
+   "attributes
+     def td a
+     def td b, c
+   " -> _
+
 test Assignment in pattern definition block
   "attributes
     eq attribute:
