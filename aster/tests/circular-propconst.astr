@@ -134,12 +134,6 @@ attributes // Data flow
       try(<id.table-diff> (id, stm.constant-killset))
 
 attributes // Utility
-  
-  remove-entry(|key) =
-    ?[(key, _) | tail];
-    <remove-entry(|key)> tail
-  <+
-    [id | remove-entry(|key)]
 
   local tables:
     id.table-union = union({?((k1, _), (k2, _)); k1.eq(|k2)})
