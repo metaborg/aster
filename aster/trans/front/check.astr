@@ -86,7 +86,11 @@ attributes
       <Local> id.def-type
     
     AttributeDef(_, _, AttributeDefStrategy(_, Attribute([_ | _], _, _), Circular(_), _)) ->
-    "Circular attributes cannot have strategy arguments" 
+    "Circular attributes cannot have strategy arguments"
+    
+    AttributeDef(_, pattern, AttributeDefStrategy(Child(child), _, _, _)).child -> "Pattern child not defined"
+    where
+      not(<term-depth(|Var(child))> pattern)
 
   local warning:
     Var(x) -> "Performing match using annotated term - use id.eq instead"
@@ -94,16 +98,16 @@ attributes
       id.in-match;
       not(id.in-pattern + id.is-def-param);
       (id.is-pattern-var(|x) + id.is-def-arg(|x))
-  
+    
+    AttributeDef(_, pattern, AttributeDefStrategy(Child(child), _, _, _)).child -> "Pattern child equals pattern"
+    where
+      0 := <term-depth(|Var(child))> pattern
+    
   // TODO: confirm attribute applicability based on pattern, where possible
   
   // TODO: more checks
-  // - check if topdown-depth succeeds for child patterns
-  // - no child patterns in strat calls
-  // - inh x(kid).foo = kid.foo should be synthesized or local
   // - inh foo(x) = .... ?x -> Warning: should not use annotated terms in match?
   // - congruence in attribute strategy: Foo().x = Bar() always results in a hard failure
-  // - inh x := y -> "set default value using root.x := y"
   // - warn for "name1: name1 -> ... name2 -> ..." if name1 and name2 aren't used
   //   (should probably be := instead!)
   // - warn for rules(...id... -> foo); id does not bind to the current term but acts as a wild card

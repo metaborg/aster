@@ -4,6 +4,7 @@ imports
   libstratego-lib
   astr/runtime/parents
   astr/runtime/lists
+  astr/runtime/attributes
 
 strategies // Util
 
@@ -48,6 +49,9 @@ strategies // Util
     else
       <conc-strings> ("?", ".", <to-tiny-string>)
     end
+  
+  eval-local-path-and-node(|parent, all-parents, attr-cache, rewrite-mode) =
+    fail // generator-defined rule
 
 strategies // Node initialization
 
@@ -94,6 +98,9 @@ strategies // Node initialization
       reverse;
       map(<fprintnl> (stderr(), ["\t", <id>]))
     end
+  
+  internal-enable-warnings =
+    rules(AstrWarningsDisabled :- _) // ensure this rule is defined somewhere
   
   astr-is-reference-collection(|all-parents) = 
     (is-list + is-tuple);

@@ -143,8 +143,14 @@ rules // Semantic rule definition helpers
       x_parent       := <ParentVar>;
       x_all-parents  := <AllParentsVar>;
       depth          := <dec> <term-depth(|Var(x_child))> t_pattern;
-      s_traverse-up  := |[ get-parent(|x_all-parents); not(NoParent) ]|;
-      s_traverse-up' := <copy; fold-seq> (depth, s_traverse-up)
+
+      if -1 := depth then // pff.. recover if the child IS the pattern
+        s_traverse-up  := Id();
+        s_traverse-up' := |[ !x_child ]|; tiny-debug(!3)
+      else
+        s_traverse-up  := |[ get-parent(|x_all-parents); not(NoParent) ]|;
+        s_traverse-up' := <copy; fold-seq> (depth, s_traverse-up)
+      end
     
     // TODO2: Optimize - ancestor-check should use intermediate patterns
 

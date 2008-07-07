@@ -2,6 +2,7 @@ module back/util
 
 imports
   libstratego-lib
+  astr/runtime/annotations
 
 strategies
     
@@ -25,7 +26,7 @@ strategies
     );
     !result
   <+
-    ?child;
+    eq-ignore-annos(|child);
     !initial
   
   roll-out-list-terms:

@@ -23,41 +23,39 @@ strategies // Set-up, testing
       verbose-option
     ,
       input := <make-input>;
-      oncetd(?Assign("x", _) => it);
-      it.constant-before.debug
     
-      // test-propconst
+      test-propconst
     )
   
   make-input =
     !Block([
-       Assign("bogus1", Int(1))
-     , Assign("y", Int(3))
-     , Assign("x", Int(3))
-     , While("x", Block([
-         Assign("x", Int(4))
-       , Assign("x", Var("y"))
-       ]))
-     , Return("x")
+      Assign("x", Int(1))
+    , Assign("y", Int(2))
+    , Assign("x", Int(3))
+    , While("cond", Block([
+        Assign("x", Var("y"))
+      , Assign("x", Var("x"))
+      ]))
+    , Return("x")
     ]).init
   
   test-propconst =
     topdown(
-      !id{^id.constant-before}
+      !id{^id.constant-after}
     );
     
     debug;
     
     ?Block([
-       Assign("bogus1", "value")   {          "bogus3", "value"}
-     , Assign("bogus2", "bogus1")  {"bogus1", "bogus3", "value"}
-     , Assign("x", "value")        {          "bogus3", "value"}
-     , While("x", Block([
-         Assign("x", "bogus3")     {          "bogus3", "value"}
-       , Assign("x", "value")      {          "bogus3", "value"}
-      ]))                          {"x",      "bogus3", "value"}
-     , Return("x")                 {"x"}
-     ])
+      Assign("x", Int(1))     {               ("x", Int(1))}
+    , Assign("y", Int(2))     {("y", Int(2)), ("x", Int(1))}
+    , Assign("x", Int(3))     {("y", Int(2)), ("x", Int(3))}
+    , While("cond", Block([
+        Assign("x", Var("y")) {("y", Int(2))               }
+      , Assign("x", Var("x")) {("y", Int(2)), ("x", Int(4))}
+      ]))                     {("y", Int(2))               }
+    , Return("x")
+    ])
   
   // is-Stm can normally be generated from the grammar, but is simply hardcoded here
   is-Stm = ?Block(_) + ?While(_, _) + ?If(_, _, _) + ?Assign(_, _) + ?Return(_)
@@ -115,42 +113,25 @@ attributes // Extract constant values
   // TODO: cover(|"Expr")
   local constant-value:
     Int(i)       -> id
-    Var(v)       -> id.constant-before.lookup(|v)
+    Var(v)       -> id.constant-before.lookup(|v) where verbose-msg(!"looked up", !v.uninit, !"in", id.parent.uninit, !id.parent.constant-before.uninit, !"=", id.parent.constant-before.lookup(|v))
 
-  local constant-genset:
-    Assign(var, e) -> [(var, e.constant-value)]
-
-  local constant-killset:
-    Assign(var, e) -> [(var, ())] where not(e.constant-value)
-
-/*
-
-we have two operations:
-
-* merge: if e then a else b; c
-
-         entry(c) = all pairs in a, if they also exist in b 
- 
-* add: s1 @ Assign(var, e); s2
-   
-         exit(s1) = union of updates and all pairs in a
-
-*/
-
+  local Assign(var, e):
+     id.constant-genset  := [(var, e.constant-value)]
+     id.constant-killset := [(var, ()              )] where not(e.constant-value)
 
 attributes // Data flow
 
-  local stm circular []:
+  // TODO: this should be inh and apply-to-stm
+  inh stm circular []:
     id.constant-before =
       id.pred;
       map(id.constant-after);
       id.isect
   
     id.constant-after =
-      <id.table-diff> (
-        <id.table-union> (id.constant-genset, id.constant-before)
-      , id.constant-killset
-      )
+      id.constant-before;
+      try(<id.table-union> (<stm.constant-genset>, id));
+      try(<id.table-diff> (id, stm.constant-killset))
 
 attributes // Utility
   
@@ -161,26 +142,6 @@ attributes // Utility
     [id | remove-entry(|key)]
 
   local tables:
-    id.table-union = union(?((k1, _), (k2, _)); k1.eq(|k2))
-    id.table-diff  = diff(?((k1, _), (k2, _)); k1.eq(|k2))
+    id.table-union = union({?((k1, _), (k2, _)); k1.eq(|k2)})
+    id.table-diff  = diff({?((k1, _), (k2, _)); k1.eq(|k2)})
 
-/* UNDONE: What a mess
-
-  // union: [x,1] + [x,2] -> []
-  union-tables =
-    union(?((k1, v), (k2, _)); k1.eq(|k2));
-    remove-duplicates;
-    filter(not(NOT_CONSTANT))
-  
-  remove-duplicates =
-    ?([(key, value) | tail], table2);
-    if <remove-entry(|key)> table2 => table2' then
-       ![(key, value) | <merge-tables> (tail, table2')]
-    else
-       <merge-tables> (tail, table2)
-    end
-    
-      [
-       union(?((k1, _), (k2, _)))
-    // id.table-isect = isect(?((k1, v), (k2, _)); k1.eq(|k2))
-*/

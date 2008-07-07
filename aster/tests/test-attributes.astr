@@ -75,6 +75,8 @@ attributes
   local x.tuple-first(|(x, y)) = id
   
   local Fork(a, b).b.parent-first-kid = id.first-kid
+  
+  local stupid.stupid.stupid = id
  
   test-attribute-behavior =
     apply-and-check(
@@ -165,6 +167,12 @@ attributes
       !"id.attribute does not refer to specified child"
     , fetchtd(2; id.parent-first-kid)
     , !Fork(1, 2).init
+    , 1
+    );
+    apply-and-check(
+      !"attribute on id child"
+    , id.stupid
+    , !1.init
     , 1
     )
 

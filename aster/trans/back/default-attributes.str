@@ -83,7 +83,7 @@ rules
       local set:
         id.union = union(id.eq) <+ foldr(![], union(id.eq))
         id.diff = diff(id.eq)   <+ foldr(![], diff(id.eq))
-        id.isect = isect(id.eq) <+ foldr(![], isect(id.eq))
+        id.isect = isect(id.eq) <+ foldr(<Hd> set, isect(id.eq)) <+ ![]
         id.make-set = foldr(![], id.union, ![<id>])
       
       local (key,list).lookup = lookup(id.eq)
