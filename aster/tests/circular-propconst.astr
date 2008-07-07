@@ -83,11 +83,11 @@ attributes // Control flow (also defined in circular-liveness)
 attributes // Reverse control flow
   
   // for each id.succ: pred = id  
-  `collect-foreach-idsucc` pred = id
+  `contribute-to-idsucc` pred = id
   
   // TODO: promote collect-foreach-idsucc to a library decorator
   //       id.succ should not be hardcoded in here, but should be a strategy argument 'targets'
-  local node.`collect-foreach-idsucc`(s) =
+  local node.`contribute-to-idsucc`(s) =
     if not(<CompletedSurvey> s.unique-id) then
       rules(CompletedSurvey: s.unique-id);
       

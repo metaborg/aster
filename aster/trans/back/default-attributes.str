@@ -130,12 +130,16 @@ rules
       */
             
       local `rewrite-td`(d) =
-        id.eval(d, id);
+        if d.defined then
+          d
+        end;
         id.all(`rewrite-td`(d))
 
       local `rewrite-bu`(d) =
         id.all(`rewrite-bu`(d));
-        id.eval(d, id)
+        if d.defined then
+          d
+        end
       
       /**
        * Terminate with a fatal error if the decorated attribute results in a hard failure.
