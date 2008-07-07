@@ -36,8 +36,8 @@ attributes
       recompute-circular-def(`plain`(s)|s.unique-id, old-value)
     in
       if last-value := <get-last-value(|s.unique-id)> then
-        if !last-value; (?CIRCULAR_FINISHED(value) + ?CIRCULAR_BUSY(value)) then
-          <not(EVAL_FAILED)> value
+        if <?CIRCULAR_FINISHED(value) + ?CIRCULAR_BUSY(value)> last-value then
+          !value
         else
           recompute(|last-value)
         end
@@ -46,9 +46,9 @@ attributes
         //   old-value := <s_ensure-init <+ !EVAL_FAILED()> t_initial
         // );
         where(old-value := <id>);
-        circular-fixpoint'(recompute|old-value);
-        not(EVAL_FAILED)
-      end
+        circular-fixpoint'(recompute|old-value)
+      end;
+      not(EVAL_FAILED)
     end
   
   /**

@@ -114,13 +114,29 @@ attributes // Extract constant values
 
   // TODO: cover(|"Expr")
   local constant-value:
-    id           -> NOT_CONSTANT()
     Int(i)       -> id
     Var(v)       -> id.constant-before.lookup(|v)
 
-  // Add nodes that define new constant values
-  local constant-updates:
+  local constant-genset:
     Assign(var, e) -> [(var, e.constant-value)]
+
+  local constant-killset:
+    Assign(var, e) -> [(var, ())] where not(e.constant-value)
+
+/*
+
+we have two operations:
+
+* merge: if e then a else b; c
+
+         entry(c) = all pairs in a, if they also exist in b 
+ 
+* add: s1 @ Assign(var, e); s2
+   
+         exit(s1) = union of updates and all pairs in a
+
+*/
+
 
 attributes // Data flow
 
@@ -128,12 +144,27 @@ attributes // Data flow
     id.constant-before =
       id.pred;
       map(id.constant-after);
-      union-tables
+      id.isect
   
     id.constant-after =
-      <union-tables> (id.constant-updates, id.constant-before)
+      <id.table-diff> (
+        <id.table-union> (id.constant-genset, id.constant-before)
+      , id.constant-killset
+      )
 
 attributes // Utility
+  
+  remove-entry(|key) =
+    ?[(key, _) | tail];
+    <remove-entry(|key)> tail
+  <+
+    [id | remove-entry(|key)]
+
+  local tables:
+    id.table-union = union(?((k1, _), (k2, _)); k1.eq(|k2))
+    id.table-diff  = diff(?((k1, _), (k2, _)); k1.eq(|k2))
+
+/* UNDONE: What a mess
 
   // union: [x,1] + [x,2] -> []
   union-tables =
@@ -148,16 +179,7 @@ attributes // Utility
     else
        <merge-tables> (tail, table2)
     end
-  
-  remove-entry(|key) =
-    ?[(key, _) | tail];
-    <remove-entry(|key)> tail
-  <+
-    [id | remove-entry(|key)]
-
-/*
-  local tables:
-    id.table-union =
+    
       [
        union(?((k1, _), (k2, _)))
     // id.table-isect = isect(?((k1, v), (k2, _)); k1.eq(|k2))

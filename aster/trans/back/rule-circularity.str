@@ -19,22 +19,21 @@ strategies
        * Read from cache, or enqueue into fixpoint with initial value
        */
       x_eval(|a*) =
-        switch s_cache-read
-          case ?CIRCULAR_FINISHED(x_cached) + ?CIRCULAR_BUSY(x_cached):
-            <not(EVAL_FAILED)> x_cached
-            // TODO: Don't fall back to outer choice for this failure
-          
-          case ?x_cached: // re-eval once per iteration
-            x_eval-recompute(|x_cached, t*)
-        end
-      <+
         let eval(|x_old-value) =
           x_eval-recompute(|x_old-value, t*)
         in
-          where(
-            x_old-value := <s_ensure-init <+ !EVAL_FAILED()> t_initial
-          );
-          circular-fixpoint(eval |x_attr-cache, x_old-value);
+          if x_cached := <s_cache-read> then
+            if <?CIRCULAR_FINISHED(x_old-value) + ?CIRCULAR_BUSY(x_old-value)> x_cached then
+              !x_old-value
+            else
+              eval(|x_cached) // re-eval once per iteration
+            end
+          else
+            where(
+              x_old-value := <s_ensure-init <+ !EVAL_FAILED()> t_initial
+            );
+            circular-fixpoint(eval |x_attr-cache, x_old-value)
+          end;        
           not(EVAL_FAILED)
         end
       
