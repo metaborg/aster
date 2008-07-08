@@ -19,7 +19,7 @@ check : Stratego-Attributes.runtestsuite \
 CLEANFILES = $(tests)
 
 clean :
-	rm -f $(RUN_TESTS) $(STR_TESTS) test-attributes.str
+	rm -f $(RUNTESTS) $(RUNTESTS:=.str) test-attributes.str
 
 %.str : %.astr ../trans/stratego-rerag
 	$(top_srcdir)/trans/stratego-rerag -i $< -o $@ --trace --verbose 2

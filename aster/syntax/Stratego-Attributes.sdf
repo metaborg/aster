@@ -50,10 +50,11 @@ exports
   
   lexical syntax
 
-    "`" Id "`" -> DecoratorId
-    "all"      -> AttributeId %% reserved Id
-    "one"      -> AttributeId %% reserved Id
-    "some"     -> AttributeId %% reserved Id
+    "`" Id "`"  -> DecoratorId
+    "all"       -> AttributeId %% reserved Id
+    "one"       -> AttributeId %% reserved Id
+    "some"      -> AttributeId %% reserved Id
+    "signature" -> AttributeId %% reserved Id
   
   context-free restrictions
   

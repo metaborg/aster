@@ -146,7 +146,7 @@ rules // Semantic rule definition helpers
 
       if -1 := depth then // pff.. recover if the child IS the pattern
         s_traverse-up  := Id();
-        s_traverse-up' := |[ !x_child ]|; tiny-debug(!3)
+        s_traverse-up' := |[ !x_child ]|
       else
         s_traverse-up  := |[ get-parent(|x_all-parents); not(NoParent) ]|;
         s_traverse-up' := <copy; fold-seq> (depth, s_traverse-up)

@@ -88,8 +88,8 @@ attributes // Reverse control flow
   // TODO: promote collect-foreach-idsucc to a library decorator
   //       id.succ should not be hardcoded in here, but should be a strategy argument 'targets'
   local node.`contribute-to-idsucc`(s) =
-    if not(<CompletedSurvey> s.unique-id) then
-      rules(CompletedSurvey: s.unique-id);
+    if not(<CompletedSurvey> s.signature) then
+      rules(CompletedSurvey: s.signature);
       
       id.root;
       topdown(where(try(
@@ -99,14 +99,14 @@ attributes // Reverse control flow
           map({ target:
             ?target;
             rules(
-              CollectForeachContributions :+ (s.unique-id, target) -> contribution
+              CollectForeachContributions :+ (s.signature, target) -> contribution
             )
           })
         }
       )))
     end;
     
-    <bagof-CollectForeachContributions; s> (s.unique-id, node)
+    <bagof-CollectForeachContributions; s> (s.signature, node)
 
 attributes // Extract constant values
 
@@ -115,6 +115,7 @@ attributes // Extract constant values
     Int(i)       -> id
     Var(v)       -> id.constant-before.lookup(|v) where verbose-msg(!"looked up", !v.uninit, !"in", id.parent.uninit, !id.parent.constant-before.uninit, !"=", id.parent.constant-before.lookup(|v))
 
+  // TODO: default(|[])
   local Assign(var, e):
      id.constant-genset  := [(var, e.constant-value)]
      id.constant-killset := [(var, ()              )] where not(e.constant-value)

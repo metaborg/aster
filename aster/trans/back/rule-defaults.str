@@ -91,6 +91,9 @@ rules // copy rules
   default-rule(|s_call, def):
     Local() -> |[ !EVAL_FAILED() ]|
 
+  // TODO: I'm not sure if these default-rule semantics are desirable anymore
+  // FIXME: ^ this probably breaks certain cases of circular decorators
+
   // For decorators, the default rule is only ever invoked
   // for recursive calls (e.g., inh foo = <inc> id.foo).
   default-rule(|s_call, def):

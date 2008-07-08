@@ -33,9 +33,9 @@ attributes
 
   `plain` `circular-id`(s) =
     let recompute(|old-value) =
-      recompute-circular-def(`plain`(s)|s.unique-id, old-value)
+      recompute-circular-def(`plain`(s)|s.signature, old-value)
     in
-      if last-value := <get-last-value(|s.unique-id)> then
+      if last-value := <get-last-value(|s.signature)> then
         if <?CIRCULAR_FINISHED(value) + ?CIRCULAR_BUSY(value)> last-value then
           !value
         else

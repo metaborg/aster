@@ -237,6 +237,8 @@ rules
       local `plain`(d) = d
       
       // TODO: local `covers`(d|sort) = d
+      
+      // TODO: def default(d|value) = if d.defined then d else !value end
   ]|
   
   ignore-trace-def =
@@ -331,6 +333,7 @@ rules // Native attributes on decorated evaluation functions
     AttributeRef(Var(x_decorated), attr) -> <assimilate-decoration-native-attr(|x_decorated)> attr
 
   // TODO: Ideally, "d.defined" wouldn't evaluate d
+  
   assimilate-decoration-native-attr(|x_decorated):
     Attribute("defined", [], []) -> |[ where(x_decorated) ]|
   
@@ -340,6 +343,6 @@ rules // Native attributes on decorated evaluation functions
     Attribute("name", [], []) -> |[ !"<decorated-attribute-name>" ]|
   
   assimilate-decoration-native-attr(|x_decorated):
-    Attribute("unique-id", [], []) -> |[ !~str:key ]|
+    Attribute("signature", [], []) -> |[ !~str:sig ]|
     with
-      key := <conc-strings> ("<decorated-attribute-unique-id-", x_decorated, ">")
+      sig := <conc-strings> ("<decorated-attribute-signature-", x_decorated, ">")
