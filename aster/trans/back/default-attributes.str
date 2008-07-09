@@ -221,16 +221,12 @@ rules
         d
       <+
         ?[<d> | id] // inspect list item to the left
-      <+
-        `lookup-ordered`(d)
       
       inh `lookup-unordered`(d) =
         d
       <+
         where(id.is-root + not(<is-list> id.parent)); // search lists only from their head
         getfirst(d) <+ `lookup-unordered`(d)
-      <+
-        `lookup-unordered`(d)
      
     // Annotations
      
