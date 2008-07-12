@@ -322,7 +322,9 @@ rules // Native attribute definitions
     
 rules // Native attributes on decorated evaluation functions
 
-  is-native-attribute =
+  is-native-attribute = is-decoration-native-attr
+  
+  is-decoration-native-attr =
     where(assimilate-decoration-native-attr(|"d")) // TODO: Proper native attr checks for decoration attrs
 
   assimilate-native-decoration-ref(|x_decorated):
