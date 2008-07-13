@@ -153,17 +153,17 @@ rules
             print-stacktrace;
             <exit> 1
       
-      local `inh`(d) =
+      local `down`(d) =
         id.eval(
           d
-        , id.parent; `inh`(d)
+        , id.parent; `down`(d)
         )
       
-      local `syn`(d) =
+      local `up`(d) =
         if d.defined then
           d
         else
-          one(d.defined; result := `syn`(d));
+          one(d.defined; result := `up`(d));
           !result
         end
       

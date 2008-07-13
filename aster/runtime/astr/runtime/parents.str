@@ -72,14 +72,15 @@ strategies
     if is-list then
       ?[<pattern> | child] // consnil semantics
     else
-      (id < id + ?match);
-      one(
-        pattern => match
-      <+
-        ?child
-      );
-      !match
+      get-arguments;
+      split-at(?child) => (<id>, _);
+      getlast(pattern)
     end
+  
+  getlast(s) =
+    ?[_ | <getlast(s)>]
+  <+
+    ?[<s> | _]
   
   get-next-sibling(pattern|parent) =
     ?child;

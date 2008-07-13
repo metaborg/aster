@@ -40,11 +40,17 @@ strategies
     , ?Fork(_, _)
     );
     apply-and-check(
-      !"id.ancestor is not proper"
+      !"id.ancestor is not proper" // TODO: Should id.ancestor be proper?
     , id.ancestor(1)
     , !1.init
     , ?1
-    )    
+    );
+    apply-and-check(
+      !"id.prev-sibling"
+    , fetchtd(2; id.prev-sibling(id))
+    , !Fork(Leaf(1), 2).init
+    , ?Leaf(_)
+    )
 
 strategies
   
