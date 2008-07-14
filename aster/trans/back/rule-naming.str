@@ -30,13 +30,14 @@ strategies
       get-attribute-decorators;
       map(?Decorator(<id>, _, _));
       separate-by(|"-");
+      ([] <+ at-last(\[last] -> [last, "-"]\)); // add trailing -
       concat-strings => decorators
     );
     attribute-accessor-name(|decorators)
 
   attribute-accessor-name(|type) =
     attribute-signature => Attribute(name, _, _);
-    accessor := <conc-strings> ("eval-", type, "-", name);
+    accessor := <conc-strings> ("eval-", type, name);
     rules(
       UndoAccessorName: accessor -> name
     )

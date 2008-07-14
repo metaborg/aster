@@ -214,3 +214,19 @@ test Attributes in pattern
      eq Foo(id.eq(|baz)).bar(|baz) = id
   " -> _
 
+test "Default" decorator
+  "attributes
+     def default x = y
+  " -> _
+
+test Parameterized decorators
+  "attributes
+     def circular(|[]) default(![]) x = y
+  " -> _
+
+test Single-line pattern, child pattern, and attribute definition
+  "attributes
+     def stupid.stupid.stupid = y
+  " -> _
+
+

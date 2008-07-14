@@ -76,16 +76,16 @@ strategies // Set-up, testing
   // is-Stm can normally be generated from the grammar, but is simply hardcoded here
   is-Stm = ?Block(_) + ?While(_, _) + ?If(_, _, _) + ?Assign(_, _) + ?Return(_)
 
-attributes // Local variable use and define sites
+attributes // def variable use and define sites
 
-  local uses:
+  def uses:
     id             -> []
     If(var, _, _)  -> [var]
     While(var, _)  -> [var]
     Assign(_, var) -> [var]
     Return(var)    -> [var]
   
-  local defines:
+  def defines:
     id             -> []
     Assign(var, _) -> [var]
 
@@ -95,7 +95,7 @@ attributes // Control flow defaults
     root            -> []
     [s1, s2 | _].s1 -> [s2]
 
-  local succ = id.succ-enclosing // default next statement for a particular statement
+  def succ = id.succ-enclosing // default next statement for a particular statement
 
 attributes // Control flow for specific statements
   
@@ -111,7 +111,7 @@ attributes // Control flow for specific statements
 
 attributes // Data flow
 
-  local stm circular []:
+  def stm circular []:
     id.live-before =
       <id.union> (id.uses, <id.diff> (id.live-after, id.defines))
   

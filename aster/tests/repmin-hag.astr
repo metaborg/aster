@@ -39,7 +39,7 @@ attributes
 
 rules
 
-  local rewrite:
+  def rewrite:
     Leaf(x)      -> Leaf(id.global-min)
     Fork(t1, t2) -> Fork(t1.rewrite, t2.rewrite)
 

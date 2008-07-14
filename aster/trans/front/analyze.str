@@ -19,11 +19,16 @@ strategies // Analysis
       
       switch !type
         case Decorator():
-          rules(IsDecorator: sig)
+          rules(
+            IsDecorator: sig
+            HasDeclaration: sig
+          )
         case Def():
-          rules(HasDeclaration: sig)
+          rules(
+            HasDeclaration: sig
+          )
       end;
-      
+      <debug(!"defined -")> sig;
       rules(
         AttributeDecorators: sig -> decorators'
       )
@@ -36,7 +41,7 @@ strategies // Analysis
     )
   
   unify-decorators =
-    conc // TODO: Smart decorator unification
+    union // TODO: Smart decorator unification
     
 strategies // Providing information
   
@@ -53,11 +58,8 @@ strategies // Providing information
   // HACK: work-around to get `plain` attributes for now
   is-plain-decorator =
     where(
-      "`plain`"
-    <+
-      !Attribute(Decorator(<id>), 1, 0);
-      AttributeType;
-      Decorated(getfirst(?"`plain`"))
+      get-attribute-decorators;
+      fetch(Decorator("plain", [], []))
     )
   
   // TODO: Explicit constructors / tuples for attribute signatures
@@ -77,7 +79,7 @@ strategies // Providing information
       x_eval' := <try(UndoAccessorName)> x_eval
   
   attribute-signature:
-    Decorator(name, s*, a*) -> <attribute-signature> Attribute(name, s*, a*)
+    Decorator(name, s*, a*) -> <attribute-signature> Attribute(name, [(), s*], a*)
   
   rename-signature(|name'):
     Attribute(name,  s*, a*) ->

@@ -45,7 +45,9 @@ exports
   
   context-free restrictions
   
-    AttributeId   -/- [a-zA-Z0-9\'\-\_\*]
+    AttributeId -/- [a-zA-Z0-9\'\-\_\*]
+
+    DecoratorRef -/- [\(]  %% decorator(arg,y) vs. decorator (tuple, y)
   
   context-free syntax
   
@@ -82,9 +84,10 @@ exports
   context-free syntax %% semantic rules: core syntax
 
     AttributeType { AttributeDecl "," } +        -> AttributeDef {cons("AttributeDecl")}
-    AttributeType Pattern "." AttributeNameValue -> AttributeDef {cons("AttributeDef")}
+    AttributeTypeNoSort Pattern "." AttributeNameValue -> AttributeDef {cons("AttributeDef")}
     
     DefType DecoratorRef* OptSortDot -> AttributeType {cons("Type")}
+    DefType DecoratorRef* NoSortDot -> AttributeTypeNoSort {cons("Type")}
     
     OptChildDot AttributeDecl "="  Strategy -> AttributeNameValue {cons("AttributeDefStrategy")}
     
@@ -106,6 +109,7 @@ exports
     
     Sort "." -> OptSortDot {cons("Sort")}
              -> OptSortDot {cons("NoSort")}
+             -> NoSortDot {cons("NoSort")}
     
     Term             -> Pattern
     AttributeKeyword -> Pattern {reject}
@@ -118,7 +122,7 @@ exports
     "decorators" AttributeDef* -> Decl {cons("Decorators")}    
 
     %% Single-line attribute definitions
-    AttributeType AttributeNameValue           -> AttributeDef {cons("AttributeDefNoPattern"), avoid}
+    AttributeTypeNoSort AttributeNameValue     -> AttributeDef {cons("AttributeDefNoPattern"), avoid}
     OptChildDot AttributeDecl ":=" Term Where* -> AttributeNameValue {cons("AttributeDefTerm")}
     
     %% Attribute definition blocks/groups
@@ -163,6 +167,4 @@ exports
     "root"
     "decorator"
     "attributes" -/- [a-zA-Z0-9\'\-\_]
-
-    DecoratorId -/- [\(]
 

@@ -50,8 +50,6 @@ strategies
         where(s_init-args); // TODO: init args first if built-in pattern?
         s'
     ]|
-    where
-      <not(Def)> type
     with
       x_parent           := <ParentVar>;
       x_node             := <NodeVar>;
@@ -59,7 +57,6 @@ strategies
       x_attr-cache       := <AttrCacheVar>;
       x_rewrite-mode     := <RewriteModeVar>;
       s_pattern          := <assimilate-pattern(|child)> t_pattern;
-      type-name          := <attribute-type-name(|type)> attr;
       sig                := <attribute-signature> attr;
       x_eval             := <attribute-accessor-name> attr;
       (a'*, s_init-args) := <extract-arg-patterns> a*;
@@ -73,9 +70,6 @@ strategies
         assimilate-expr-inside-ag(|sig, s_parent, s_parent-desired, x_node, x_all-parents, x_attr-cache)
       ));
       add-eval-failed => s'
-    
-  assimilate-def:
-    AttributeDef(Type(Def(), _, _), _, _) -> []
   
   assimilate-where-with =
     map(
@@ -107,9 +101,9 @@ rules // Semantic rule definition helpers
   // TODO: Strategies should always cause "soft" failure, mainly to support stacked decorators
 
   add-eval-failed:
-    InlineWhereClause(c, s) -> |[ where(c'); (s <+ !EVAL_FAILED()) ]|
+    InlineWhereClause(conditions, s) -> |[ where(s_conditions); (s <+ !EVAL_FAILED()) ]|
     with
-      c' := <assimilate-where-with> c
+      s_conditions := <assimilate-where-with> conditions
   
   add-eval-failed:
     s -> |[ s <+ !EVAL_FAILED() ]|

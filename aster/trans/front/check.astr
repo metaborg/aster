@@ -4,6 +4,7 @@ imports
   libstratego-lib
   Stratego-Attributes
   // back/default-attributes
+  front/analyze
 
 rules
 
@@ -33,19 +34,20 @@ attributes
     Attribute(name, _, _) -> "Undefined attribute referenced"
     where
       not(get-attribute-decorators + is-native-attribute);
-      not(<?Decorator(_)> name)
+      not(is-decorator);
+      verbose-msg(!"undefined - ", attribute-signature, get-attribute-decorators)
     
     Decorator(name, _, _) -> "Undefined attribute decorator referenced"
     where
       not(get-attribute-decorators)
     
-    AttributeDefStrategy(_ attr, _) -> "Semantic rule type not declared using 'def'"
+    AttributeDefStrategy(_, attr, _) -> "Semantic rule type not declared using 'def'"
     where
-      not(<HasDeclaration> attr)
+      not(<HasDeclaration> <attribute-signature> attr)
     
     amb(_) -> "Internal error: ambiguity in input"
     
-    AttributeDefStrategy(Child(x), _, _, _) -> "Child variable not defined by rule pattern"
+    AttributeDefStrategy(Child(x), _, _) -> "Child variable not defined by rule pattern"
     where
       not(id.is-pattern-var(|x))
 
@@ -58,18 +60,17 @@ attributes
     where
       <oncetd(?RootApp(_))> args
 
-    AttributeDefStrategy(_, attr, _) -> "Circular attributes cannot be decorated"
-    where
-      id.def-type => [_ | _];
-      <AttributeCircular> attr
 
-    AttributeDefStrategy(_, Attribute(Decorator(_), [], _), _) -> "Circular attributes must specify a target strategy argument."
-        
     AttributeRef(_, _) -> "Illegal attribute reference in match pattern"
     where
       id.in-match
     
-    /*
+    /* UNDONE: Pre-decorator checks
+    AttributeDefStrategy(_, attr, _) -> "Circular attributes cannot be decorated"
+    where
+      id.def-type => [_ | _];
+      <AttributeCircular> attr
+    
     AttributeDef(type, pattern, s) -> "Chained attributes must specify type inh or syn for each definition"
     where
       Chained() := id.def-type;
@@ -79,19 +80,19 @@ attributes
     AttributeDef(_, Root(), _) -> "Synthesized attribute cannot have a root definition"
     where
       id.def-type-local => Syn()
-    */
-    
-    AttributeDef(_, Root(), AttributeDefStrategy(Some(_), _, _)) -> "Illegal child pattern on root node definition"
-    
-    AttributeDefStrategy(_, attr,_ , _) -> "Cannot redefine a native attribute"
-    where
-      <is-native-attribute> attr;
-      not(is-decoration-native-attr)
     
     AttributeDef(_, _, AttributeDefStrategy(_, attr @ Attribute([_ | _], _, _), _)) ->
     "Circular attributes cannot have strategy arguments"
     where
       <AttributeCircular> attr
+    */
+    
+    AttributeDef(_, Root(), AttributeDefStrategy(Child(_), _, _)) -> "Illegal child pattern on root node definition"
+    
+    AttributeDefStrategy(_, attr, _) -> "Cannot redefine a native attribute"
+    where
+      <is-native-attribute> attr;
+      not(is-decoration-native-attr)
 
   def warning:
     Var(x) -> "Performing match using annotated term - use id.eq instead"
@@ -100,7 +101,7 @@ attributes
       not(id.in-pattern + id.is-def-param);
       (id.is-pattern-var(|x) + id.is-def-arg(|x))
     
-    AttributeDef(_, pattern, AttributeDefStrategy(Child(child), _, _, _)).child -> "Pattern child equals pattern"
+    AttributeDef(_, pattern, AttributeDefStrategy(Child(child), _, _)).child -> "Pattern child equals pattern"
     where
       0 := <term-depth(|Var(child))> pattern
     
@@ -120,7 +121,7 @@ strategies
 
 attributes
   
-  def inh in-match:
+  def down in-match:
     Match(t).t         -> t
     Assign(t, _).t     -> t
     AM(_, t).t         -> t
@@ -129,17 +130,17 @@ attributes
     RuleNoCond(t, _).t -> t
     RootApp(s).s       -> fail
     App(s, _).s        -> fail
-    NameDefBlock(_, t, _, _).t      -> t
+    NameDefBlock(_, t, _).t      -> t
     AnonymousRewriteRule(s, _, _).s -> s
-    AttributeDefStrategy(_, Attribute(_, _, t), _, _).t -> t
+    AttributeDefStrategy(_, Attribute(_, _, t), _).t -> t
   
-  def inh in-pattern:
+  def down in-pattern:
     AttributeDef(_, pattern, _).pattern -> pattern
   
-  def inh is-pattern-var(|var):
+  def down is-pattern-var(|var):
     AttributeDef(_, pattern, _) -> <oncetd(id.eq(|Var(var)))> pattern
   
-  def inh is-def-arg(|var):
+  def down is-def-arg(|var):
     AttributeDef(_, _, AttributeDefStrategy(_, attr, _)) -> <oncetd(id.eq(|Var(var)))> attr
 
   def is-def-param:
@@ -156,10 +157,10 @@ attributes
     <conc-strings> (" in attribute ", <as-string>)
   
   // TODO: Rename def-type, def-type-local
-  def inh def-type:
+  def down def-type:
     AttributeDef(_, _, AttributeDefStrategy(_, attr, _)) ->  <get-attribute-decorators> attr
   
-  def inh def-type-local:
+  def down def-type-local:
     AttributeDef(type, _, _) ->  type
   
-  // def inh root.has-root-def(|name) = oncetd(AttributeDef(...
+  // def down root.has-root-def(|name) = oncetd(AttributeDef(...

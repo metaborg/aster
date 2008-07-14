@@ -9,7 +9,7 @@
  *     (i.e., soft failure occurs)
  *
  *  b) An attribute is called "recursively," e.g.:
- *     inh root = id.root <+ id
+ *     down root = id.root <+ id
  *
  * @author Lennart Kats <lennart add lclnet.nl>
  */
@@ -93,6 +93,7 @@ rules // copy rules
 
   // TODO: I'm not sure if these default-rule semantics are desirable anymore
   // FIXME: ^ this probably breaks certain cases of circular decorators
+  //        (also assimilate-attr-self-ref-inside-ag and its todos)
 
   // For decorators, the default rule is only ever invoked
   // for recursive calls (e.g., inh foo = <inc> id.foo).

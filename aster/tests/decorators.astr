@@ -21,7 +21,7 @@ rules // Using library decorators
    */
   `collect-all` collect-lt(|i) = where(is-int; <lt> (id, i))
 
-rules // Using local decorators
+rules // Using def decorators
   
   /**
    * Collects all values in the tree smaller than 'i'.
@@ -38,7 +38,7 @@ rules // Using local decorators
    */
   `_inh` `_at-root`(s) = `_at-root`(s) <+ s
 
-  local `_inh`(a) =
+  def `_inh`(a) =
     if a.defined then
       a
     else

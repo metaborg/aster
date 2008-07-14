@@ -60,7 +60,7 @@ strategies // Set-up, testing
   // is-Stm can normally be generated from the grammar, but is simply hardcoded here
   is-Stm = ?Block(_) + ?While(_, _) + ?If(_, _, _) + ?Assign(_, _) + ?Return(_)
   
-  local `apply-to-stm`(s) = is-Stm; s
+  decorator apply-to-stm(a) = is-Stm; a
 
 attributes // Control flow (also defined in circular-liveness)
   
@@ -87,7 +87,7 @@ attributes // Reverse control flow
   
   // TODO: promote collect-foreach-idsucc to a library decorator
   //       id.succ should not be hardcoded in here, but should be a strategy argument 'targets'
-  local node.`contribute-to-idsucc`(s) =
+  def node.`contribute-to-idsucc`(s) =
     if not(<CompletedSurvey> s.signature) then
       rules(CompletedSurvey: s.signature);
       
@@ -111,12 +111,12 @@ attributes // Reverse control flow
 attributes // Extract constant values
 
   // TODO: cover(|"Expr")
-  local constant-value:
+  def constant-value:
     Int(i)       -> id
     Var(v)       -> id.constant-before.lookup(|v) where verbose-msg(!"looked up", !v.uninit, !"in", id.parent.uninit, !id.parent.constant-before.uninit, !"=", id.parent.constant-before.lookup(|v))
 
   // TODO: default(|[])
-  local Assign(var, e):
+  def Assign(var, e):
      id.constant-genset  := [(var, e.constant-value)]
      id.constant-killset := [(var, ()              )] where not(e.constant-value)
 
@@ -136,7 +136,7 @@ attributes // Data flow
 
 attributes // Utility
 
-  local tables:
+  def tables:
     id.table-union = union({?((k1, _), (k2, _)); k1.eq(|k2)})
     id.table-diff  = diff({?((k1, _), (k2, _)); k1.eq(|k2)})
 

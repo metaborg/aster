@@ -16,7 +16,7 @@ strategies
 
 attributes
 
-  local (A, B, C) circular id:
+  def (A, B, C) circular id:
     A.avg-others = <round-avg> (B.avg-others, C.avg-others); debug'(!"A=")
     B.avg-others = <round-avg> (A.avg-others, C.avg-others); debug'(!"B=")
     C.avg-others = <round-avg> (A.avg-others, B.avg-others); debug'(!"C=")

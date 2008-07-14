@@ -32,10 +32,12 @@ rules // Evaluate attributes in AG context
   // TODO2: Optimize - don't redirect attribute self-references for child terms
   //       	e.g., syn Fork(t1, t2).min := <min> (t1.min, t2.min)
 
+  // TODO: Don't redirect attribute self-references, at all? (also see rule-definitions xdoc, todos)
+
   /**
    * Redirect attribute self-references.
    *
-   * (e.g., 'inh foo = id.foo' effectively becomes 'inh foo = id.parent.foo').
+   * (e.g., 'def down foo = id.foo' effectively becomes 'def down foo = id.parent.foo').
    */
   assimilate-attr-self-ref-inside-ag(|sig, attr, s_parent, x_node):
     |[ <s> t ]| ->

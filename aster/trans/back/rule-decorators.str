@@ -12,19 +12,19 @@ imports
 rules // Decorator references
       
   assimilate-decorator-ref:
-    AttributeRef(t, attr @ Attribute(x_name, s*, t*)) ->
+    AttributeRef(t, attr @ Attribute(x_name, [s_decorated | s*], t*)) ->
     |[ let x_cached =
          // Can't assume caching here, and is likely already performed inside
          s_eval
        in
-         x_cached
+         !t; x_cached
        end
     ]|
     where
-      <is-decorator> attr
+      <is-decorator> attr; debug(!"decorator ref: ")
     with
       x_cached := <CachedVar>; // not actually cached
-      s_eval   := <make-decorated> (Decorator(x_name, s*, t*), t)
+      s_eval   := <make-decorated> (Decorator(x_name, s*, t*), s_decorated)
   
   // Recursive decorator reference
   assimilate-decorator-self-ref(|attr, x_decorator, s_arg*, t_arg*):

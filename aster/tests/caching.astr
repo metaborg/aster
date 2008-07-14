@@ -14,7 +14,7 @@ strategies
 
 attributes
   
-  local get-new-1 = new
+  def get-new-1 = new
   
   `noop` get-new-2 = new
   
@@ -22,4 +22,4 @@ attributes
   
 attributes
 
-  local `noop`(s) = s
+  def `noop`(s) = s

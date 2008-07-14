@@ -82,13 +82,6 @@ rules
       
     // Decorators
       
-      /* TODO: eval with hard-fail argument (once the syntax allows it)
-      
-      local `eval`(s, soft-fail, hard-fail) =
-        id.eval(s, soft-fail <+ ?soft-fail) < not(!soft-fail)
-                                            + hard-fail
-      */
-      
       /**
        * Applies the attribute semantic rule at the root of the tree.
        */
@@ -209,12 +202,12 @@ rules
       
       decorator plain uncached(d) = d; id.ensure-init
         
-      decorator inh lookup-ordered(d) =
+      decorator down lookup-ordered(d) =
         d
       <+
         ?[<d> | id] // inspect list item to the left
       
-      decorator inh lookup-unordered(d) =
+      decorator down lookup-unordered(d) =
         d
       <+
         where(id.is-root + not(<is-list> id.parent)); // search lists only from their head
