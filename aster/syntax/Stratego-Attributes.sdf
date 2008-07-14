@@ -64,7 +64,7 @@ exports
     AttributeId                                             -> AttributeRef {cons("AttributeNoArgs")}
     
     DecoratorId "(" { Strategy "," }* "|" { Term "," }* ")" -> DecoratorRef {cons("Decorator")}
-    DecoratorId "(" { Strategy "," }*                   ")" -> DecoratorRef {cons("DecoratoreNoTerms")}
+    DecoratorId "(" { Strategy "," }*                   ")" -> DecoratorRef {cons("DecoratorNoTerms")}
     DecoratorId                                             -> DecoratorRef {cons("DecoratorNoArgs")}
 
     AttributeCallLHS "." AttributeRef -> AttributeCall {cons("AttributeRef")}

@@ -35,11 +35,9 @@ attributes
       not(get-attribute-decorators + is-native-attribute);
       not(<?Decorator(_)> name)
     
-    decorator -> "Undefined attribute decorator referenced"
+    Decorator(name, _, _) -> "Undefined attribute decorator referenced"
     where
-      is-string;
-      id.ancestor(?Decorated(_));
-      not(<get-attribute-decorators> Attribute(Decorator(decorator), [1], []))
+      not(get-attribute-decorators)
     
     AttributeDefStrategy(_ attr, _) -> "Semantic rule type not declared using 'def'"
     where
@@ -110,9 +108,11 @@ attributes
   // - inh x := y -> "set default value using root.x := y"
   // - decorators have no sort or pattern spec
 
-attributes
+strategies
 
   is-recursive-definition = id // TODO2: is-recursive-definition
+
+attributes
   
   def inh in-match:
     Match(t).t         -> id
@@ -136,7 +136,7 @@ attributes
   def inh is-def-arg(|var):
     AttributeDef(_, _, AttributeDefStrategy(_, attr, _)) -> <oncetd(id.eq(|Var(var)))> attr
 
-  local is-def-param:
+  def is-def-param:
     AttributeDefStrategy(_, Attribute(_, _, t), _).t -> id
   
   // TODO2: Proper error pp

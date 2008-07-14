@@ -12,7 +12,7 @@ imports
 rules // Decorator references
       
   assimilate-decorator-ref:
-    AttributeRef(t, attr) ->
+    AttributeRef(t, attr @ Attribute(x_name, s*, t*)) ->
     |[ let x_cached =
          // Can't assume caching here, and is likely already performed inside
          s_eval
@@ -24,7 +24,7 @@ rules // Decorator references
       <is-decorator> attr
     with
       x_cached := <CachedVar>; // not actually cached
-      s_eval   := <make-decorated> (attr, t)
+      s_eval   := <make-decorated> (Decorator(x_name, s*, t*), t)
   
   // Recursive decorator reference
   assimilate-decorator-self-ref(|attr, x_decorator, s_arg*, t_arg*):
@@ -51,20 +51,20 @@ rules // Assimilation of decorator definitions
       , record-decorator-type-wrap(
           Attribute(
             ?x_decorator
-          , ?[decorated | as*];
+          , ?[a_decorated | as*];
             ![DefaultVarDec(<CachedVar>) | <id>]
           , ?a*
           ) => attr
         )
-      , assimilate-decorator-body(|attr, x_decorator, a*, t*, a_decorated)
+      , assimilate-decorator-body(|attr, x_decorator, as*, a*, a_decorated)
       )
     );
     assimilate-def
  
-  assimilate-decorator-body(|attr, x_decorator, a*, t*, a_decorated) =
+  assimilate-decorator-body(|attr, x_decorator, as*, a*, a_decorated) =
     with(
       Var(x_decorated) := <param-to-var> a_decorated;
-      (s_arg*, t_arg*) := <params-to-vars> (a*, t*)
+      (s_arg*, t_arg*) := <params-to-vars> (as*, a*)
     );
     alltd(
       assimilate-decorator-self-ref(|attr, x_decorator, s_arg*, t_arg*)
@@ -102,6 +102,7 @@ rules // Assimilation of decorator definitions
     with(
       sig  := <attribute-signature> attr-before;
       sig' := <attribute-signature> attr-after;
+      debug(!"set type for");
       rules(
         AttributeDecorators: sig' -> <AttributeDecorators> sig
       )
@@ -148,7 +149,7 @@ rules // Adding decoration logic to decorated rules
          s_body'
     ]|
     where
-      <get-attribute-decorators> def => Decorated(ds)
+      <get-attribute-decorators> def => [_ | _] => ds
     with
       (s*, t*) := <params-to-vars> (sa*, a*);
       s_body'  := <eliminate-copy-rule(|def);
@@ -202,9 +203,9 @@ rules // Adding decoration logic to decorated rules
       s_cache-write := <add-cache-write(|s_arg*, t_arg*)> def
   
   make-decorated:
-    (x_decorator, s_decorated) ->
+    (Decorator(x_decorator, s*, t*), s_decorated) ->
     <assimilate-attr-ref-inside-decorator> <desugar-all> Strat |[
-      id.x_decorator(x_cached, s_decorated')
+      id.x_decorator(x_cached, s_decorated', s* | t*)
     ]|
     with
       x_cached     := <CachedVar>;

@@ -39,7 +39,7 @@ rules
         some(d);
         (?before <+ id.init)
       
-      def inh tree-access-ancestors:
+      def down tree-access-ancestors:
         id.root = try(id.root)
         id.ancestor(p) = p <+ id.ancestor(p)
         // id.ancestors(p,path) := <p <+ path; id.ancestors(p, path)>
@@ -65,16 +65,6 @@ rules
           end
         )
       
-      truncate-path-lists =
-        // "[].[].[]." becomes "[].."
-        ?['[', ']', '.' | <id>];
-        repeat1(?['[', ']', '.' | <id>]);
-        !['[', ']', '.', '.' | <truncate-path-lists>]
-      <+
-        [id | truncate-path-lists]
-      <+
-        []
-      
       // TODO: Could the language indicate that these operate on uninitialized terms?
       // TODO: Could the language indicate that these don't require caching?
       //       (maybe a modifier 'plain' for both these, as not caching is still expensive if you have to init the term)
@@ -96,7 +86,7 @@ rules
       /**
        * Applies the attribute semantic rule at the root of the tree.
        */
-      decorator inh at-root(d) =
+      decorator down at-root(d) =
         id.at-root(d) <+ d
       
       // TODO: Should collect-all et al accept only soft failure?
@@ -144,11 +134,20 @@ rules
             print-stacktrace;
             <exit> 1
       
-      decorator inh(d) =
-        id.eval(
+      decorator down(d) =
+        if d.defined then
           d
-        , id.parent; id.inh(d)
-        )
+        else
+          id.parent;
+          id.down(d)
+        end
+      
+      decorator up(d) =
+        if d.defined then
+          d
+        else
+          id.child(d.defined; id.up(d))
+        end
       
       /* TODO: Sane definition of `chained`
       //       should semantic rules be applied only once per node,

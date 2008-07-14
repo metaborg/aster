@@ -123,6 +123,8 @@ rules // Argument patterns
 
 rules // Semantic rule definition helpers
 
+  // TODO: Strategies should always cause "soft" failure, mainly to support stacked decorators
+
   add-eval-failed:
     InlineWhereClause(c, s) -> |[ where(c'); (s <+ !EVAL_FAILED()) ]|
     with

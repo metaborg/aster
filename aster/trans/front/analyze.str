@@ -14,14 +14,8 @@ strategies // Analysis
     );
     with(
       sig            := <attribute-signature> attribute;
-      old-decorators := <AttributeDecorators <+ !type> sig;
+      old-decorators := <AttributeDecorators <+ ![]> sig;
       decorators'    := <unify-decorators> (decorators, old-decorators);
-
-      if Circular(value) := circular then
-        rules(
-          AttributeCircular: sig -> value
-        )
-      end;
       
       switch !type
         case Decorator():
@@ -31,7 +25,7 @@ strategies // Analysis
       end;
       
       rules(
-        AttributeDecorators: sig -> type'
+        AttributeDecorators: sig -> decorators'
       )
     )
   
@@ -42,17 +36,13 @@ strategies // Analysis
     )
   
   unify-decorators =
-    concat // TODO: Smart decorator unification
+    conc // TODO: Smart decorator unification
     
 strategies // Providing information
   
   get-attribute-decorators =
     attribute-signature;
     AttributeDecorators
-  
-  get-attribute-circular =
-    attribute-signature;
-    AttributeCircular
 
   is-decorator =
     where(
@@ -75,6 +65,9 @@ strategies // Providing information
       sarity  := <length> sa*;
       tarity  := <subt> (<length> a*, DEFAULT_ARG_COUNT());
       x_eval' := <try(UndoAccessorName)> x_eval
+  
+  attribute-signature:
+    Decorator(name, s*, a*) -> <attribute-signature> Attribute(name, s*, a*)
   
   rename-signature(|name'):
     Attribute(name,  s*, a*) ->

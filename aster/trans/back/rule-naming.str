@@ -26,14 +26,17 @@ strategies
   */
 
   attribute-accessor-name =
-    attribute-accessor-name(
-    | <conc-strings> <separate-by(|"-")> <get-attribute-decorators>
-    )
+    with(
+      get-attribute-decorators;
+      map(?Decorator(<id>, _, _));
+      separate-by(|"-");
+      concat-strings => decorators
+    );
+    attribute-accessor-name(|decorators)
 
   attribute-accessor-name(|type) =
     attribute-signature => Attribute(name, _, _);
-    decorators' := <conc-strings> <separate-by(|"-")> <AttributeDecorators>;
-    accessor := <conc-strings> ("eval-", decorators', "-", name);
+    accessor := <conc-strings> ("eval-", type, "-", name);
     rules(
       UndoAccessorName: accessor -> name
     )

@@ -15,6 +15,7 @@ rules
     topdown(repeat(
       desugar-attribute-ref
     + desugar-attribute-def
+    + desugar-decorator-ref
     + desugar-id-term
     + desugar-fail-term
     + desugar-attribute-child
@@ -68,6 +69,12 @@ rules
   
   desugar-attribute-ref:
     AttributeNoTerms(x, s*) -> Attribute(x, s*, [])
+
+  desugar-decorator-ref:
+    DecoratorNoArgs(x) -> Decorator(x, [], [])
+  
+  desugar-decorator-ref:
+    DecoratorNoTerms(x, s*) -> Decorator(x, s*, [])
   
   desugar-attribute-ref:
     AttributeTerm(x) -> RootApp(x)
