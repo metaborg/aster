@@ -2,13 +2,17 @@ module back/rule-naming
 
 imports
   Stratego-Attributes
+  front/analyze
   back/util
 
 strategies
 
+  // TODO: Cleanup
+
+  /*
   attribute-type-name(|local-type) =
     if NoType() := local-type then
-      get-attribute-type // globally declared type
+      get-attribute-decorators // globally declared type
     else
       !local-type
     end;
@@ -19,6 +23,16 @@ strategies
       case Decorated(id): !"decorated"
       otherwise:          !"syn"
     end
+  */
+
+  attribute-accessor-name =
+    with(
+      get-attribute-decorators;
+      map(?Decorator(<id>, _, _));
+      separate-by(|"-");
+      concat-strings => decorators
+    );
+    attribute-accessor-name(|decorators)
 
   attribute-accessor-name(|type) =
     attribute-signature => Attribute(name, _, _);
@@ -26,7 +40,8 @@ strategies
     rules(
       UndoAccessorName: accessor -> name
     )
-  
+
+  /*
   preferred-attribute-accessor-type =
     attribute-type-name(|NoType())
-
+  */

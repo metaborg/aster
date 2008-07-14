@@ -9,22 +9,23 @@ imports
 strategies // Analysis
 
   analyze =
-    ( ?AttributeDef(type, _, AttributeDefStrategy(_, attribute, circular, s))
-    + ?AttributeDecl(type, _, attribute, circular)
+    ( ?AttributeDef(Type(type, decorators, sort), _, AttributeDefStrategy(_, attribute, _))
+    + ?AttributeDecl(Type(type, decorators, sort), attribute)
     );
     with(
-      sig     := <attribute-signature> attribute;
-      oldtype := <!sig; AttributeType <+ !type>;
-      type'   := <unify-attribute-type> (type, oldtype);
-
-      if Circular(value) := circular then
-        rules(
-          AttributeCircular: sig -> value
-        )
+      sig            := <attribute-signature> attribute;
+      old-decorators := <AttributeDecorators <+ ![]> sig;
+      decorators'    := <unify-decorators> (decorators, old-decorators);
+      
+      switch !type
+        case Decorator():
+          rules(IsDecorator: sig)
+        case Def():
+          rules(HasDeclaration: sig)
       end;
       
       rules(
-        AttributeType: sig -> type'
+        AttributeDecorators: sig -> decorators'
       )
     )
   
@@ -34,33 +35,21 @@ strategies // Analysis
       UsesAnonymousRewriteRules: _
     )
   
-  unify-attribute-type =
-    \(t, t) -> t\
-  <+
-    \(Decorated(t), _) -> Decorated(t)\
-  <+
-    \(_, Decorated(t)) -> Decorated(t)\
-  <+
-    \(Local(), _) -> Local()\
-  <+
-    \(_, Local()) -> Local()\
-  <+
-    \(t, NoType()) -> t\
-  <+
-    \(NoType(), t) -> t\
-  <+
-    !Chained()
+  unify-decorators =
+    conc // TODO: Smart decorator unification
     
 strategies // Providing information
   
-  get-attribute-type =
+  get-attribute-decorators =
     attribute-signature;
-    AttributeType
-  
-  get-attribute-circular =
-    attribute-signature;
-    AttributeCircular
-  
+    AttributeDecorators
+
+  is-decorator =
+    where(
+      attribute-signature;
+      IsDecorator
+    )
+
   // HACK: work-around to get `plain` attributes for now
   is-plain-decorator =
     where(
@@ -86,6 +75,9 @@ strategies // Providing information
       sarity  := <length> sa*;
       tarity  := <subt> (<length> a*, DEFAULT_ARG_COUNT());
       x_eval' := <try(UndoAccessorName)> x_eval
+  
+  attribute-signature:
+    Decorator(name, s*, a*) -> <attribute-signature> Attribute(name, s*, a*)
   
   rename-signature(|name'):
     Attribute(name,  s*, a*) ->

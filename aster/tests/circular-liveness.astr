@@ -116,7 +116,5 @@ attributes // Data flow
       <id.union> (id.uses, <id.diff> (id.live-after, id.defines))
   
     id.live-after =
-      id.succ;
-      map(id.live-before);
-      id.union
+      TODO: id.succ.map(id.live-before).union
 

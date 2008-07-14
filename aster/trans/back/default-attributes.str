@@ -16,10 +16,10 @@ rules
 
   default-attributes = !|[
     attributes
-      local enable-warnings = rules(AstrWarningsDisabled :- _)
+      def enable-warnings = rules(AstrWarningsDisabled :- _)
       
       // TODO2: Optimize - should prev-sibling be cached?
-      `plain` tree-access:
+      def plain plain tree-access:
         id.prev-sibling  = get-prev-sibling(|id.parent)
         id.next-sibling  = get-next-sibling(|id.parent)
         id.first-sibling = get-first-child(|id.parent)
@@ -30,31 +30,31 @@ rules
         id.next-sibling(d) = get-next-sibling(d|id.parent)
         id.child(d) = one(d; ?it); !it
       
-      local root.is-root = id
+      def root.is-root = id
       
-      `plain` all(d) =
+      def plain all(d) =
         ?before;
         all(d);
         (?before <+ id.init)
       
-      `plain` some(d) =
+      def plain some(d) =
         ?before;
         some(d);
         (?before <+ id.init)
       
-      inh tree-access-ancestors:
+      def down tree-access-ancestors:
         id.root = try(id.root)
         id.ancestor(p) = p <+ id.ancestor(p)
         // id.ancestors(p,path) := <p <+ path; id.ancestors(p, path)>
       
-      local path =
+      def path =
         id.path-list;
         reverse;
         map(get-constructor; as-string);
         separate-by(|".");
         concat-strings
       
-      local path-and-node =
+      def path-and-node =
         where(node := <to-tiny-string>);
         id.path;
         (?"" < !node + <conc-strings> (<id>, ".", node));
@@ -68,27 +68,17 @@ rules
           end
         )
       
-      truncate-path-lists =
-        // "[].[].[]." becomes "[].."
-        ?['[', ']', '.' | <id>];
-        repeat1(?['[', ']', '.' | <id>]);
-        !['[', ']', '.', '.' | <truncate-path-lists>]
-      <+
-        [id | truncate-path-lists]
-      <+
-        []
-      
       // TODO: Could the language indicate that these operate on uninitialized terms?
       // TODO: Could the language indicate that these don't require caching?
       //       (maybe a modifier 'plain' for both these, as not caching is still expensive if you have to init the term)
-      local set:
+      def set:
         id.union = union(id.eq) <+ foldr(![], union(id.eq))
         id.diff = diff(id.eq)   <+ foldr(![], diff(id.eq))
         id.isect = isect(id.eq) <+ foldr(<Hd> set, isect(id.eq)) <+ ![]
         id.make-set = foldr(![], id.union, ![<id>])
       
-      local (key,list).lookup = lookup(id.eq)
-      local list.lookup(|keyb) = <lookup(id.eq)> (keyb, list)
+      def (key,list).lookup = lookup(id.eq)
+      def list.lookup(|keyb) = <lookup(id.eq)> (keyb, list)
       
     // Decorators
       
@@ -102,8 +92,8 @@ rules
       /**
        * Applies the attribute semantic rule at the root of the tree.
        */
-      inh `at-root`(d) =
-        `at-root`(d) <+ d
+      decorator down at-root(d) =
+        id.at-root(d) <+ d
       
       // TODO: Should collect-all et al accept only soft failure?
       //       (and how to express that nicely?)
@@ -112,7 +102,7 @@ rules
        * Collects all nodes in the tree where the attribute can be applied,
        * including subnodes of the results.
        */
-      `at-root` `collect-all`(d) =
+      def at-root collect-all(d) =
         collect-all(d, conc)
       
       /**
@@ -120,24 +110,24 @@ rules
        *
        * `map`(id.attr) is cached per list, while map(id.s) is cached per item.
        */
-      local `map`(d) = map(d)
+      decorator map(d) = map(d)
       
       /* TODO: Should `soft-try` be factored out again?
                What does that mean for decorator definitions,
                they are then basically the same as their strategy equivalents?
       
-      local `stry`(d) =
+      decorator stry(d) =
         id.eval(d, id)
       */
             
-      local `rewrite-td`(d) =
+      decorator rewrite-td(d) =
         if d.defined then
           d
         end;
-        id.all(`rewrite-td`(d))
+        id.all(id.rewrite-td(d))
 
-      local `rewrite-bu`(d) =
-        id.all(`rewrite-bu`(d));
+      decorator rewrite-bu(d) =
+        id.all(id.rewrite-bu(d));
         if d.defined then
           d
         end
@@ -145,27 +135,28 @@ rules
       /**
        * Terminate with a fatal error if the decorated attribute results in a hard failure.
        */
-      local `fail-fatal`(d):
+      decorator fail-fatal(d):
         id -> result 
         where
           id.eval(d, ?soft-fail) => result
           < not(!soft-fail)
-          + log(|Critical(), "Hard failure not expected in decorated attribute", id.uninit);
+          + log(|Critical(), ["Hard failure not expected in decorated attribute at", id.path], id.uninit);
             print-stacktrace;
             <exit> 1
       
-      local `down`(d) =
-        id.eval(
-          d
-        , id.parent; `down`(d)
-        )
-      
-      local `up`(d) =
+      decorator down(d) =
         if d.defined then
           d
         else
-          one(d.defined; result := `up`(d));
-          !result
+          id.parent;
+          id.down(d)
+        end
+      
+      decorator up(d) =
+        if d.defined then
+          d
+        else
+          id.child(d.defined; id.up(d))
         end
       
       /* TODO: Sane definition of `chained`
@@ -214,24 +205,20 @@ rules
        * Plain attributes do not have the default behavior of
        * caching and re-annotating a result term for re-attribution
        */
-      local `plain`(d) = d // note that this is a special, built-in decorator
+      decorator plain(d) = d // note that this is a special, built-in decorator
       
-      `plain` `uncached`(d) = d; id.ensure-init
+      decorator plain uncached(d) = d; id.ensure-init
         
-      inh `lookup-ordered`(d) =
+      decorator inh lookup-ordered(d) =
         d
       <+
         ?[<d> | id] // inspect list item to the left
       
-      inh `lookup-unordered`(d) =
+      decorator inh lookup-unordered(d) =
         d
       <+
         where(id.is-root + not(<is-list> id.parent)); // search lists only from their head
-        getfirst(d) <+ `lookup-unordered`(d)
-     
-    // Annotations
-     
-      local `plain`(d) = d
+        getfirst(d)
       
       // TODO: local `covers`(d|sort) = d
       

@@ -2,6 +2,7 @@ include $(top_srcdir)/Makefile.xt
 
 bin_PROGRAMS                  = stratego-rerag
 nodist_stratego_rerag_SOURCES = stratego-rerag.c
+nobase_pkgdata_DATA = $(RTREES)
 
 all : stratego-rerag.copy
 
@@ -21,10 +22,10 @@ STRINCLUDES = \
 	-I ../syntax \
 	-I ../runtime
 
-STRS=stratego-rerag.str  $(wildcard *.str) $(wildcard **/*.str) $(wildcard ../runtime/*.str) $(wildcard ../runtime/**/*.str) front/check.str
+STRS=stratego-rerag.str  $(wildcard *.str) $(wildcard */*.str) $(wildcard ../runtime/*.str) $(wildcard ../runtime/*/*.str) front/check.str
 RTREES=$(STRS:.str=.rtree)
 
-bootclean :
+cleanstrap :
 	rm -f stratego-rerag.copy stratego-rerag-no-check stratego-rerag front/check.str
 
 stratego-rerag.c : $(RTREES)
@@ -33,7 +34,7 @@ stratego-rerag.c : $(RTREES)
 stratego-rerag.copy : stratego-rerag
 	cp stratego-rerag stratego-rerag.copy
 
-stratego-rerag-no-check : stratego-rerag.str
+stratego-rerag-no-check : stratego-rerag.str $(RTREES)
 	$(MAKE) -C .. all-local # ensure build-time XTC repository is complete at this point
 	[ -e stratego-rerag.copy ] && cp stratego-rerag.copy stratego-rerag-no-check ||\
 	( rm -f $@.c && \
@@ -42,5 +43,5 @@ stratego-rerag-no-check : stratego-rerag.str
 	  rm front/check.str $@.c )
 
 front/check.str : front/check.astr stratego-rerag-no-check
-	./stratego-rerag-no-check --verbose 2 -i $< -o $@ || $(MAKE) bootclean
+	./stratego-rerag-no-check --verbose 2 -i $< -o $@ || $(MAKE) cleanstrap
 

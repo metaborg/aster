@@ -11,49 +11,36 @@ hiddens
 
 exports
   sorts
-    AttributeType
+    DefType
     Pattern
+    AttributeDef
     AttributeRef
     AttributeCall
     AttributeCallLHS
     AttributeDecl
+    AttributeType
+    DecoratorRef
+    DecoratorId
     AttributeKeyword
     ChildDot
     DotChild
-    DecoratorId
     AttributeId
     AttributeDeclId
     OptChildDot
     OptDotChild
+    OptSortDot
     AttributeNameValue
     NameDefBlockDef
     PatternDefBlockDef
-    Circular
     Where
-    OptWhere
     NoWhere
-  
-  %% TODO: New syntax? Eliminate backticks.
-  %%
-  %% def collect-all foo // decl (or a different keyword? "eq"? "sem"?)
-  %% eq foo = 2         // <- error if no accompanying def
-  %%
-  %% def inh Pattern(x).bar = 3 // <- declaration and definition
-  %%
-  %% decorator inh collect-all(s) = id.collect-all(s) <+ ...
-  
-  %% TODO: Typed declarations?
-  %%
-  %% def collect-all foo : Sort [ => Sort ] [ := ... | ... ]
-  %%
-  %% or def Sort.[pattern.]collect-all (confusing for sort 'List(x)' or pattern 'Foo')
+    UNDEFINED %% matches nothing
   
   lexical syntax
 
-    "`" Id "`"  -> DecoratorId
-    "all"       -> AttributeId %% reserved Id
-    "one"       -> AttributeId %% reserved Id
-    "some"      -> AttributeId %% reserved Id
+    "all"  -> AttributeId %% reserved Id
+    "one"  -> AttributeId %% reserved Id
+    "some" -> AttributeId %% reserved Id
     "signature" -> AttributeId %% reserved Id
   
   context-free restrictions
@@ -62,12 +49,16 @@ exports
   
   context-free syntax
   
-    Id -> AttributeId {prefer}
+    Id               -> AttributeId {prefer}
+
+    AttributeKeyword -> DecoratorId {reject}
+    AttributeId      -> DecoratorId
+    "*"              -> DecoratorId
+    "plain"          -> DecoratorId {prefer} %% treat as keyword
   
   context-free syntax %% attributes
   
     AttributeId -> AttributeDeclId
-    DecoratorId -> AttributeDeclId {cons("Decorator")}
     
     AttributeDeclId "(" { Typedid "," }* "|" { Term "," }* ")" -> AttributeDecl {cons("Attribute")}
     AttributeDeclId "(" { Typedid "," }*                   ")" -> AttributeDecl {cons("AttributeNoTerms")}
@@ -76,6 +67,10 @@ exports
     AttributeId "(" { Strategy "," }* "|" { Term "," }* ")" -> AttributeRef {cons("Attribute")}
     AttributeId "(" { Strategy "," }*                   ")" -> AttributeRef {cons("AttributeNoTerms")}
     AttributeId                                             -> AttributeRef {cons("AttributeNoArgs")}
+    
+    DecoratorId "(" { Strategy "," }* "|" { Term "," }* ")" -> DecoratorRef {cons("Decorator")}
+    DecoratorId "(" { Strategy "," }*                   ")" -> DecoratorRef {cons("DecoratorNoTerms")}
+    DecoratorId                                             -> DecoratorRef {cons("DecoratorNoArgs")}
 
     AttributeCallLHS "." AttributeRef -> AttributeCall {cons("AttributeRef")}
     Term                              -> AttributeCallLHS
@@ -86,111 +81,88 @@ exports
    
   context-free syntax %% semantic rules: core syntax
 
-    AttributeType Pattern "." AttributeNameValue     -> RuleDef {cons("AttributeDef")}
-    AttributeType Pattern "." AttributeDecl Circular -> RuleDef {cons("AttributeDecl")}
-
-    OptChildDot AttributeDecl Circular "="  Strategy -> AttributeNameValue {cons("AttributeDefStrategy")}
+    AttributeType { AttributeDecl "," } +        -> AttributeDef {cons("AttributeDecl")}
+    AttributeType Pattern "." AttributeNameValue -> AttributeDef {cons("AttributeDef")}
+    
+    DefType DecoratorRef* OptSortDot -> AttributeType {cons("Type")}
+    
+    OptChildDot AttributeDecl "="  Strategy -> AttributeNameValue {cons("AttributeDefStrategy")}
+    
+    "eq"        -> DefType {cons("Eq")}
+    "def"       -> DefType {cons("Def")}
+    "decorator" -> DefType {cons("Decorator")}
     
     Id "."     -> ChildDot {cons("Child")}
     "." Id     -> DotChild {cons("DotChild")}
     "id" "."   -> ChildDot {cons("IdChild"), prefer}    %% sugar
     "." "id"   -> DotChild {cons("DotIdChild"), prefer} %% sugar
-    "root" "." -> ChildDot {reject}
-    "." "root" -> DotChild {reject}
+    "root" "." -> ChildDot {reject}                     %% confusing
+    "." "root" -> DotChild {reject}                     %% confusing
     
     ChildDot   -> OptChildDot
                -> OptChildDot {cons("NoChild")}
     DotChild   -> OptDotChild
                -> OptDotChild {cons("NoChild")}
-
-    %% Patterns are terms without attribute references
     
-    Term          -> Pattern
-    AttributeCall -> Pattern {reject}
-    "root"        -> Pattern {cons("Root"), prefer}
-
-  context-free syntax %% attribute types
-  
-    "syn"        -> AttributeType {cons("Syn")}
-    "inh"        -> AttributeType {cons("Inh")}
-    "local"      -> AttributeType {cons("Local")}
-    "chained"    -> AttributeType {cons("Chained")}
-    "eq"         -> AttributeType {cons("NoType")}
-    DecoratorId+ -> AttributeType {cons("Decorated")}
+    Sort "." -> OptSortDot {cons("Sort")}
+             -> OptSortDot {cons("NoSort")}
     
-    AttributeKeyword                       -> Pattern {reject}
-%%  AttributeKeyword "(" { Term "," }* ")" -> Pattern {reject}
+    Term             -> Pattern
+    AttributeKeyword -> Pattern {reject}
+    AttributeCall    -> Pattern {reject}
+    "root"           -> Pattern {cons("Root"), prefer}
 
-%%  Either reject suffices, but the first may be too specific
-%%  "<" Strategy ">" AttributeKeyword -> Term {reject}
+  context-free syntax %% semantic rules: syntactic sugar
+ 
+    "attributes" AttributeDef* -> Decl {cons("Attributes")}    
+    "decorators" AttributeDef* -> Decl {cons("Decorators")}    
+
+    %% Single-line attribute definitions
+    AttributeType AttributeNameValue           -> AttributeDef {cons("AttributeDefNoPattern"), avoid}
+    OptChildDot AttributeDecl ":=" Term Where* -> AttributeNameValue {cons("AttributeDefTerm")}
+    
+    %% Attribute definition blocks/groups
+    AttributeType Pattern       ":" NameDefBlockDef+    -> AttributeDef {cons("NameDefBlock")}
+    AttributeType AttributeDecl ":" PatternDefBlockDef+ -> AttributeDef {cons("PatternDefBlock")}
+    
+    %% Definitions grouped in a NameDefBlock
+    ChildDot AttributeDecl ":=" Term     Where* -> NameDefBlockDef {cons("AttributeDefTerm")}
+    ChildDot AttributeDecl "="  Strategy        -> NameDefBlockDef {cons("AttributeDefStrategy")}
+
+    %% Definitions grouped in a PatternDefBlock
+    Pattern OptDotChild "->" ResultTerm NoWhere* -> PatternDefBlockDef {cons("AttributePDefTerm")}
+    Pattern OptDotChild "->" Term       Where+   -> PatternDefBlockDef {cons("AttributePDefTerm")}
+
+    "where" Strategy -> Where {cons("Where")}
+    "with" Strategy  -> Where {cons("With")}
+    UNDEFINED        -> NoWhere
+
+  context-free syntax %% Misc.
+    
+    "eq" Pattern "->" Term Where* -> AttributeDef {cons("AnonymousRewriteRule")}
+      
+    "id"   -> PreTerm {cons("IdTerm")}
+    "fail" -> Term {cons("FailTerm")}
+
+  context-free syntax
+
+    %%  Either reject suffices, but the first may be too specific/confusing
+    %%  "<" Strategy ">" AttributeKeyword -> Term {reject}
     AttributeKeyword -> Var {reject}
-
-    "circular" Term -> Circular {cons("Circular")}
-    "circular"      -> Circular {cons("CircularFail")}
-                    -> Circular {cons("NotCircular")}
   
   lexical syntax
     
-    "eq"      -> AttributeKeyword
-    "syn"     -> AttributeKeyword
-    "inh"     -> AttributeKeyword
-    "local"   -> AttributeKeyword
-    "chained" -> AttributeKeyword
+    "eq"        -> AttributeKeyword
+    "def"       -> AttributeKeyword
+    "decorator" -> AttributeKeyword
   
   context-free restrictions
   
     "eq"
-    "syn"
-    "inh"
+    "def"
     "root"
-    "local"
-    "chained"
-    "circular"
+    "decorator"
     "attributes" -/- [a-zA-Z0-9\'\-\_]
 
-  context-free syntax %% semantic rules: syntactic sugar
- 
-    "attributes" Def* -> Decl {cons("Attributes")}    
+    DecoratorId -/- [\(]
 
-    %% Single-line attribute definitions
-    AttributeType AttributeNameValue                      -> RuleDef {cons("AttributeDefNoPattern"), avoid}
-    AttributeType AttributeDecl Circular                  -> RuleDef {cons("AttributeDeclNoPattern")}
-    OptChildDot AttributeDecl Circular ":=" Term OptWhere -> AttributeNameValue {cons("AttributeDefTerm")}
-    
-    %% Attribute definition blocks/groups
-    AttributeType Pattern Circular       ":"
-    NameDefBlockDef+                         -> RuleDef {cons("NameDefBlock")}
-    AttributeType AttributeDecl Circular ":"
-    PatternDefBlockDef+                      -> RuleDef {cons("PatternDefBlock")}
-    
-    %% Definitions grouped in a NameDefBlock
-    ChildDot AttributeDecl Circular ":=" Term OptWhere -> NameDefBlockDef {cons("AttributeDefTerm")}
-    ChildDot AttributeDecl Circular "="  Strategy      -> NameDefBlockDef {cons("AttributeDefStrategy")}
-
-    %% Definitions grouped in a PatternDefBlock
-    Pattern OptDotChild "->" ResultTerm NoWhere -> PatternDefBlockDef {cons("AttributePDefTerm")}
-    Pattern OptDotChild "->" Term       Where   -> PatternDefBlockDef {cons("AttributePDefTerm")}
-
-    "where" Strategy                 -> Where {cons("WhereClause")}
-    "with" Strategy                  -> Where {cons("WithClause")}
-    "where" Strategy "with" Strategy -> Where {cons("WhereWithClause")}
-
-    %% TODO: Allow lists of where/with clauses
-
-            -> NoWhere {cons("NoWhere")}
-    NoWhere -> OptWhere
-    Where   -> OptWhere
-
-  context-free syntax
-      
-    DecoratorId "(" Strategy ")" -> AttributeCall {cons("DecoratorRef")}
-
-  context-free syntax %% Misc.
-    
-    "eq" Pattern "->" Term "where" Strategy -> RuleDef {cons("AnonymousRewriteRule")}
-    "eq" Pattern "->" Term                  -> RuleDef {cons("AnonymousRewriteRuleNoWhere")}
-      
-    "id"   -> PreTerm {cons("IdTerm")}
-    "fail" -> Term {cons("FailTerm")}
- 
-    %% "extend" TermPrototype ":" { TermPrototype }+ -> ExtendId
