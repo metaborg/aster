@@ -77,7 +77,10 @@ attributes
     
     AttributeDef(_, Root(), AttributeDefStrategy(Some(_), _, _, _)) -> "Illegal child pattern on root node definition"
     
-    AttributeDefStrategy(_, <is-native-attribute>,_ , _) -> "Cannot redefine a native attribute"
+    AttributeDefStrategy(_, attr,_ , _) -> "Cannot redefine a native attribute"
+    where
+      <is-native-attribute> attr;
+      not(is-decoration-native-attr)
     
     // TODO: report error at the declaration site? (id.def-type.parent)
     AttributeDef(not-Local, _, _) -> "Can only assign local definitions to local attribute"

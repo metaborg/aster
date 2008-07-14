@@ -18,6 +18,7 @@ rules
     attributes
       local enable-warnings = rules(AstrWarningsDisabled :- _)
       
+      // TODO2: Optimize - should prev-sibling be cached?
       `plain` tree-access:
         id.prev-sibling  = get-prev-sibling(|id.parent)
         id.next-sibling  = get-next-sibling(|id.parent)
@@ -153,17 +154,17 @@ rules
             print-stacktrace;
             <exit> 1
       
-      local `inh`(d) =
+      local `down`(d) =
         id.eval(
           d
-        , id.parent; `inh`(d)
+        , id.parent; `down`(d)
         )
       
-      local `syn`(d) =
+      local `up`(d) =
         if d.defined then
           d
         else
-          one(d.defined; result := `syn`(d));
+          one(d.defined; result := `up`(d));
           !result
         end
       
@@ -221,16 +222,12 @@ rules
         d
       <+
         ?[<d> | id] // inspect list item to the left
-      <+
-        `lookup-ordered`(d)
       
       inh `lookup-unordered`(d) =
         d
       <+
         where(id.is-root + not(<is-list> id.parent)); // search lists only from their head
         getfirst(d) <+ `lookup-unordered`(d)
-      <+
-        `lookup-unordered`(d)
      
     // Annotations
      
@@ -326,7 +323,9 @@ rules // Native attribute definitions
     
 rules // Native attributes on decorated evaluation functions
 
-  is-native-attribute =
+  is-native-attribute = is-decoration-native-attr
+  
+  is-decoration-native-attr =
     where(assimilate-decoration-native-attr(|"d")) // TODO: Proper native attr checks for decoration attrs
 
   assimilate-native-decoration-ref(|x_decorated):
