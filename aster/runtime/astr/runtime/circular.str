@@ -20,31 +20,57 @@ strategies
   // TODO: Start a new fixpoint for a new strongly connected component? (helps performance and prevents premature caching)
   //       or could we give an error for attributes apply premature caching during circular fixpoint?
 
-  circular-fixpoint(eval : t * a -> a |attr-cache, initial) =
-    if circular-enter-fixpoint(|attr-cache) then
-      ?fixpoint-locked
-    end;
   
+  /**
+   * Uncached evaluator for use in fixpoint loop.
+   *
+   * @returns The initialized value produced by the semantic function, or EVAL_FAILED.
+   */
+  recompute-circular-def(s|cache, old-value) =
+    set-last-value(|cache, <id>, CIRCULAR_BUSY(old-value));
+    
     ?node;
-    eval(|initial);
-
-    if !fixpoint-locked then
-      while(
-        circular-get-remove-has-changed(|attr-cache)
-      ,
-        // TODO: aren't participants trashed without a chance of getting re-added?
-        circular-reset-participants(|attr-cache);
-          
-        { old-value:
-          ?old-value;
-          <eval(|old-value)> node
-        }
-      );
-      
-      circular-mark-participants-finished(|attr-cache); // also resets
-      circular-exit-fixpoint(|attr-cache);
-      not(EVAL_FAILED)
+    (s <+ !EVAL_FAILED());
+    
+    if eq-ignore-annos(|old-value) then
+      // verbose-msg(!"  [circ.] No change @", <strip-annos> node, !"with", strip-annos);
+      circular-add-participant(|<attr-cache>, node, cache, old-value);
+      set-last-value(|cache, node, old-value) // remove CIRCULAR_BUSY
+    else
+      // verbose-msg(!"  [circ.] Changed @", <strip-annos> node, !"with", strip-annos, !"was", <strip-annos> old-value);
+      astr-initialize-attribute-value(|<all-parents>, <attr-cache>);
+      circular-set-has-changed(|<attr-cache>);
+      set-last-value(|cache, node, <id>)
     end
+  
+  circular-fixpoint'(eval : t * a -> a |old-value) =
+    if is-fixpoint-running then
+      eval(|old-value)
+    else
+      ?node;
+      eval(|old-value);
+      set-fixpoint-running(
+        while(circular-get-remove-has-changed(|<attr-cache>),
+          { o: ?o; <eval(|o)> node }
+        );
+        circular-mark-participants-finished(|<attr-cache>)
+      )
+    end
+  
+  is-fixpoint-running = not(hashtable-get(|<attr-cache>, "$circular-lock"))
+  
+  set-fixpoint-running(s) =
+    hashtable-put(|<attr-cache>, "$circular-lock", ());
+    s;
+    hashtable-remove(|<attr-cache>, "$circular-lock")
+  
+  // TODO: Use hash tables instead of dynamic rules?
+  get-last-value(|cache, key) =
+    <CircularCache> (cache, key)
+  
+  set-last-value(|cache, key, value) =
+    rules(CircularCache: (cache, key) -> value)
+ 
 
 strategies // Maintain a list of attributes participating in the latest fixpoint network
 
@@ -81,15 +107,6 @@ strategies // Maintain a list of attributes participating in the latest fixpoint
       iset-clear
     ))
 
-strategies // Only one fixpoint loop runs at a time
-
-  circular-enter-fixpoint(|attr-cache) =
-    not(hashtable-get(|attr-cache, "$circular-lock"));
-    hashtable-put(|attr-cache, "$circular-lock", ())
-
-  circular-exit-fixpoint(|attr-cache) =
-    hashtable-remove(|attr-cache, "$circular-lock")
-
 strategies // Fixpoint keeps running while something changed
   
   circular-set-has-changed(|attr-cache) =
@@ -98,3 +115,41 @@ strategies // Fixpoint keeps running while something changed
   circular-get-remove-has-changed(|attr-cache) =
     where(hashtable-get(|attr-cache, "$circular-changed"));
     hashtable-remove(|attr-cache, "$circular-changed")
+
+/* UNDONE: Native circular attributes runtime
+
+  circular-fixpoint(eval : t * a -> a |attr-cache, initial) =
+    if circular-enter-fixpoint(|attr-cache) then
+      ?fixpoint-locked
+    end;
+  
+    ?node;
+    eval(|initial);
+
+    if !fixpoint-locked then
+      while(
+        circular-get-remove-has-changed(|attr-cache)
+      ,
+        // TODO: aren't participants trashed without a chance of getting re-added?
+        circular-reset-participants(|attr-cache);
+          
+        { old-value:
+          ?old-value;
+          <eval(|old-value)> node
+        }
+      );
+      
+      circular-mark-participants-finished(|attr-cache); // also resets
+      circular-exit-fixpoint(|attr-cache);
+      not(EVAL_FAILED)
+    end
+
+strategies // Only one fixpoint loop runs at a time
+
+  circular-enter-fixpoint(|attr-cache) =
+    not(hashtable-get(|attr-cache, "$circular-lock"));
+    hashtable-put(|attr-cache, "$circular-lock", ())
+
+  circular-exit-fixpoint(|attr-cache) =
+    hashtable-remove(|attr-cache, "$circular-lock")
+*/

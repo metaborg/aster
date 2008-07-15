@@ -37,7 +37,7 @@ attributes
       not(is-decorator);
       verbose-msg(!"undefined - ", attribute-signature, get-attribute-decorators)
     
-    Decorator(name, _, _) -> "Undefined attribute decorator referenced"
+    Decorator(name, _, _) -> "Undefined decorator referenced"
     where
       not(get-attribute-decorators)
     

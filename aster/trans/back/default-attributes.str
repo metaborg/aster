@@ -101,7 +101,7 @@ rules
       /**
        * Maps over a list.
        *
-       * `map`(id.attr) is cached per list, while map(id.s) is cached per item.
+       * def map(id.attr) is cached per list, while map(id.s) is cached per item.
        */
       decorator map(d) = map(d)
       
@@ -131,11 +131,13 @@ rules
       decorator fail-fatal(d):
         id -> result 
         where
-          id.eval(d, ?soft-fail) => result
-          < not(!soft-fail)
-          + log(|Critical(), ["Hard failure not expected in decorated attribute at", id.path], id.uninit);
+          if d.defined then
+            result := <d>
+          <+
+            log(|Critical(), ["Hard failure not expected in decorated attribute at", id.path], id.uninit);
             print-stacktrace;
             <exit> 1
+          end
       
       decorator down(d) =
         if d.defined then
@@ -213,7 +215,27 @@ rules
         where(id.is-root + not(<is-list> id.parent)); // search lists only from their head
         getfirst(d)
       
-      // TODO: local `covers`(d|sort) = d
+      decorator plain circular(d|initial-value) =
+        let recompute(|old-value) =
+          recompute-circular-def(id.plain(d)|d.signature, old-value)
+        in
+          if last-value := <get-last-value(|d.signature, id)> then
+            if <?CIRCULAR_FINISHED(value) + ?CIRCULAR_BUSY(value)> last-value then
+              !value
+            else
+              recompute(|last-value)
+            end
+          else
+            where(
+              old-value := <id.ensure-init <+ !EVAL_FAILED()> initial-value
+            );
+            circular-fixpoint'(recompute|old-value)
+          end;
+          not(EVAL_FAILED)
+        end
+
+      
+      // TODO: local def covers(d|sort) = d
       
       // TODO: def default(d|value) = if d.defined then d else !value end
   ]|
@@ -314,7 +336,16 @@ rules // Native attributes on decorated evaluation functions
   // TODO: Ideally, "d.defined" wouldn't evaluate d
   
   assimilate-decoration-native-attr(|x_decorated):
-    Attribute("defined", [], []) -> |[ where(x_decorated) ]|
+    Attribute("defined", [], []) ->
+    |[ where(
+         ?x_node
+         < !x_cached <+ x_decorated => x_cached
+         + x_decorated
+       )
+    ]|
+    with
+      x_cached := <DecoratedValueVar>;
+      x_node   := <NodeVar>
   
   // FIXME: Decorator reflection
   

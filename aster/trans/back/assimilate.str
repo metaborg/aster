@@ -15,7 +15,6 @@ imports
 strategies
 
   assimilate-all =
-    init-shared-vars;
     map(add-imports);
     
     all-stratego-defs(try(
@@ -32,19 +31,6 @@ strategies
       add-default-rules;
       add-merged-rules;
       add-rewrites-enabled
-    )
- 
-  init-shared-vars =
-    // TODO2: Things like <all-parents> should be optimized in a post-processing stage, not right away
-    // TODO2: Rename attr-cache to cache or store, or something
-    rules(
-      ParentVar      := <newname> "parent"
-      NodeVar        := <newname> "node"
-      AllParentsVar  := <newname> "all-parents"
-      AttrCacheVar   := <newname> "attr-cache"
-      RewriteModeVar := <newname> "rewrite-mode"
-      RootVar        := <newname> "root"
-      CachedVar      := <newname> "cached"
     )
 
   add-imports:

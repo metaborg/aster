@@ -143,7 +143,7 @@ exports
 
   context-free syntax %% Misc.
     
-    "eq" Pattern "->" Term Where* -> AttributeDef {cons("AnonymousRewriteRule")}
+    "rewrite" Pattern "->" Term Where* -> AttributeDef {cons("AnonymousRewriteRule")}
       
     "id"   -> PreTerm {cons("IdTerm")}
     "fail" -> Term {cons("FailTerm")}
@@ -159,12 +159,14 @@ exports
     "eq"        -> AttributeKeyword
     "def"       -> AttributeKeyword
     "decorator" -> AttributeKeyword
+    "rewrite"   -> AttributeKeyword
   
   context-free restrictions
   
     "eq"
     "def"
     "root"
+    "rewrite"
     "decorator"
     "attributes" -/- [a-zA-Z0-9\'\-\_]
 

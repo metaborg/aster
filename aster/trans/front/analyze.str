@@ -10,7 +10,7 @@ strategies // Analysis
 
   analyze =
     ( ?AttributeDef(Type(type, decorators, sort), _, AttributeDefStrategy(_, attribute, _))
-    + ?AttributeDecl(Type(type, decorators, sort), attribute)
+    + ?AttributeDecl(Type(type, decorators, sort), [attribute])
     );
     with(
       sig            := <attribute-signature> attribute;
@@ -27,8 +27,9 @@ strategies // Analysis
           rules(
             HasDeclaration: sig
           )
+        case Eq():
+          id
       end;
-      <debug(!"defined -")> sig;
       rules(
         AttributeDecorators: sig -> decorators'
       )
@@ -55,7 +56,7 @@ strategies // Providing information
       IsDecorator
     )
 
-  // HACK: work-around to get `plain` attributes for now
+  // HACK: work-around to get def plain attributes for now
   is-plain-decorator =
     where(
       get-attribute-decorators;

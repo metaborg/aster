@@ -26,14 +26,14 @@ strategies
   */
 
   attribute-accessor-name =
-    with(
-      get-attribute-decorators;
-      map(?Decorator(<id>, _, _));
-      separate-by(|"-");
-      ([] <+ at-last(\[last] -> [last, "-"]\)); // add trailing -
-      concat-strings => decorators
-    );
-    attribute-accessor-name(|decorators)
+    attribute-accessor-name(|<get-attribute-decorators; decorators-to-string>)
+
+  /** @type List(Decorator) -> String */
+  decorators-to-string =
+    map(?Decorator(<id>, _, _));
+    separate-by(|"-");
+    ([] <+ at-last(\[last] -> [last, "-"]\)); // add trailing -
+    concat-strings => decorators
 
   attribute-accessor-name(|type) =
     attribute-signature => Attribute(name, _, _);

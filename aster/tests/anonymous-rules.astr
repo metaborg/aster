@@ -18,8 +18,10 @@ strategies
       
       id.init.debug => 720
     )
-    
-  eq Add(x, y) -> <add> (x, y)
-  eq Mul(x, y) -> <mul> (x, y)
-  eq Fac(i) -> Mul(i, Fac(<add> (i, -1))) where not(0 := i)
-  eq Fac(0) -> 1
+
+attributes
+
+  rewrite Add(x, y) -> <add> (x, y)
+  rewrite Mul(x, y) -> <mul> (x, y)
+  rewrite Fac(i) -> Mul(i, Fac(<add> (i, -1))) where not(0 := i)
+  rewrite Fac(0) -> 1

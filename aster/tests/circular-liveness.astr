@@ -91,7 +91,7 @@ attributes // def variable use and define sites
 
 attributes // Control flow defaults
   
-  inh succ-enclosing: // next statement as determined by the enclosing control structures  
+  def down succ-enclosing: // next statement as determined by the enclosing control structures  
     root            -> []
     [s1, s2 | _].s1 -> [s2]
 
@@ -111,10 +111,10 @@ attributes // Control flow for specific statements
 
 attributes // Data flow
 
-  def stm circular []:
+  def circular(|[]) stm:
     id.live-before =
       <id.union> (id.uses, <id.diff> (id.live-after, id.defines))
   
     id.live-after =
-      TODO: id.succ.map(id.live-before).union
+      id.succ.map(id.live-before).union
 

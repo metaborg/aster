@@ -58,7 +58,7 @@ strategies
 
 attributes
 
-  def down test-root = id.test-root <+ id
+  def down test-root = id.parent.test-root <+ id
   
   def circular(|0) test-silly-circular = !2
   

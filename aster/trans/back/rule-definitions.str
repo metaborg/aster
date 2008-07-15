@@ -70,6 +70,9 @@ strategies
         assimilate-expr-inside-ag(|sig, s_parent, s_parent-desired, x_node, x_all-parents, x_attr-cache)
       ));
       add-eval-failed => s'
+
+  assimilate-def:
+    AttributeDecl(_, _) -> []
   
   assimilate-where-with =
     map(
@@ -100,15 +103,14 @@ rules // Semantic rule definition helpers
 
   // TODO: Strategies should always cause "soft" failure, mainly to support stacked decorators
 
-  add-eval-failed:
-    InlineWhereClause(conditions, s) -> |[ where(s_conditions); (s <+ !EVAL_FAILED()) ]|
-    with
-      s_conditions := <assimilate-where-with> conditions
-  
-  add-eval-failed:
-    s -> |[ s <+ !EVAL_FAILED() ]|
-    where
-      not(?InlineWhereClause(_, _))
+  add-eval-failed =
+    oncetd(
+      \InlineWhereClause(conditions, s) -> |[ where(s_conditions); (s <+ !EVAL_FAILED()) ]|
+       with
+        s_conditions := <assimilate-where-with> conditions\
+    )
+  <+
+    \s -> |[ s <+ !EVAL_FAILED() ]|\
    
   assimilate-pattern(|child) =
     ?t_pattern;

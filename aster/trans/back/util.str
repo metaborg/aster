@@ -67,3 +67,17 @@ strategies
   <+
     ?(sarity, tarity);
     <conc-strings> ("_", <as-string> sarity, "_", <as-string> tarity)
+  
+  all-stratego-defs(s) =
+    map(
+      Module(
+        id
+      , map(
+          all(
+            map(s); flatten-list
+          <+
+            not(is-list)
+          )
+        )
+      )
+    )

@@ -45,10 +45,9 @@ strategies
         ))
       ]|
     with
-      decorators    := <get-attribute-decorators> def;
-      decorators'   := <separate-by(|" "); concat-strings> decorators;
+      decorators    := <decorators-to-string> <get-attribute-decorators> def;
       arity'        := <arity-to-string> (sarity, tarity);
-      message       := <conc-strings> ("  [trace] ", decorators', " ", real-name, arity', " @ ");
+      message       := <conc-strings> ("  [trace] ", decorators, " ", real-name, arity', " @ ");
       x_parent      := <ParentVar>;
       x_all-parents := <AllParentsVar>;
       x_attr-cache  := <AttrCacheVar>;

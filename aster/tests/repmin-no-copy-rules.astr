@@ -36,9 +36,9 @@ strategies
 
 attributes
 
-  `fail-fatal` min
-  `fail-fatal` global-min
-  `fail-fatal` replace
+  def fail-fatal min
+  def fail-fatal global-min
+  def fail-fatal replace
 
   eq Tree(t):
     t.global-min := id.min

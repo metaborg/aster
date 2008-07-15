@@ -16,10 +16,10 @@ attributes
   
   def get-new-1 = new
   
-  `noop` get-new-2 = new
+  def noop get-new-2 = new
   
-  `uncached` get-new-3 = new
+  def uncached get-new-3 = new
   
-attributes
+decorators
 
-  def `noop`(s) = s
+  decorator noop(a) = a

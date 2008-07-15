@@ -21,7 +21,7 @@ rules // Decorator references
        end
     ]|
     where
-      <is-decorator> attr; debug(!"decorator ref: ")
+      <is-decorator> attr
     with
       x_cached := <CachedVar>; // not actually cached
       s_eval   := <make-decorated> (Decorator(x_name, s*, t*), s_decorated)
@@ -61,35 +61,51 @@ rules // Assimilation of decorator definitions
     );
     assimilate-def
  
-  assimilate-decorator-body(|attr, x_decorator, as*, a*, a_decorated) =
-    with(
-      Var(x_decorated) := <param-to-var> a_decorated;
-      (s_arg*, t_arg*) := <params-to-vars> (as*, a*)
-    );
-    alltd(
-      assimilate-decorator-self-ref(|attr, x_decorator, s_arg*, t_arg*)
-    <+
-      assimilate-decorated-svar(|attr, x_decorated)
-    <+
-      assimilate-native-decoration-ref(|x_decorated)
-    )
-
-  // TODO: Add eval to default-attributes, check.astr
-  // TODO: Remove id.eval(s)
-  
-  /**
-   * Assimilate a id.eval() decorator call, which
-   * allows the specification of the default behavior
-   * in case of soft failure.
-   */
-  assimilate-decorated-svar(|attr, x_decorated):
-    Strat |[ t.eval(x_decorated(|), s_default|) ]| ->
-    |[ !t;
-       (x_decorated < not(EVAL_FAILED) + s_default)
+  assimilate-decorator-body(|attr, x_decorator, as*, a*, a_decorated):
+    s_body ->
+    |[ (id < id + ?x_decorated-value);
+       s_body'
     ]|
+    with
+      x_decorated-value := <DecoratedValueVar>;
+      Var(x_decorated)  := <param-to-var> a_decorated;
+      (s_arg*, t_arg*)  := <params-to-vars> (as*, a*);
 
+      !s_body;
+      
+      alltd(
+        assimilate-decorator-self-ref(|attr, x_decorator, s_arg*, t_arg*)
+      <+
+        assimilate-decorated-svar(|attr, x_decorated)
+      <+
+        assimilate-native-decoration-ref(|x_decorated)
+      ) => s_body'
+
+  /*
+  ensure-decorated-value-var-init =
+    with(
+      x_decorated-value := <DecoratedValueVar>
+    );
+    ( \InlineWhereClause(w, s_body) -> InlineWhereClause(w, |[ (id < id + ?x_decorated-value); s_body ]|)\
+    <+ 
+      \s_body -> |[ (id < id + ?x_decorated-value); s_body ]|\
+    )
+  */
+
+  // TODO: Only use decorated value var caching if the function is not "plain"
+  // TODO2: Optimize - if this is done, it'd be safe to store the result in x_cached here
   assimilate-decorated-svar(|attr, x_decorated):
-    |[ x_decorated(|) ]| -> |[ ~<id>; not(EVAL_FAILED) ]|
+    |[ x_decorated(|) ]| ->
+    |[ if ?x_node then
+         !x_cached <+ x_decorated
+       else
+         x_decorated
+       end;
+       not(EVAL_FAILED)
+    ]|
+    with
+      x_node   := <NodeVar>;
+      x_cached := <DecoratedValueVar>
   
   /**
    * Record the type of a decorator rule.
@@ -104,7 +120,6 @@ rules // Assimilation of decorator definitions
     with(
       sig  := <attribute-signature> attr-before;
       sig' := <attribute-signature> attr-after;
-      debug(!"set type for");
       rules(
         AttributeDecorators: sig' -> <AttributeDecorators> sig
       )

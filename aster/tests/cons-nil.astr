@@ -11,6 +11,6 @@ strategies
   
 attributes
 
-  syn depth:
+  def up depth:
     [a | as] -> <inc> as.depth
     []       -> 0

@@ -64,11 +64,11 @@ strategies // Set-up, testing
 
 attributes // Control flow (also defined in circular-liveness)
   
-  inh succ-enclosing: // next statement as determined by the enclosing control structures  
+  def down succ-enclosing: // next statement as determined by the enclosing control structures  
     root            -> []
     [s1, s2 | _].s1 -> [s2]
 
-  `apply-to-stm` succ = id.succ-enclosing // default next statement for a particular statement
+  def apply-to-stm  succ = id.succ-enclosing // default next statement for a particular statement
   
   eq Block([s | _]).succ := [s]
   
@@ -83,11 +83,11 @@ attributes // Control flow (also defined in circular-liveness)
 attributes // Reverse control flow
   
   // for each id.succ: pred = id  
-  `contribute-to-idsucc` pred = id
+  def contribute-to-idsucc pred = id
   
   // TODO: promote collect-foreach-idsucc to a library decorator
   //       id.succ should not be hardcoded in here, but should be a strategy argument 'targets'
-  def node.`contribute-to-idsucc`(s) =
+  decorator node.contribute-to-idsucc(s) =
     if not(<CompletedSurvey> s.signature) then
       rules(CompletedSurvey: s.signature);
       
@@ -122,8 +122,7 @@ attributes // Extract constant values
 
 attributes // Data flow
 
-  // TODO: this should be inh and apply-to-stm
-  inh stm circular []:
+  def down apply-to-stm stm circular []:
     id.constant-before =
       id.pred;
       map(id.constant-after);

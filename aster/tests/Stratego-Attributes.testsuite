@@ -230,3 +230,8 @@ test Single-line pattern, child pattern, and attribute definition
   " -> _
 
 
+test Aonymous rewrite rule
+  "attributes
+     rewrite foo -> bar
+  " -> _
+

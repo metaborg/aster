@@ -14,11 +14,9 @@ strategies
       id.debug => Block([Assign("x","value"), While("x", Block([Assign("x","value")])), Return("x")])
     )
   
-rules
-
-  eq [assign | s*] -> s* where assign.is-dead
-
 attributes
+
+  rewrite [assign | s*] -> s* where assign.is-dead
 
   def is-dead = not(<id.diff> (id.defines, id.live-after) => [])
 

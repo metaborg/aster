@@ -20,6 +20,7 @@ strategies
   // TODO: Add switch for run-time checks, e.g., for circularity and tree concistency
   
   stratego-rerag =
+    init-shared-vars;
     one(add-default-attributes);
     desugar-all;
     
@@ -27,19 +28,21 @@ strategies
     all-stratego-defs(try(analyze));
     where(check-all);
     assimilate-all
-  
-  all-stratego-defs(s) =
-    map(
-      Module(
-        id
-      , map(
-          all(
-            map(s); flatten-list
-          <+
-            not(is-list)
-          )
-        )
-      )
+
+strategies
+ 
+  init-shared-vars =
+    // TODO2: Things like <all-parents> should be optimized in a post-processing stage, not right away
+    // TODO2: Rename attr-cache to cache or store, or something
+    rules(
+      ParentVar         := <newname> "parent"
+      NodeVar           := <newname> "node"
+      AllParentsVar     := <newname> "all-parents"
+      AttrCacheVar      := <newname> "attr-cache"
+      RewriteModeVar    := <newname> "rewrite-mode"
+      RootVar           := <newname> "root"
+      CachedVar         := <newname> "cached"
+      DecoratedValueVar := <newname> "decorated-value"
     )
 
 strategies // I/O

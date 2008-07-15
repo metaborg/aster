@@ -132,8 +132,15 @@ rules // flatten block definitions to individual definitions
     )
   
   astr-flatten-block-def =
-    ?PatternDefBlock(type, attribute, <id>);
+    ?PatternDefBlock(type, attr, <id>);
     map(
       \AttributePDefStrategy(pattern, child, s) ->
-       AttributeDef(type, pattern, AttributeDefStrategy(child, attribute, s))\
+       AttributeDef(type, pattern, AttributeDefStrategy(child, attr, s))\
+    )
+
+  astr-flatten-block-def =
+    ?AttributeDecl(type, <id>);
+    where(?[_, _ | _]);
+    map(
+      !AttributeDecl(type, [<id>])
     )
