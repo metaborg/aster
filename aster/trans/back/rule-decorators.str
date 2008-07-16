@@ -7,7 +7,9 @@ imports
   
 // TODO: Optimize: decorators should be inlined after the merging stage
 
-// TODO: Decorator arguments?
+overlays
+
+  DECORATOR_ARG_COUNT = 1 // added system args for decorator strategies
 
 rules // Decorator references
       
@@ -48,14 +50,12 @@ rules // Assimilation of decorator definitions
     , id
     , AttributeDefStrategy(
         id
-      , record-decorator-type-wrap(
-          Attribute(
-            ?x_decorator
-          , ?[a_decorated | as*];
-            ![DefaultVarDec(<CachedVar>) | <id>]
-          , ?a*
-          ) => attr
-        )
+      , Attribute(
+          ?x_decorator; DecoratorInternalName
+        , ?[a_decorated | as*];
+          ![DefaultVarDec(<CachedVar>) | <id>]
+        , ?a*
+        ) => attr
       , assimilate-decorator-body(|attr, x_decorator, as*, a*, a_decorated)
       )
     );
@@ -81,17 +81,6 @@ rules // Assimilation of decorator definitions
         assimilate-native-decoration-ref(|x_decorated)
       ) => s_body'
 
-  /*
-  ensure-decorated-value-var-init =
-    with(
-      x_decorated-value := <DecoratedValueVar>
-    );
-    ( \InlineWhereClause(w, s_body) -> InlineWhereClause(w, |[ (id < id + ?x_decorated-value); s_body ]|)\
-    <+ 
-      \s_body -> |[ (id < id + ?x_decorated-value); s_body ]|\
-    )
-  */
-
   // TODO: Only use decorated value var caching if the function is not "plain"
   // TODO2: Optimize - if this is done, it'd be safe to store the result in x_cached here
   assimilate-decorated-svar(|attr, x_decorated):
@@ -106,36 +95,6 @@ rules // Assimilation of decorator definitions
     with
       x_node   := <NodeVar>;
       x_cached := <DecoratedValueVar>
-  
-  /**
-   * Record the type of a decorator rule.
-   * (Must be done again after assimilation changes
-   *  the signature.)
-   */
-  record-decorator-type-wrap(process-attribute) =
-    ?attr-before;
-    process-attribute;
-    ?attr-after;
-    
-    with(
-      sig  := <attribute-signature> attr-before;
-      sig' := <attribute-signature> attr-after;
-      rules(
-        AttributeDecorators: sig' -> <AttributeDecorators> sig
-      )
-    )
-  
-  /*
-  assimilate-decorator-id:
-    Decorator(x) -> x'
-    with
-      !x;
-      string-as-chars(Tl);
-      string-replace(|"`", "-decorator") => x';
-      rules(
-        IsDecoratorName: x'
-      )
-  */
 
 rules // Finishing decorator copy rules
 
@@ -228,10 +187,11 @@ rules // Adding decoration logic to decorated rules
   make-decorated:
     (Decorator(x_decorator, s*, t*), s_decorated) ->
     <assimilate-attr-ref-inside-decorator> <desugar-all> Strat |[
-      id.x_decorator(x_cached, s_decorated', s* | t*)
+      id.x_decorator'(x_cached, s_decorated', s* | t*)
     ]|
     with
       x_cached     := <CachedVar>;
+      x_decorator' := <DecoratorInternalName> x_decorator;
       s_decorated' := s_decorated
 
 strategies // Provide new cache vars for each decorator application

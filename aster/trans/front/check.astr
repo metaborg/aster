@@ -114,6 +114,7 @@ attributes
   //   (should probably be := instead!)
   // - warn for rules(...id... -> foo); id does not bind to the current term but acts as a wild card
   // - decorators have no sort or pattern spec
+  // - disallow attributes with the same signature as the declared signature of a decorator
 
 strategies
 

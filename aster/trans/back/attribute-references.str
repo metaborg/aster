@@ -26,6 +26,7 @@ rules // Evaluate attributes in AG context
     where
       not(<is-decorator> attr)
     with
+      !attr;
       x_eval         := <attribute-accessor-name> attr;
       x_rewrite-mode := <RewriteModeVar>
 
@@ -78,5 +79,4 @@ rules // Evaluate attributes outside of AG context
       x_all-parents  := <AllParentsVar>;
       x_attr-cache   := <AttrCacheVar>;
       name'          := name
-        
-      
+

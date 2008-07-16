@@ -68,7 +68,7 @@ attributes // Control flow (also defined in circular-liveness)
     root            -> []
     [s1, s2 | _].s1 -> [s2]
 
-  def apply-to-stm  succ = id.succ-enclosing // default next statement for a particular statement
+  def apply-to-stm succ = id.succ-enclosing // default next statement for a particular statement
   
   eq Block([s | _]).succ := [s]
   

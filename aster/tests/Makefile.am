@@ -6,7 +6,7 @@ STRCFLAGS = \
 	--format-check 0 \
 	-Xcc -O0
 
-RUNTESTS = empty find-minimum repmin repmin-no-copy-rules repmin-anonymous repmin-hag repmin-hag-decorated binary-numbers caching cons-nil anonymous-rules circular-basic circular-liveness circular-liveness-rewrites decorators
+RUNTESTS = empty find-minimum repmin repmin-no-copy-rules repmin-anonymous repmin-hag repmin-hag-decorated binary-numbers caching cons-nil anonymous-rules decorators circular-basic circular-liveness circular-liveness-rewrites
 
 check : Stratego-Attributes.runtestsuite \
         test-stratego-rerag test-stratego-rerag.run \

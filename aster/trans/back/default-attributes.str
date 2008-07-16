@@ -30,7 +30,7 @@ rules
         id.next-sibling(d) = get-next-sibling(d|id.parent)
         id.child(d) = one(d; ?it); !it
       
-      def root.is-root = id
+      def plain root.is-root = id
       
       def plain all(d) =
         ?before;
@@ -86,7 +86,11 @@ rules
        * Applies the attribute semantic rule at the root of the tree.
        */
       decorator down at-root(d) =
-        id.at-root(d) <+ d
+        if id.is-root then
+          d
+        else
+          id.parent.at-root(d)
+        end
       
       // TODO: Should collect-all et al accept only soft failure?
       //       (and how to express that nicely?)
@@ -95,7 +99,7 @@ rules
        * Collects all nodes in the tree where the attribute can be applied,
        * including subnodes of the results.
        */
-      def at-root collect-all(d) =
+      decorator at-root collect-all(d) =
         collect-all(d, conc)
       
       /**
