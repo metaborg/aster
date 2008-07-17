@@ -14,16 +14,14 @@ strategies
       id.debug => Block([Assign("x","value"), While("x", Block([Assign("x","value")])), Return("x")])
     )
   
-rules
-
-  eq [assign | s*] -> s* where assign.is-dead
-
 attributes
 
-  local is-dead = not(<id.diff> (id.defines, id.live-after) => [])
+  rewrite [assign | s*] -> s* where assign.is-dead
+
+  def is-dead = not(<id.diff> (id.defines, id.live-after) => [])
 
 attributes // HACK: different main files and imports in the same directory don't work too well
   
-  local defines    := id where fail
-  local live-after := id where fail
+  def defines    := id where fail
+  def live-after := id where fail
   

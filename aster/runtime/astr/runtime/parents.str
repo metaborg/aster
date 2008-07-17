@@ -124,3 +124,15 @@ strategies
     all-consnil(
       astr-add-parent-references(|all-parents, node)
     )
+
+  /** @internal */
+  truncate-path-lists =
+    // "[].[].[]." becomes "[].."
+    ?['[', ']', '.' | <id>];
+    repeat1(?['[', ']', '.' | <id>]);
+    !['[', ']', '.', '.' | <truncate-path-lists>]
+  <+
+    [id | truncate-path-lists]
+  <+
+    []
+    

@@ -32,17 +32,17 @@ strategies
 
 attributes
   
-  inh root.global-min = id.min
+  def down root.global-min = id.min
   
-  syn Fork(t1, t2).min := <min> (t1.min, t2.min)
+  def up Fork(t1, t2).min := <min> (t1.min, t2.min)
 
-  syn Leaf(x).min      := x
+  def up Leaf(x).min      := x
 
-rules
+attributes
 
-  `rewrite-td` rewrite-td:
+  def rewrite-td rewrite-td:
     Leaf(x) -> Leaf(id.global-min)
 
-  `rewrite-bu` rewrite-bu:
+  def rewrite-bu rewrite-bu:
     Leaf(x) -> Leaf(id.global-min)    
 

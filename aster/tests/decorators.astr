@@ -14,34 +14,34 @@ strategies
       id.eq => ([1,2,3,4,1,2], _)
     )
 
-rules // Using library decorators
+attributes // Using library decorators
   
   /**
    * Collects all values in the tree smaller than 'i'.
    */
-  `collect-all` collect-lt(|i) = where(is-int; <lt> (id, i))
+  def collect-all collect-lt(|i) = where(is-int; <lt> (id, i))
 
-rules // Using local decorators
+attributes // Using local decorators
   
   /**
    * Collects all values in the tree smaller than 'i'.
    */
-  `_collect-all` _collect-lt(|i) = where(is-int; <lt> (id, i))
+  def _collect-all _collect-lt(|i) = where(is-int; <lt> (id, i))
   
   /**
    * Collects all nodes in the tree where the attribute can be applied.
    */
-  `_at-root` `_collect-all`(s) = collect-all(s, conc)
+  decorator _at-root _collect-all(s) = collect-all(s, conc)
   
   /**
    * Applies the attribute semantic rule at the root of the tree.
    */
-  `_inh` `_at-root`(s) = `_at-root`(s) <+ s
+  decorator _inh _at-root(s) = id.parent._at-root(s) <+ s
 
-  local `_inh`(a) =
+  decorator _inh(a) =
     if a.defined then
       a
     else
-      id.parent; `_inh`(a)
+      id.parent; id._inh(a)
     end
 

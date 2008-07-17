@@ -30,20 +30,20 @@ strategies
     <copy> (<subt> (0, <Snd>), <Fst>);
     foldr(!1.0, Swap; div)
 
-rules // Attributes
+attributes
 
-  syn value: // "with add"
+  def up value: // "with add"
     0              -> 0
     1              -> <pow> (2, id.scale)
     List(l, v)     -> <add> (l.value, v.value)
     Number(l1, l2) -> <add> (l1.value, l2.value)
 
-  inh scale:
+  def down scale:
     Number(t, _).t -> 0
     Number(_, t).t -> <subt> (0, t.length)
     List(l, _).l   -> <inc> id.scale
 
-  syn length:
+  def up length:
     List(_)    -> 1
     List(l, _) -> <inc> l.length
 

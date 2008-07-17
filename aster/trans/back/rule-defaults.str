@@ -9,7 +9,7 @@
  *     (i.e., soft failure occurs)
  *
  *  b) An attribute is called "recursively," e.g.:
- *     inh root = id.root <+ id
+ *     down root = id.root <+ id
  *
  * @author Lennart Kats <lennart add lclnet.nl>
  */
@@ -28,11 +28,9 @@ strategies
     Module(x, decl*) -> Module(x, [decl*, defaults*])
     with
       bagof-AllRules;
-      map({
-        ?def;
-        default-rule;
-        try(add-empty-chained-rules(|def))
-      });
+      map(
+        default-rule
+      );
       flatten-list;
       defaults* := [Rules(<id>)]
   
@@ -45,31 +43,27 @@ strategies
         s_rule'
     ]|
     with
-      type     := <get-attribute-type> def;
-      (sa*,a*) := <RuleParams> def;
-      (s*,t*)  := <params-to-vars> (sa*,a*);
-      x_eval   := <RuleAccessorName> def;
-      s_call   := |[ x_eval(s*|t*) ]|;
-      s_rule   := <default-rule(|s_call, def)> type;
-      s_rule'  := <try(make-decorator-default-rule(|def))> s_rule;
+      decorators := <get-attribute-decorators> def;
+      (sa*,a*)   := <RuleParams> def;
+      (s*,t*)    := <params-to-vars> (sa*,a*);
+      x_eval     := <RuleAccessorName> def;
+      s_call     := |[ x_eval(s*|t*) ]|;
+      s_rule     := <default-rule(|s_call, def)> decorators;
+      s_rule'    := <try(make-decorator-default-rule(|def))> s_rule;
 
-      if Local() := type then
-        s_trace := Id()
+      if [] := decorators then
+        s_trace  := Id()
       else
-        s_trace := <trace-default-rule> def
+        s_trace  := <trace-default-rule> def
       end
 
 rules
-
-  // TODO: Split up chained definitions to a new inh and syn part
-  //       each with its own signature for the two copy rules.
-  //       How would the copy rules fall back to their
-  //       counterpart on soft failure?
    
-  /**
-   * Add default, empty semantic rules for chained attributes.
+  /*
+   * UNDONE: Added default, empty semantic rules for chained attributes.
+   *         (this was applied after default-rule before)
    * (In case only synthesized or only inherited definitions were provided.)
-   */
+   *
   add-empty-chained-rules(|def):
     default-rule ->
     Def* |[
@@ -78,32 +72,39 @@ rules
       x_eval-syn(sa*|a*) = fail
     ]|
     where
-      <get-attribute-type> def => Chained()
+      <get-attribute-decorators> def => Chained()
     with
       x_eval-inh := <attribute-accessor-name(|"inh")> def;
       x_eval-syn := <attribute-accessor-name(|"syn")> def;
       (sa*,a*)   := <RuleParams> def;
       (s*,t*)    := <params-to-vars> (sa*,a*)
+  */
 
 rules // copy rules
 
+  default-rule(|s_call, def) =
+    default-rule-native(|s_call, def)
+  <+
+    default-rule-decorators(|s_call, def)
+
   // Local has a default rule '!EVAL_FAILED' for caching of fails and proper tracing
-  default-rule(|s_call, def):
-    Local() -> |[ !EVAL_FAILED() ]|
+  default-rule-native(|s_call, def):
+    [] -> |[ !EVAL_FAILED() ]|
 
   // TODO: I'm not sure if these default-rule semantics are desirable anymore
   // FIXME: ^ this probably breaks certain cases of circular decorators
+  //        (also assimilate-attr-self-ref-inside-ag and its todos)
 
   // For decorators, the default rule is only ever invoked
   // for recursive calls (e.g., inh foo = <inc> id.foo).
-  default-rule(|s_call, def):
-    Decorated(ds) ->
+  default-rule-decorators(|s_call, def):
+    decorators ->
     |[ s_decorated; not(EVAL_FAILED) ]|
     with
       (s*,  t*)   := <params-to-vars> <RuleParams> def;
       s_call'     := <add-one-soft-failure> s_call;
       // TODO: Is caching after add-one-soft-failure harmful?
-      s_decorated := <foldr(!s_call', make-decorated-with-caching(|def, s*, t*))> ds
+      s_decorated := <foldr(!s_call', make-decorated-with-caching(|def, s*, t*))> decorators
 
   add-one-soft-failure:
     s_eval ->
@@ -118,8 +119,8 @@ rules // copy rules
     with
       x_failed-once := <newname> "failed-once"
  
-  default-rule(|s_call, def):
-    Inh() ->  
+  default-rule-native(|s_call, def):
+    ["inh"] ->  
     |[ // id.parent.attr
        (!x_parent; not(UnknownParent) <+ get-parent(|x_all-parents));
        not(NoParent);
@@ -131,7 +132,7 @@ rules // copy rules
   // TODO: Or should the syn copy rule consider all following children after "soft failure"?
   
   default-rule(|s_call, def):
-    Syn() ->
+    ["syn"] ->
     |[
        ?x_node;
        one(x_eval(s* |x_node, t*) => x_value);
@@ -142,8 +143,9 @@ rules // copy rules
       x_value := <newname> "value";
       !s_call => |[ x_eval(s* |x_parent, t*) ]|
   
+  /* UNDONE: Different default rules for chained inh and syn definitions
   default-rule(|s_call, def):
-    Chained() ->
+    ["chained"] ->
     |[ get-prev-sibling(|x_parent)
        < x_eval-syn(s* |x_parent, t*)    // id.syn_attr
        + !x_parent;
@@ -156,7 +158,7 @@ rules // copy rules
       x_eval-syn := <attribute-accessor-name(|"syn")> def
       
   default-rule(|s_call, def):
-    Chained() ->
+    ["chained"] ->
     |[ ?x_node;
        get-last-child(|<id>)
        < x_eval(s* |x_node, t*)       // id.last-child.syn_attr
@@ -168,6 +170,7 @@ rules // copy rules
       !s_call    => |[ x_eval(s* |x_parent, t*) ]|;
       x_node     := <NodeVar>;
       x_eval-inh := <attribute-accessor-name(|"inh")> def
+  */
       
   default-rule-name =
     attribute-signature => sig;

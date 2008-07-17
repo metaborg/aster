@@ -45,12 +45,12 @@ strategies // Util
   
   astr-node-path(|parent, all-parents, attr-cache) =
     if is-astr-initialized(|all-parents) then
-      eval-local-path-and-node(|parent, all-parents, attr-cache, 0)
+      eval-path-and-node(|parent, all-parents, attr-cache, 0)
     else
       <conc-strings> ("?", ".", <to-tiny-string>)
     end
   
-  eval-local-path-and-node(|parent, all-parents, attr-cache, rewrite-mode) =
+  eval-path-and-node(|parent, all-parents, attr-cache, rewrite-mode) =
     fail // generator-defined rule
 
 strategies // Node initialization

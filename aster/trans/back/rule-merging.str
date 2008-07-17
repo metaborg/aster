@@ -6,7 +6,6 @@ imports
   back/rule-tracing
   back/rule-caching
   back/rule-naming
-  back/rule-circularity
   back/rule-decorators
   back/assimilate
   front/analyze
@@ -47,11 +46,9 @@ strategies
   add-merged-rule-logic(|def) =
     add-decorated-rule-logic(|def)
   <+
-    add-circular-rule-logic(|def)
+    add-cached-rule-logic(|def) // TODO: cached rule logic is obsolete?
   <+
-    add-cached-rule-logic(|def)
-  <+
-    add-uncached-rule-logic
+    add-uncached-rule-logic // TODO: uncached rule logic is obsolete?
   
   make-merged-rule:
     def @ Attribute(_, sarity, tarity) ->
@@ -104,17 +101,17 @@ strategies
 
 strategies
 
-  make-merged-def(|pattern, child, accessor-type) =
+  make-merged-def(|pattern, child) =
     with(
-      record-def(|accessor-type)
+      record-def
     );
     if Root() := pattern then
       make-merged-def-root
     else
-      make-merged-def(|pattern, <pattern-order-index(|child)> pattern)
+      make-merged-def-non-root(|pattern, <pattern-order-index(|child)> pattern)
     end
   
-  make-merged-def(|pattern, index):
+  make-merged-def-non-root(|pattern, index):
     |[ x_eval(sa*|a*) = s ]| -> |[ x_eval'(sa*|a*) = s ]|
     with
       sig     := <attribute-signature>;
@@ -155,7 +152,7 @@ strategies
   <+
     !""
   
-  record-def(|accessor-type) =
+  record-def =
     ?|[ x_eval(sa*|a*) = s ]|;
     sig := <attribute-signature>;
     
@@ -165,7 +162,6 @@ strategies
         IsKnownRule      :   sig
         RuleAccessorName :   sig -> x_eval
         RuleParams       :   sig -> (sa*, a*)
-        RuleAccessorType :   sig -> accessor-type
       )
     end
   

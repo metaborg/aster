@@ -38,16 +38,16 @@ strategies
 
   assimilate-def:
     AttributeDef(
-      type
+      Type(type, decorators, _)
     , t_pattern
-    , AttributeDefStrategy(child, attr @ Attribute(name, sa*, a*), _, s)
+    , AttributeDefStrategy(child, attr @ Attribute(name, sa*, a*), s)
     ) ->
-    <make-merged-def(|t_pattern, child, type-name)>
+    <make-merged-def(|t_pattern, child)>
     Def |[
       x_eval(sa* |x_parent, x_all-parents, x_attr-cache, x_rewrite-mode, a'*) =
         ?x_node;
         s_pattern;
-        where(s_init-args); // TODO: init args first if built in pattern?
+        where(s_init-args); // TODO: init args first if built-in pattern?
         s'
     ]|
     with
@@ -57,9 +57,8 @@ strategies
       x_attr-cache       := <AttrCacheVar>;
       x_rewrite-mode     := <RewriteModeVar>;
       s_pattern          := <assimilate-pattern(|child)> t_pattern;
-      type-name          := <attribute-type-name(|type)> attr;
       sig                := <attribute-signature> attr;
-      x_eval             := <attribute-accessor-name(|type-name)> attr;
+      x_eval             := <attribute-accessor-name> attr;
       (a'*, s_init-args) := <extract-arg-patterns> a*;
      
       s_parent         := |[ ?x_node; !x_parent; not(UnknownParent)
@@ -71,9 +70,16 @@ strategies
         assimilate-expr-inside-ag(|sig, s_parent, s_parent-desired, x_node, x_all-parents, x_attr-cache)
       ));
       add-eval-failed => s'
-    
+
   assimilate-def:
-    AttributeDecl(_, _, _, _) -> []
+    AttributeDecl(_, _) -> []
+  
+  assimilate-where-with =
+    map(
+      ?Where(s)
+    + \With(s) -> Strat |[ with'(s) ]|\
+    );
+    fold-seq
 
 rules // Argument patterns
    
@@ -95,13 +101,16 @@ rules // Argument patterns
 
 rules // Semantic rule definition helpers
 
-  add-eval-failed:
-    Seq(WhereClause(s1), s2) -> |[ where(s1); (s2 <+ !EVAL_FAILED()) ]|
-  
-  add-eval-failed:
-    s -> |[ s <+ !EVAL_FAILED() ]|
-    where
-      not(?Seq(WhereClause(c), _))
+  // TODO: Strategies should always cause "soft" failure, mainly to support stacked decorators
+
+  add-eval-failed =
+    oncetd(
+      \InlineWhereClause(conditions, s) -> |[ where(s_conditions); (s <+ !EVAL_FAILED()) ]|
+       with
+        s_conditions := <assimilate-where-with> conditions\
+    )
+  <+
+    \s -> |[ s <+ !EVAL_FAILED() ]|\
    
   assimilate-pattern(|child) =
     ?t_pattern;

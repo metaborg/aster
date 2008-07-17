@@ -58,31 +58,33 @@ strategies
 
 attributes
 
-  inh test-root = id.test-root <+ id
+  def down test-root = id.parent.test-root <+ id
   
-  local test-silly-circular circular 0 = !2
+  def circular(|0) test-silly-circular = !2
   
-  inh root.test-copy-root = id
+  def down root.test-copy-root = id
   
-  syn 1.is-one = id
+  def up 1.is-one = id
   
-  local Fork(a@1, 2).a.child-def = id
+  def Fork(a@1, 2).a.child-def = id
   
-  local first-kid = one(?kid); !kid
+  def first-kid = one(?kid); !kid
   
-  local all-kids = ?_#(<id>)
+  def all-kids = ?_#(<id>)
   
-  local all-kids-tuple = ?_#(<id>); ListToTuple
+  def all-kids-tuple = ?_#(<id>); ListToTuple
   
-  local new-fork = \_#(kids) -> "Fork2"#(kids)\
+  def new-fork = \_#(kids) -> "Fork2"#(kids)\
   
-  local x.is(|x) = id
+  def x.is(|x) = id
   
-  local x.tuple-first(|(x, y)) = id
+  def x.tuple-first(|(x, y)) = id
   
-  local Fork(a, b).b.parent-first-kid = id.first-kid
+  def Fork(a, b).b.parent-first-kid = id.first-kid
   
-  local stupid.stupid.stupid = id
+  def stupid.stupid.stupid = id
+
+strategies
  
   test-attribute-behavior =
     apply-and-check(
