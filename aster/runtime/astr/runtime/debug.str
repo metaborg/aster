@@ -130,7 +130,7 @@ strategies
   <+ []; !"[]"
   <+ strip-annos; ?<as-string>#(_)
 
-  print-stacktrace =
+  print-stacktrace' =
     where(
       prim("SSL_stacktrace_get_all_frame_names");
       try(\["print_stacktrace_0_0" | tail] -> tail\);

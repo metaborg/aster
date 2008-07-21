@@ -104,20 +104,35 @@ test Attribute block defined on tuple
         a.x := 1
   " -> _
 
-test Attribute on term 'eq'
+test Attribute definition 'eq'
   "attributes
      eq eq = 1
   " -> _
 
+test Attribute declaration 'eq'
+  "attributes
+     eq eq
+  " fails
+
+test Attribute declaration 'attributes'
+  "attributes
+     def foo attributes
+  " fails
+
+test Attribute declaration 'def'
+  "attributes
+     def foo def
+  " fails
+
 test Mixture of attribute keywords and identifiers (1)
   "attributes
-     eq eq eq eq = 1" -> Attributes([_, _])
+     eq eq eq eq = 1" fails // should at least not be ambiguous
 
 test Mixture of attribute keywords and identifiers (2)
   "attributes
-     eq eq eq a = 1" -> Attributes([_, _])
+     eq eq eq a = 1" fails // should at least not be ambiguous
 
-test AttributeDecl and AttributeDefNoPattern
+test AttributeDecl and ADefNoPattern
   "attributes
      def bu x
      eq B(a): id.x = 1
@@ -161,14 +176,14 @@ test Attribute pattern definitions vs. <App> (1)
      eq td:
        1 -> <s>
        A(2) -> 3
-  " -> Attributes([PatternDefBlock(Type(Eq,[],NoSort),AttributeNoArgs("td"),[AttributePDefTerm(NoAnnoList(Int("1")),NoChild,RootApp(CallNoArgs(SVar("s"))),[]),AttributePDefTerm(NoAnnoList(Op("A",[NoAnnoList(Int("2"))])),NoChild,NoAnnoList(Int("3")),[])])])
+  " -> Attributes([PatternDefBlock(Type(Eq,[],NoSort),AttributeNoArgs("td"),[APDefTerm(NoAnnoList(Int("1")),NoChild,RootApp(CallNoArgs(SVar("s"))),[]),APDefTerm(NoAnnoList(Op("A",[NoAnnoList(Int("2"))])),NoChild,NoAnnoList(Int("3")),[])])])
 
 test Attribute pattern definitions vs. <App> (2)
   "attributes
      eq td:
        1 -> <s> A
        (2) -> 3
-  " -> Attributes([PatternDefBlock(Type(Eq,[],NoSort),AttributeNoArgs("td"),[AttributePDefTerm(NoAnnoList(Int("1")),NoChild,App(CallNoArgs(SVar("s")),Var("A")),[]),AttributePDefTerm(NoAnnoList(Tuple([NoAnnoList(Int("2"))])),NoChild,NoAnnoList(Int("3")),[])])])
+  " -> Attributes([PatternDefBlock(Type(Eq,[],NoSort),AttributeNoArgs("td"),[APDefTerm(NoAnnoList(Int("1")),NoChild,App(CallNoArgs(SVar("s")),Var("A")),[]),APDefTerm(NoAnnoList(Tuple([NoAnnoList(Int("2"))])),NoChild,NoAnnoList(Int("3")),[])])])
 
 test Attribute pattern definitions vs. <App> (3)
   "attributes
@@ -230,8 +245,7 @@ test Single-line pattern, child pattern, and attribute definition
   " -> _
 
 
-test Aonymous rewrite rule
+test Anonymous rewrite rule
   "attributes
      rewrite foo -> bar
   " -> _
-

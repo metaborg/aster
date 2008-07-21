@@ -9,8 +9,8 @@ imports
 strategies // Analysis
   
   analyze =
-    ( ?AttributeDef(Type(type, decorators, sort), _, AttributeDefStrategy(_, attribute, _))
-    + ?AttributeDecl(Type(type, decorators, sort), [attribute])
+    ( ?ADef(Type(type, decorators, sort), _, ADefStrategy(_, attribute, _))
+    + ?ADecl(Type(type, decorators, sort), [attribute])
     );
     with(
       sig            := <attribute-signature> attribute;

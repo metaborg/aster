@@ -7,7 +7,7 @@ imports
 
 signature constructors
   // used in intermediate syntax
-  AttributePDefStrategy : Pattern * OptDotChild * Strategy -> PatternDefBlockDef
+  APDefStrategy : Pattern * OptDotChild * Strategy -> PatternDefBlockDef
   InlineWhereClause     : List(Strategy) * Strategy        -> Strategy
 rules
 
@@ -39,20 +39,20 @@ rules
     Decorators(def*) -> Rules(def*)
      
   desugar-attribute-def:
-    AttributePDefTerm(pattern, child, term, condition) ->
-    AttributePDefStrategy(pattern, child, s)
+    APDefTerm(pattern, child, term, condition) ->
+    APDefStrategy(pattern, child, s)
     with
       s := InlineWhereClause(condition, Build(term))
   
   desugar-attribute-def:
-    AttributeDefTerm(child, attribute, term, condition) ->
-    AttributeDefStrategy(child, attribute, s)
+    ADefTerm(child, attribute, term, condition) ->
+    ADefStrategy(child, attribute, s)
     with
       s := InlineWhereClause(condition, Build(term))
   
   desugar-attribute-def:
-    AttributeDefNoPattern(type, value) ->
-    AttributeDef(type, Wld(), value)
+    ADefNoPattern(type, value) ->
+    ADef(type, Wld(), value)
 
 rules
 
@@ -120,27 +120,27 @@ rules
 
   at-match(s) =
     Match(s) + NameDefBlock(id, s, id) + RuleNoCond(s, id) + Rule(s, id, id) + AM(id, s) + Assign(s, id)
-  + AttributeDefStrategy(id, Attribute(id, id, map(s)), id) + AnonymousRewriteRule(s, id, id)
+  + ADefStrategy(id, Attribute(id, id, map(s)), id) + AnonymousRewriteRule(s, id, id)
      
 rules // flatten block definitions to individual definitions
 
   astr-flatten-block-def =
     ?NameDefBlock(type, pattern, <id>);
     map(
-      \AttributeDefStrategy(child, attr, s) ->
-       AttributeDef(type, pattern, AttributeDefStrategy(child, attr, s))\
+      \ADefStrategy(child, attr, s) ->
+       ADef(type, pattern, ADefStrategy(child, attr, s))\
     )
   
   astr-flatten-block-def =
     ?PatternDefBlock(type, attr, <id>);
     map(
-      \AttributePDefStrategy(pattern, child, s) ->
-       AttributeDef(type, pattern, AttributeDefStrategy(child, attr, s))\
+      \APDefStrategy(pattern, child, s) ->
+       ADef(type, pattern, ADefStrategy(child, attr, s))\
     )
 
   astr-flatten-block-def =
-    ?AttributeDecl(type, <id>);
+    ?ADecl(type, <id>);
     where(?[_, _ | _]);
     map(
-      !AttributeDecl(type, [<id>])
+      !ADecl(type, [<id>])
     )

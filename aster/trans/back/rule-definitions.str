@@ -37,10 +37,10 @@ strategies
     params-to-vars
 
   assimilate-def:
-    AttributeDef(
+    ADef(
       Type(type, decorators, _)
     , t_pattern
-    , AttributeDefStrategy(child, attr @ Attribute(name, sa*, a*), s)
+    , ADefStrategy(child, attr @ Attribute(name, sa*, a*), s)
     ) ->
     <make-merged-def(|t_pattern, child)>
     Def |[
@@ -72,7 +72,7 @@ strategies
       add-eval-failed => s'
 
   assimilate-def:
-    AttributeDecl(_, _) -> []
+    ADecl(_, _) -> []
   
   assimilate-where-with =
     map(

@@ -45,10 +45,10 @@ rules // Assimilation of decorator definitions
   //       (by passing a rec argument that performs memoization)
   
   assimilate-decorator-def =
-    AttributeDef(
+    ADef(
       Type(Decorator(), id, id)
     , id
-    , AttributeDefStrategy(
+    , ADefStrategy(
         id
       , Attribute(
           ?x_decorator; DecoratorInternalName

@@ -42,11 +42,13 @@ rules // Evaluate attributes in AG context
    */
   assimilate-attr-self-ref-inside-ag(|sig, attr, s_parent, x_node):
     |[ <s> t ]| ->
-    |[ <?x_node < s_eval-default + s> t ]|
+    |[ <?x_node < warn(|~str:message); s_eval-default + s> t ]|
     where
       <attribute-signature> attr => sig
     with
-      s_eval-default := <default-rule-call> attr
+      s_eval-default := <default-rule-call> attr;
+      name           := <?Attribute(<id>, _, _)> sig;
+      message        := <conc-strings> ("self-reference is not allowed in attribute ", name)
 
 rules // Evaluate attributes outside of AG context
 

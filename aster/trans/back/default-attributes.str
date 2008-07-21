@@ -43,7 +43,7 @@ rules
       
       def down tree-access-ancestors:
         id.root = try(id.root)
-        id.ancestor(p) = p <+ id.ancestor(p)
+        id.ancestor(p) = p <+ id.parent.ancestor(p)
         // id.ancestors(p,path) := <p <+ path; id.ancestors(p, path)>
       
       def path =
@@ -207,16 +207,25 @@ rules
       
       decorator plain uncached(d) = d; id.ensure-init
         
-      decorator down lookup-ordered(d) =
-        d
+      decorator down lookup-ordered(fetch, is-scope) =
+        fetch
       <+
-        ?[<d> | id] // inspect list item to the left
+        id.prev-sibling(id.lookup-outside-scopes(is-scope, fetch))
       
-      decorator down lookup-unordered(d) =
-        d
+      decorator down lookup-unordered(fetch, is-scope) =
+        (id.is-root + is-scope);
+        id.lookup-in-scope(is-scope, fetch)
+      
+      def plain lookup-in-scope(is-scope, fetch) =
+        fetch
       <+
-        where(id.is-root + not(<is-list> id.parent)); // search lists only from their head
-        getfirst(d)
+        id.child(id.lookup-outside-scopes(is-scope, fetch))
+      
+      def plain lookup-outside-scopes(is-scope, fetch) =
+        fetch
+      <+
+        not(is-scope);
+        id.child(id.lookup-outside-scopes(is-scope, fetch))
       
       decorator plain circular(d|initial-value) =
         let recompute(|old-value) =
