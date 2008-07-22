@@ -76,7 +76,7 @@ strategies // Set-up, testing
   // is-Stm can normally be generated from the grammar, but is simply hardcoded here
   is-Stm = ?Block(_) + ?While(_, _) + ?If(_, _, _) + ?Assign(_, _) + ?Return(_)
 
-attributes // def variable use and define sites
+attributes // Local variable use and define sites
 
   def uses:
     id             -> []
