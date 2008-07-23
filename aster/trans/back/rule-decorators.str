@@ -186,7 +186,7 @@ rules // Adding decoration logic to decorated rules
   
   make-decorated:
     (Decorator(x_decorator, s*, t*), s_decorated) ->
-    <assimilate-attr-ref-inside-decorator> <desugar-all> Strat |[
+    <assimilate-all-inside-decorator> Strat |[
       id.x_decorator'(x_cached, s_decorated', s* | t*)
     ]|
     with
@@ -215,8 +215,12 @@ strategies // Provide new cache vars for each decorator application
     )
 
 strategies // Helpers
+
+  assimilate-all-inside-decorator =
+    desugar-all;
+    topdown(try(assimilate-expr-inside-decorator))
   
-  assimilate-attr-ref-inside-decorator =
+  assimilate-expr-inside-decorator =
     with(
       x_parent       := <ParentVar>;
       x_all-parents  := <AllParentsVar>;
@@ -224,4 +228,4 @@ strategies // Helpers
       x_node         := <NodeVar>;
       s_parent       := |[ ?x_node < !x_parent + !UnknownParent() ]|
     );
-    assimilate-attr-ref-inside-ag(|s_parent, s_parent, x_all-parents, x_node, x_attr-cache)
+    assimilate-expr-inside-ag(|None(), s_parent, s_parent, x_node, x_all-parents, x_attr-cache)

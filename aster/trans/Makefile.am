@@ -1,12 +1,12 @@
 include $(top_srcdir)/Makefile.xt
 
-bin_PROGRAMS                  = stratego-rerag
-nodist_stratego_rerag_SOURCES = stratego-rerag.c
+bin_PROGRAMS                  = aster
+nodist_stratego_rerag_SOURCES = aster.c
 nobase_pkgdata_DATA = $(RTREES)
 
-all : stratego-rerag.copy
+all : aster.copy
 
-CLEANFILES=stratego-rerag stratego-rerag-no-check stratego-rerag.copy front/check.str $(RTREES)
+CLEANFILES=aster aster-no-check aster.copy front/check.str $(RTREES)
 
 SCFLAGS = \
 	--format-check 0 \
@@ -22,26 +22,26 @@ STRINCLUDES = \
 	-I ../syntax \
 	-I ../runtime
 
-STRS=stratego-rerag.str  $(wildcard *.str) $(wildcard */*.str) $(wildcard ../runtime/*.str) $(wildcard ../runtime/*/*.str) front/check.str
+STRS=aster.str  $(wildcard *.str) $(wildcard */*.str) $(wildcard ../runtime/*.str) $(wildcard ../runtime/*/*.str) front/check.str
 RTREES=$(STRS:.str=.rtree)
 
 cleanstrap :
-	rm -f stratego-rerag.copy stratego-rerag-no-check stratego-rerag front/check.str
+	rm -f aster.copy aster-no-check aster front/check.str
 
-stratego-rerag.c : $(RTREES)
-	$(SCOMPILE) -c -i $< -o $@ $(SCFLAGS) $(STRINCLUDES) -m main-stratego-rerag
+aster.c : $(RTREES)
+	$(SCOMPILE) -c -i $< -o $@ $(SCFLAGS) $(STRINCLUDES) -m main-aster
 	
-stratego-rerag.copy : stratego-rerag
-	cp stratego-rerag stratego-rerag.copy
+aster.copy : aster
+	cp aster aster.copy
 
-stratego-rerag-no-check : stratego-rerag.str $(RTREES)
+aster-no-check : aster.str $(RTREES)
 	$(MAKE) -C .. all-local # ensure build-time XTC repository is complete at this point
-	[ -e stratego-rerag.copy ] && cp stratego-rerag.copy stratego-rerag-no-check ||\
+	[ -e aster.copy ] && cp aster.copy aster-no-check ||\
 	( rm -f $@.c && \
 	  cp front/check.bootstrap.str front/check.str && \
-	  $(SCOMPILE) -i $< -o $@ $(STRCFLAGS) $(SCFLAGS) -m main-stratego-rerag -Xcc -O0 -Xcc -DDEFAULT_XTC_REPOSITORY="\"$(top_srcdir)/BUILDTIME_XTC\"" $(STRINCLUDES) && \
+	  $(SCOMPILE) -i $< -o $@ $(STRCFLAGS) $(SCFLAGS) -m main-aster -Xcc -O0 -Xcc -DDEFAULT_XTC_REPOSITORY="\"$(top_srcdir)/BUILDTIME_XTC\"" $(STRINCLUDES) && \
 	  rm front/check.str $@.c )
 
-front/check.str : front/check.astr stratego-rerag-no-check
-	./stratego-rerag-no-check --verbose 2 -i $< -o $@ || $(MAKE) cleanstrap
+front/check.str : front/check.astr aster-no-check
+	./aster-no-check --verbose 2 -i $< -o $@ || $(MAKE) cleanstrap
 

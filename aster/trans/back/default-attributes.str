@@ -154,7 +154,7 @@ rules
         if d.defined then
           d
         else
-          id.child(d.defined; id.up(d))
+          id.child(id.up(d))
         end
       
       /* TODO: Sane definition of `chained`

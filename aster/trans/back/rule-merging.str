@@ -36,19 +36,19 @@ strategies
   //   
   
   add-merged-rules:
-    Module(x, decl*) -> Module(x, [decl*, ordered*])
-    where
+    Module(x, decl*) -> Module(x, [decl*, merged])
+    with
       bagof-AllRules;
       map(make-merged-rule);
       flatten-list;
-      ordered* := [Rules(<id>)]
+      merged := Rules(<id>)
   
   add-merged-rule-logic(|def) =
     add-decorated-rule-logic(|def)
   <+
-    add-cached-rule-logic(|def) // TODO: cached rule logic is obsolete?
+    add-cached-rule-logic(|def)
   <+
-    add-uncached-rule-logic // TODO: uncached rule logic is obsolete?
+    add-uncached-rule-logic
   
   make-merged-rule:
     def @ Attribute(_, sarity, tarity) ->

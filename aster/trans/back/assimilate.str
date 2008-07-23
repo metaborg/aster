@@ -15,30 +15,23 @@ imports
 strategies
 
   assimilate-all =
-    topdown-consnil(try(?amb(_); fatal-err(|"Internal error: ambiguity in input")));
     map(add-imports);
-    topdown-consnil(try(?amb(_); fatal-err(|"Internal error: ambiguity in output 0")));
     
     all-stratego-defs(try(
       assimilate-decorator-def
-    ; topdown-consnil(try(?amb(_); fatal-err(|"Internal error: ambiguity in output 1")))
     <+
       assimilate-def
-    ; topdown-consnil(try(?amb(_); fatal-err(|"Internal error: ambiguity in output 2")))
     ));
-    topdown-consnil(try(?amb(_); fatal-err(|"Internal error: ambiguity in output 3")));
     
     topdown(try(
       assimilate-expr
     ));
-    topdown-consnil(try(?amb(_); fatal-err(|"Internal error: ambiguity in output 4")));
     
     one(
       add-default-rules;
       add-merged-rules;
       add-rewrites-enabled
     )
-    ; topdown-consnil(try(?amb(_); fatal-err(|"Internal error: ambiguity in output 5")))
 
   add-imports:
     Module(x, decl*) -> Module(x, [imports | decl*])
