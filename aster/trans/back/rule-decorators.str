@@ -124,8 +124,12 @@ rules // Adding decoration logic to decorated rules
          s_rewrite => x_node;
          s_body'
     ]|
-    where
-      <get-attribute-decorators> def => [_ | _] => ds
+    where // TODO: put his in an additional with clause
+      <get-attribute-decorators> def;
+      filter(not(Decorator("plain", [], []))) => ds;
+      
+      // where  
+      !ds => [_ | _]
     with
       (s*, t*) := <params-to-vars> (sa*, a*);
       s_body'  := <eliminate-copy-rule(|def);
@@ -173,8 +177,8 @@ rules // Adding decoration logic to decorated rules
        end
     ]|
     with
-      s_ref         := <make-decorated>;
-      x_cached      := <CachedVar>;
+      s_ref    := <make-decorated>;
+      x_cached := <CachedVar>;
       
       if <is-plain-decorator> x_decorator then
         s_cache-read  := Fail();

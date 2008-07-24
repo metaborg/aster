@@ -18,7 +18,7 @@ rules
     attributes
       def enable-warnings = rules(AsterWarningsDisabled :- _)
       
-      def plain plain tree-access:
+      def plain tree-access:
         id.prev-sibling  = get-prev-sibling(|id.parent)
         id.next-sibling  = get-next-sibling(|id.parent)
         id.first-sibling = get-first-child(|id.parent)
@@ -203,7 +203,7 @@ rules
        * Plain attributes do not have the default behavior of
        * caching and re-annotating a result term for re-attribution
        */
-      decorator plain(d) = d // note that this is a special, built-in decorator
+      decorator plain plain(d) = d // note that this is a special, built-in decorator
       
       decorator plain uncached(d) = d; id.ensure-init
         
@@ -228,24 +228,20 @@ rules
         id.child(id.lookup-outside-scopes(is-scope, fetch))
       
       decorator plain circular(d|initial-value) =
-        let recompute(|old-value) =
-          recompute-circular-def(id.plain(d)|d.signature, old-value)
-        in
-          if last-value := <get-last-value(|d.signature, id)> then
-            if <?CIRCULAR_FINISHED(value) + ?CIRCULAR_BUSY(value)> last-value then
-              !value
-            else
-              recompute(|last-value)
-            end
+        if stored := <get-last-value(|<attr-cache>, id, d.signature)> then
+          if <?CIRCULAR_FINISHED(old-value) + ?CIRCULAR_BUSY(old-value)> stored then
+            !old-value
           else
-            where(
-              old-value := <id.ensure-init <+ !EVAL_FAILED()> initial-value
-            );
-            circular-fixpoint(recompute|old-value)
-          end;
-          not(EVAL_FAILED)
-        end
-
+            recompute-circular-def(id.plain(d) |d.signature, stored)
+          end
+        else
+          where(
+            old-value := <id.ensure-init <+ !EVAL_FAILED()> initial-value
+          );
+          circular-fixpoint(id.plain(d) |d.signature, old-value)
+        end;
+        
+        not(EVAL_FAILED)
       
       // TODO: local def covers(d|sort) = d
       
@@ -362,9 +358,11 @@ rules // Native attributes on decorated evaluation functions
   // FIXME: Decorator reflection
   
   assimilate-decoration-native-attr(|x_decorated):
-    Attribute("name", [], []) -> |[ !"<decorated-attribute-name>" ]|
+    Attribute("name", [], []) -> |[ !~str:name ]|
+    with
+      name := <conc-strings> ("<decorated-attribute-name-", x_decorated, ">")
   
   assimilate-decoration-native-attr(|x_decorated):
-    Attribute("signature", [], []) -> |[ !~str:sig ]|
+    Attribute("signature", [], []) -> |[ !Attribute(~str:name, [], []) ]|
     with
-      sig := <conc-strings> ("<decorated-attribute-signature-", x_decorated, ">")
+      name := <conc-strings> ("<decorated-attribute-name-", x_decorated, ">")

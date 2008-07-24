@@ -11,15 +11,19 @@ strategies
     ,
       !(1, 5, 7).init;
       (id.avg-others, id.avg-others, id.avg-others);
-      id.debug
+
+      id.debug;
+      
+      all(<lt> (1.6, <id>));
+      all(<lt> (<id>, 1.8))
     )
 
 attributes
 
   def circular(|id) (A, B, C):
-    A.avg-others = <round-avg> (B.avg-others, C.avg-others); debug'(!"A=")
-    B.avg-others = <round-avg> (A.avg-others, C.avg-others); debug'(!"B=")
-    C.avg-others = <round-avg> (A.avg-others, B.avg-others); debug'(!"C=")
+    A.avg-others = <round-avg> (B.avg-others, C.avg-others); id.debug(!"A=")
+    B.avg-others = <round-avg> (A.avg-others, C.avg-others); id.debug(!"B=")
+    C.avg-others = <round-avg> (A.avg-others, B.avg-others); id.debug(!"C=")
 
 strategies
 

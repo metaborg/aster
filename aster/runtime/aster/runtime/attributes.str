@@ -6,14 +6,15 @@ imports
 
 signature constructors
   EVAL_FAILED : Term
+  Attribute   : String * List(String) * List(Term) -> Term
 
 strategies
 
-  get-cached-attribute(|attr-cache, node, name-args) =
-    hashtable-get(|attr-cache, (node, name-args))
+  get-cached-attribute(|attr-cache, node, sig) =
+    hashtable-get(|attr-cache, (node, sig))
   
-  set-cached-attribute(|attr-cache, node, name-args, value) =
-    hashtable-put(|attr-cache, (node, name-args), value)
+  set-cached-attribute(|attr-cache, node, sig, value) =
+    hashtable-put(|attr-cache, (node, sig), value)
 
   attr-cache =
     lookup-table(|"attr-cache")

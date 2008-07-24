@@ -39,7 +39,7 @@ strategies // Set-up, testing
   
   test-live-before =
     topdown(
-      if(is-Stm, !id{^id.live-before})
+      if(is-Stm, !id{^id.live-before.uninit}, !id{})
     );
     
     ?Block([
@@ -57,7 +57,7 @@ strategies // Set-up, testing
   
   test-live-after =
     topdown(
-      if(is-Stm, !id{^id.live-after})
+      if(is-Stm, !id{^id.live-after.uninit}, !id{})
     );
       
     ?Block([

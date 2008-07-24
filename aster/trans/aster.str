@@ -42,7 +42,7 @@ strategies
       RewriteModeVar    := <newname> "rewrite-mode"
       RootVar           := <newname> "root"
       CachedVar         := <newname> "cached"
-      DecoratedValueVar := <newname> "decorated-value"
+      DecoratedValueVar := <newname> "decorated-value-cache"
     )
 
 strategies // I/O
