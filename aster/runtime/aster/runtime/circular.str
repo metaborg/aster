@@ -5,11 +5,11 @@
  * @internal
  * @author Lennart Kats <lennart add lclnet.nl>
  */
-module astr/runtime/circular
+module aster/runtime/circular
 
 imports
   libstratego-lib
-  astr/runtime/hashtables
+  aster/runtime/hashtables
 
 signature constructors
   CIRCULAR_FINISHED : Term -> Term
@@ -38,17 +38,15 @@ strategies
       set-last-value(|cache, node, old-value) // remove CIRCULAR_BUSY
     else
       // verbose-msg(!"  [circ.] Changed @", <strip-annos> node, !"with", strip-annos, !"was", <strip-annos> old-value);
-      astr-initialize-attribute-value(|<all-parents>, <attr-cache>);
+      aster-initialize-attribute-value(|<all-parents>, <attr-cache>);
       circular-set-has-changed(|<attr-cache>);
       set-last-value(|cache, node, <id>)
     end
   
-  circular-fixpoint'(eval : t * a -> a |old-value) =
-    if is-fixpoint-running then
-      eval(|old-value)
-    else
-      ?node;
-      eval(|old-value);
+  circular-fixpoint(eval : t * a -> a |old-value) =
+    ?node;
+    eval(|old-value);
+    if not(is-fixpoint-running) then
       set-fixpoint-running(
         while(circular-get-remove-has-changed(|<attr-cache>),
           { o: ?o; <eval(|o)> node }

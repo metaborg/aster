@@ -16,7 +16,7 @@ rules
 
   default-attributes = !|[
     attributes
-      def enable-warnings = rules(AstrWarningsDisabled :- _)
+      def enable-warnings = rules(AsterWarningsDisabled :- _)
       
       def plain plain tree-access:
         id.prev-sibling  = get-prev-sibling(|id.parent)
@@ -241,7 +241,7 @@ rules
             where(
               old-value := <id.ensure-init <+ !EVAL_FAILED()> initial-value
             );
-            circular-fixpoint'(recompute|old-value)
+            circular-fixpoint(recompute|old-value)
           end;
           not(EVAL_FAILED)
         end
@@ -292,13 +292,13 @@ rules // Native attribute definitions
       x := <new>
 
   assimilate-native-attr:
-    Attribute("debug", [], []) -> |[ where(astr-remove-annos; debug) ]|
+    Attribute("debug", [], []) -> |[ where(aster-remove-annos; debug) ]|
 
   assimilate-native-attr:
-    Attribute("debug", [s], []) -> |[ where(astr-remove-annos; debug(s)) ]|
+    Attribute("debug", [s], []) -> |[ where(aster-remove-annos; debug(s)) ]|
     
   assimilate-native-attr:
-    Attribute("disable-warnings", [], []) -> |[ rules(AstrWarningsDisabled: _) ]|
+    Attribute("disable-warnings", [], []) -> |[ rules(AsterWarningsDisabled: _) ]|
 
   assimilate-native-attr:
     Attribute("parent", [], []) -> |[ get-parent(|<all-parents>); not(NoParent) ]|
@@ -313,16 +313,16 @@ rules // Native attribute definitions
     Attribute("path-list", [], []) -> |[ get-ancestor-list(|x_all-parents) ]|
 
   assimilate-native-attr:
-    Attribute("uninit", [], []) -> |[ astr-remove-annos-persist(|<attr-cache>) ]|
+    Attribute("uninit", [], []) -> |[ aster-remove-annos-persist(|<attr-cache>) ]|
 
   assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
-    Attribute("uninit", [], []) -> |[ astr-remove-annos-persist(|x_attr-cache) ]|
+    Attribute("uninit", [], []) -> |[ aster-remove-annos-persist(|x_attr-cache) ]|
   
   assimilate-native-attr:
-    Attribute("init", [], []) -> |[ astr-initialize-node(|<all-parents>, <attr-cache>) ]|
+    Attribute("init", [], []) -> |[ aster-initialize-node(|<all-parents>, <attr-cache>) ]|
   
   assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
-    Attribute("init", [], []) -> |[ astr-initialize-node(|x_all-parents, x_attr-cache) ]|
+    Attribute("init", [], []) -> |[ aster-initialize-node(|x_all-parents, x_attr-cache) ]|
   
   // TODO: id.eval() for regular attributes
   
@@ -330,10 +330,10 @@ rules // Native attribute definitions
     Attribute("eval", [s, s-default], []) -> |[ fatal-err(|"id.eval() not fully implemented yet") ]|
   
   assimilate-native-attr:
-    Attribute("ensure-init", [], []) -> |[ astr-initialize-node-ensure(|<all-parents>, <attr-cache>) ]|
+    Attribute("ensure-init", [], []) -> |[ aster-initialize-node-ensure(|<all-parents>, <attr-cache>) ]|
   
   assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
-    Attribute("ensure-init", [], []) -> |[ astr-initialize-node-ensure(|x_all-parents, x_attr-cache) ]|
+    Attribute("ensure-init", [], []) -> |[ aster-initialize-node-ensure(|x_all-parents, x_attr-cache) ]|
     
 rules // Native attributes on decorated evaluation functions
 

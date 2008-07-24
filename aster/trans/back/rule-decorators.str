@@ -134,7 +134,7 @@ rules // Adding decoration logic to decorated rules
   
   add-ensure-init:
     s ->
-    |[ s; (EVAL_FAILED <+ astr-initialize-attribute-value(|x_all-parents, x_attr-cache)) ]|
+    |[ s; (EVAL_FAILED <+ aster-initialize-attribute-value(|x_all-parents, x_attr-cache)) ]|
     with
       x_all-parents := <AllParentsVar>;
       x_attr-cache  := <AttrCacheVar>

@@ -67,8 +67,8 @@ rules // Evaluate attributes outside of AG context
     AttributeRef(t, attr @ Attribute(name, s*, t*)) ->
     Strat |[
       !t;
-      astr-initialize-node-ensure(
-        astr-initialize-node-warning(|x_all-parents, ~str:name')
+      aster-initialize-node-ensure(
+        aster-initialize-node-warning(|x_all-parents, ~str:name')
       | <all-parents => x_all-parents>
       , <attr-cache => x_attr-cache>
       );

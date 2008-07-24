@@ -40,7 +40,7 @@ strategies
     Strat |[
         say(<conc-strings> (
              ~str:message
-           , <astr-node-path(|x_parent, x_all-parents, x_attr-cache)>
+           , <aster-node-path(|x_parent, x_all-parents, x_attr-cache)>
            , t_comment*
         ))
       ]|
@@ -63,7 +63,7 @@ strategies
       !Strat |[
         say(<conc-strings> (
           "  [rewr.] "
-        , <astr-node-path(|UnknownParent(), <all-parents>, <attr-cache>)> ~id:<NodeVar>
+        , <aster-node-path(|UnknownParent(), <all-parents>, <attr-cache>)> ~id:<NodeVar>
         , " -> "
         , <to-tiny-string>
         ))

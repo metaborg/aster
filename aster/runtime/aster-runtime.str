@@ -1,0 +1,12 @@
+module aster-runtime
+
+imports
+  aster/runtime/annotations
+  aster/runtime/attributes
+  aster/runtime/circular
+  aster/runtime/debug
+  aster/runtime/hashtables
+  aster/runtime/lists
+  aster/runtime/parents
+  aster/runtime/rewrites
+

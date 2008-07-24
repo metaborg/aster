@@ -2,7 +2,7 @@ module back/util
 
 imports
   libstratego-lib
-  astr/runtime/annotations
+  aster/runtime/annotations
 
 strategies
     

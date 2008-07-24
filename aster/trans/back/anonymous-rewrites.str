@@ -31,6 +31,6 @@ strategies
     Module(x, decl*) -> Module(x, [decl*, enabled*])
     with
       UsesAnonymousRewriteRules;
-      enabled* := Def* |[ astr-rewrites-enabled = id ]|
+      enabled* := Def* |[ aster-rewrites-enabled = id ]|
     <+
       enabled* := []

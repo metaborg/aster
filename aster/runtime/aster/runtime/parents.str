@@ -1,8 +1,8 @@
-module astr/runtime/parents
+module aster/runtime/parents
 
 imports
   libstratego-lib
-  astr/runtime/rewrites
+  aster/runtime/rewrites
 
 signature constructors
   Id : String -> TermId
@@ -118,11 +118,11 @@ strategies
 strategies
   
   /** @internal */
-  astr-add-parent-references(|all-parents, parent) =
+  aster-add-parent-references(|all-parents, parent) =
     ?node;
     set-parent(|all-parents, parent);
     all-consnil(
-      astr-add-parent-references(|all-parents, node)
+      aster-add-parent-references(|all-parents, node)
     )
 
   /** @internal */

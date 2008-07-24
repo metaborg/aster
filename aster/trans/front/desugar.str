@@ -26,7 +26,7 @@ rules
     
     try(
       all-stratego-defs(
-        try(astr-flatten-block-def)
+        try(aster-flatten-block-def)
       )
     )
 
@@ -124,21 +124,21 @@ rules
      
 rules // flatten block definitions to individual definitions
 
-  astr-flatten-block-def =
+  aster-flatten-block-def =
     ?NameDefBlock(type, pattern, <id>);
     map(
       \ADefStrategy(child, attr, s) ->
        ADef(type, pattern, ADefStrategy(child, attr, s))\
     )
   
-  astr-flatten-block-def =
+  aster-flatten-block-def =
     ?PatternDefBlock(type, attr, <id>);
     map(
       \APDefStrategy(pattern, child, s) ->
        ADef(type, pattern, ADefStrategy(child, attr, s))\
     )
 
-  astr-flatten-block-def =
+  aster-flatten-block-def =
     ?ADecl(type, <id>);
     where(?[_, _ | _]);
     map(

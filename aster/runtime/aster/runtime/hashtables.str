@@ -1,4 +1,4 @@
-module hashtables
+module aster/runtime/hashtables
 
 strategies
 

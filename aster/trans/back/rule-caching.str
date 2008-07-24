@@ -26,7 +26,7 @@ rules
              s_cache-write;
              fail
            else
-             astr-initialize-attribute-value(|x_all-parents, x_attr-cache);
+             aster-initialize-attribute-value(|x_all-parents, x_attr-cache);
              s_cache-write
            end
     ]|
@@ -44,7 +44,7 @@ rules
     |[ x_eval(sa*|a*) =
          s;
          not(EVAL_FAILED);
-         astr-initialize-attribute-value(|x_all-parents, x_attr-cache)
+         aster-initialize-attribute-value(|x_all-parents, x_attr-cache)
     ]|
     with
       x_all-parents  := <AllParentsVar>;

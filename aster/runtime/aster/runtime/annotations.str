@@ -1,10 +1,10 @@
-module astr/runtime/annotations
+module aster/runtime/annotations
 
 imports
   libstratego-lib
-  astr/runtime/parents
-  astr/runtime/lists
-  astr/runtime/attributes
+  aster/runtime/parents
+  aster/runtime/lists
+  aster/runtime/attributes
 
 strategies // Util
 
@@ -15,7 +15,7 @@ strategies // Util
   with'(s) =
     s
   <+
-    astr-remove-annos;
+    aster-remove-annos;
     log(|Critical(), "Internal error: with clause failed unexpectedly", <id>);
     prim("SSL_stacktrace_get_all_frame_names");
     report-failure
@@ -31,20 +31,20 @@ strategies // Util
       ?input-ctor
     );
     where(
-      term' := <astr-remove-annos> term
+      term' := <aster-remove-annos> term
     );
     where(
-      ?term' <+ astr-remove-annos => term'
+      ?term' <+ aster-remove-annos => term'
     )
   
-  is-astr-initialized(|all-parents) = where(get-parent(|all-parents))
+  is-aster-initialized(|all-parents) = where(get-parent(|all-parents))
   
-  astr-remove-annos-persist(|attr-cache) =
-    astr-remove-annos;
+  aster-remove-annos-persist(|attr-cache) =
+    aster-remove-annos;
     set-keep-uninitialized(|attr-cache, <id>)
   
-  astr-node-path(|parent, all-parents, attr-cache) =
-    if is-astr-initialized(|all-parents) then
+  aster-node-path(|parent, all-parents, attr-cache) =
+    if is-aster-initialized(|all-parents) then
       eval-path-and-node(|parent, all-parents, attr-cache, 0)
     else
       <conc-strings> ("?", ".", <to-tiny-string>)
@@ -61,94 +61,94 @@ strategies // Node initialization
    * Initialize an attribute value.
    *
    * Attribute values are like any other node, but can explicitly be marked
-   * as uninitialized (using id.uninit / astr-remove-annos-persist).
+   * as uninitialized (using id.uninit / aster-remove-annos-persist).
    * Additionally, attribute values may be lists or tuples of reference
    * values.
    */
-  astr-initialize-attribute-value(|all-parents, attr-cache) =
+  aster-initialize-attribute-value(|all-parents, attr-cache) =
     get-keep-uninitialized(|attr-cache, <id>)
   <+
     // TODO: What if the user was building a standard list?
     // Support reference collections
-    map(astr-initialize-node-ensure(|all-parents, attr-cache))
+    map(aster-initialize-node-ensure(|all-parents, attr-cache))
   <+
     where(get-constructor => ""); // is-tuple
-    all(astr-initialize-node-ensure(|all-parents, attr-cache))
+    all(aster-initialize-node-ensure(|all-parents, attr-cache))
   <+
-    astr-initialize-node-ensure(|all-parents, attr-cache)
+    aster-initialize-node-ensure(|all-parents, attr-cache)
   
   /**
    * Initialize a node if it was not yet initialized.
    */
-  astr-initialize-node-ensure(|all-parents, attr-cache) =
-    astr-initialize-node-ensure(id|all-parents, attr-cache)
+  aster-initialize-node-ensure(|all-parents, attr-cache) =
+    aster-initialize-node-ensure(id|all-parents, attr-cache)
 
-  astr-initialize-node-ensure(warning|all-parents, attr-cache) =
-    if not(is-astr-initialized(|all-parents)) then
+  aster-initialize-node-ensure(warning|all-parents, attr-cache) =
+    if not(is-aster-initialized(|all-parents)) then
       where(warning);    
-      astr-initialize-node(|all-parents, attr-cache)
+      aster-initialize-node(|all-parents, attr-cache)
     end
 
-  astr-initialize-node-warning(|all-parents, attribute) =
-    if not(AstrWarningsDisabled <+ astr-is-reference-collection(|all-parents)) then
+  aster-initialize-node-warning(|all-parents, attribute) =
+    if not(AsterWarningsDisabled <+ aster-is-reference-collection(|all-parents)) then
       warn(|["Evaluating attribute '", attribute, "' on an uninitialized term"]);
       prim("SSL_stacktrace_get_all_frame_names");
-      try(\["astr_initialize_node_warning_0_0" | tail] -> tail\);
-      try(\["astr_initialize_node_ensure_1_1" | tail] -> tail\);
+      try(\["aster_initialize_node_warning_0_0" | tail] -> tail\);
+      try(\["aster_initialize_node_ensure_1_1" | tail] -> tail\);
       reverse;
       map(<fprintnl> (stderr(), ["\t", <id>]))
     end
   
   internal-enable-warnings =
-    rules(AstrWarningsDisabled :- _) // ensure this rule is defined somewhere
+    rules(AsterWarningsDisabled :- _) // ensure this rule is defined somewhere
   
-  astr-is-reference-collection(|all-parents) = 
+  aster-is-reference-collection(|all-parents) = 
     (is-list + is-tuple);
-    all(is-astr-initialized(|all-parents))
+    all(is-aster-initialized(|all-parents))
   
-  astr-initialize-node-no-rewrite(|all-parents) =
-    astr-initialize-node-no-rewrite(|all-parents, NoParent())
+  aster-initialize-node-no-rewrite(|all-parents) =
+    aster-initialize-node-no-rewrite(|all-parents, NoParent())
   
-  astr-initialize-node-no-rewrite(|all-parents, parent) =
+  aster-initialize-node-no-rewrite(|all-parents, parent) =
     // First add unique annos everywhere,
     // then assign parent rules for the newly formed nodes
     ?node;
-    astr-add-annos;
+    aster-add-annos;
     where(
-      astr-add-parent-references(|all-parents, parent)
+      aster-add-parent-references(|all-parents, parent)
     )
 
 strategies // Adding/removing node annotations
   
-  astr-add-annos =
-    leaves-consnil(astr-add-anno)
+  aster-add-annos =
+    leaves-consnil(aster-add-anno)
 
-  astr-add-anno:
+  aster-add-anno:
     t {a*} -> t {b*}
     where
       if [] := a* then
         b* := [<newname> "@"]
       else
-        b* := [<newname> "@" | <filter(not(is-astr-annotation))> a*]
+        b* := [<newname> "@" | <filter(not(is-aster-annotation))> a*]
       end
   
-  astr-remove-annos =
+  aster-remove-annos =
     // leaves-consnil should suffice in most cases, but this
     // should handle more at about the same overhead
-    topdown-consnil(astr-remove-anno)
+    topdown-consnil(aster-remove-anno)
   
-  astr-remove-anno =
+  aster-remove-anno =
     try(
-      \t {<is-astr-annotation>} -> t {}\
+      \t {<is-aster-annotation>} -> t {}\
     <+
       ?_{}
     <+
       \t {a*} -> t {b*}
        where
-         b* := <filter(not(is-astr-annotation))> a*\
+         b* := <filter(not(is-aster-annotation))> a*\
     )
   
-  is-astr-annotation =
+  is-aster-annotation =
     is-string
     // TODO: Is this a sensible optimization?
     // ; explode-string => ['@' | _] 

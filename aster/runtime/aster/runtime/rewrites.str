@@ -1,11 +1,11 @@
-module astr/runtime/rewrites
+module aster/runtime/rewrites
 
 imports
   libstratego-lib
-  astr/runtime/annotations
-  astr/runtime/hashtables
-  astr/runtime/parents
-  astr/runtime/lists
+  aster/runtime/annotations
+  aster/runtime/hashtables
+  aster/runtime/parents
+  aster/runtime/lists
 
 strategies
 
@@ -27,7 +27,7 @@ strategies
 
   eval-anonymous-rewrite = fail // this is a generated strategy
   
-  astr-rewrites-enabled = fail // this is a generated strategy
+  aster-rewrites-enabled = fail // this is a generated strategy
   
   eval-anonymous-rewrites-cached(|all-parents, attr-cache) =
     get-rewrite-cached(|attr-cache, <id>)
@@ -47,11 +47,11 @@ strategies
 
   // TODO: Optimize - don't reinitialize nodes if no attrs evaluated
   
-  astr-initialize-node(|all-parents, attr-cache) =
-    if astr-rewrites-enabled then
+  aster-initialize-node(|all-parents, attr-cache) =
+    if aster-rewrites-enabled then
       set-rewrite-mode(|attr-cache, 1);
       do-while(
-        astr-initialize-node-no-rewrite(|all-parents)
+        aster-initialize-node-no-rewrite(|all-parents)
       ,
         { before:
           ?before;
@@ -67,7 +67,7 @@ strategies
       );
       set-rewrite-mode(|attr-cache, 0)
     else
-      astr-initialize-node-no-rewrite(|all-parents)
+      aster-initialize-node-no-rewrite(|all-parents)
     end
   
   /**
@@ -76,7 +76,7 @@ strategies
    */
   persist-anonymous-rewrite(|all-parents, attr-cache, from, to) =
     with(
-      to'         := <astr-initialize-node-no-rewrite(|all-parents, attr-cache)> to;
+      to'         := <aster-initialize-node-no-rewrite(|all-parents, attr-cache)> to;
       from-parent := <get-parent(|all-parents)> from;
       to-parent   := <persist-anonymous-rewrite-upwards(|all-parents, attr-cache, from, to')>;
       <set-parent(|all-parents, to-parent)> to';
