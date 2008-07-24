@@ -9,7 +9,7 @@ STRCFLAGS = \
 RUNTESTS = empty find-minimum repmin repmin-no-copy-rules repmin-anonymous repmin-hag repmin-hag-decorated binary-numbers caching cons-nil anonymous-rules decorators circular-basic circular-liveness circular-liveness-rewrites
 
 check : Stratego-Attributes.runtestsuite \
-        test-stratego-rerag test-stratego-rerag.run \
+        test-aster test-aster.run \
         $(RUNTESTS:=.str) $(RUNTESTS) \
         $(RUNTESTS:=.run)
 
@@ -21,19 +21,19 @@ CLEANFILES = $(tests)
 clean :
 	rm -f $(RUNTESTS) $(RUNTESTS:=.str) test-attributes.str
 
-%.str : %.astr ../trans/stratego-rerag
-	$(top_srcdir)/trans/stratego-rerag -i $< -o $@ --trace --verbose 2
+%.str : %.astr ../trans/aster
+	$(top_srcdir)/trans/aster -i $< -o $@ --trace --verbose 2
 
-%$(EXEEXT) : %.str ../trans/stratego-rerag
+%$(EXEEXT) : %.str ../trans/aster
 	strc -i $< -m main-`basename $*` $(STRCFLAGS) >/dev/null
 
-../trans/stratego-rerag :
-	$(MAKE) -C .. trans/stratego-rerag
+../trans/aster :
+	$(MAKE) -C .. trans/aster
 
-test-stratego-rerag : test-attributes.str
+test-aster : test-attributes.str
 
 test-attributes.str : test-attributes.astr
-	$(top_srcdir)/trans/stratego-rerag -i $< -o $@ --verbose 2
+	$(top_srcdir)/trans/aster -i $< -o $@ --verbose 2
 	
 
 %.run : %

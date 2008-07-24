@@ -3,7 +3,7 @@ module desugar
 imports
   libstratego-lib
   Stratego-Attributes
-  stratego-rerag
+  aster
 
 signature constructors
   // used in intermediate syntax

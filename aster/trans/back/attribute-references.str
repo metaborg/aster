@@ -2,7 +2,7 @@ module back/attribute-references
 
 imports
   Stratego-Attributes
-  stratego-rerag
+  aster
   back/default-attributes
   back/rule-naming
 

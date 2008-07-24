@@ -2,7 +2,7 @@ module back/anonymous-rewrites
 
 imports
   Stratego-Attributes
-  stratego-rerag
+  aster
   back/util
   back/attribute-references
 

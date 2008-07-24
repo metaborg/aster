@@ -1,18 +1,18 @@
-module test-stratego-rerag
+module test-aster
 
 imports
   libstratego-lib
-  stratego-rerag
+  aster
   test-attributes
 
 strategies
 
-  main-test-stratego-rerag =
+  main-test-aster =
     option-wrap(
       verbose-option
     ,
       test-suite(
-        !"stratego-rerag tests"
+        !"aster tests"
       ,
         test-term-depth;
         test-eq-ignore-annos;

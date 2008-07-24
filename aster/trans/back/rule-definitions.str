@@ -2,7 +2,7 @@ module back/rule-definitions
 
 imports
   Stratego-Attributes
-  stratego-rerag
+  aster
   back/default-attributes
   back/util
   back/rule-merging

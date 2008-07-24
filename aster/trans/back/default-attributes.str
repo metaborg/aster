@@ -2,7 +2,7 @@ module back/default-attributes
 
 imports
   Stratego-Attributes
-  stratego-rerag
+  aster
   front/analyze
 
 rules
