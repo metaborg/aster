@@ -7,6 +7,7 @@ imports
 signature constructors
   EVAL_FAILED : Term
   Attribute   : String * List(String) * List(Term) -> Term
+  Anonymous   : Term
 
 strategies
 

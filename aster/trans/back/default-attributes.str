@@ -53,7 +53,7 @@ rules
         separate-by(|".");
         concat-strings
       
-      def path-and-node =
+      def /*string*/ path-and-node =
         where(node := <to-tiny-string>);
         id.path;
         (?"" < !node + <conc-strings> (<id>, ".", node));
@@ -206,6 +206,19 @@ rules
       decorator plain plain(d) = d // note that this is a special, built-in decorator
       
       decorator plain uncached(d) = d; id.ensure-init
+      
+      decorator plain node.uninit(d) =
+        get-last-value(|id.global-cache, node, d.signature);
+        not(EVAL_FAILED)
+      <+
+        (d <+ !EVAL_FAILED());
+        id.uninit;
+        set-last-value(|id.global-cache, node, d.signature, id);
+        not(EVAL_FAILED)
+      
+      decorator uninit string(d) =
+        d;
+        with(is-string)
         
       decorator down lookup-ordered(fetch, is-scope) =
         fetch
@@ -228,7 +241,7 @@ rules
         id.child(id.lookup-outside-scopes(is-scope, fetch))
       
       decorator plain circular(d|initial-value) =
-        if stored := <get-last-value(|<attr-cache>, id, d.signature)> then
+        if stored := <get-last-value(|id.global-cache, id, d.signature)> then
           if <?CIRCULAR_FINISHED(old-value) + ?CIRCULAR_BUSY(old-value)> stored then
             !old-value
           else
@@ -250,9 +263,9 @@ rules
   
   ignore-trace-def =
     // traces on path attributes cause looping
-    "path" + "path-list" + "path-and-node" 
+    "path" + "path-list" + "path-and-node"
     // helper attributes where tracing is undesirable
-  + "debug" + "enable-warnings" + "all"
+  + "debug" + "enable-warnings" + "all" + "uncached" + "uninit" + "string"
   + "next-sibling" + "prev-sibling" + "first-sibling" + "last-sibling"
   + "root" + "first-child" + "last-child"
     // attributes dealing with uninitialized terms
@@ -264,7 +277,8 @@ rules // Native attribute definitions
   // special or optimized operations not directly supported by regular
   // attributes.
   
-  // TODO2: Remove all assimilate-native-ref-inside-ag rules, and perform the optimization elswehere
+  // TODO2: Cleanup - remove all assimilate-native-ref-inside-ag rules, and perform the optimization elswehere
+  // TODO2: Cleanup - move native attribute to the library, where possible
   
   is-native-attribute =
     where(assimilate-native-attr)
@@ -273,7 +287,7 @@ rules // Native attribute definitions
     AttributeRef(t, attr) -> |[ !t; s ]|
     where
       s := <assimilate-native-attr> attr
-  
+    
   assimilate-native-ref-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
     AttributeRef(t, attr) -> |[ !t; s ]|
     where
@@ -284,7 +298,7 @@ rules // Native attribute definitions
 
   assimilate-native-attr:
     Attribute("eq", [], []) -> |[ where({ x: ?(<id>, x); eq-ignore-annos(|x) }) ]|
-    where
+    with
       x := <new>
 
   assimilate-native-attr:
@@ -309,10 +323,10 @@ rules // Native attribute definitions
     Attribute("path-list", [], []) -> |[ get-ancestor-list(|x_all-parents) ]|
 
   assimilate-native-attr:
-    Attribute("uninit", [], []) -> |[ aster-remove-annos-persist(|<attr-cache>) ]|
+    Attribute("uninit", [], []) -> |[ aster-remove-annos ]|
 
   assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
-    Attribute("uninit", [], []) -> |[ aster-remove-annos-persist(|x_attr-cache) ]|
+    Attribute("uninit", [], []) -> |[ aster-remove-annos ]|
   
   assimilate-native-attr:
     Attribute("init", [], []) -> |[ aster-initialize-node(|<all-parents>, <attr-cache>) ]|
@@ -320,23 +334,40 @@ rules // Native attribute definitions
   assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
     Attribute("init", [], []) -> |[ aster-initialize-node(|x_all-parents, x_attr-cache) ]|
   
-  // TODO: id.eval() for regular attributes
-  
   assimilate-native-attr:
     Attribute("eval", [s, s-default], []) -> |[ fatal-err(|"id.eval() not fully implemented yet") ]|
   
   assimilate-native-attr:
-    Attribute("ensure-init", [], []) -> |[ aster-initialize-node-ensure(|<all-parents>, <attr-cache>) ]|
+    Attribute("ensure-init", [], []) -> |[ aster-initialize-attribute-value(|<all-parents>, <attr-cache>) ]|
   
   assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
-    Attribute("ensure-init", [], []) -> |[ aster-initialize-node-ensure(|x_all-parents, x_attr-cache) ]|
+    Attribute("ensure-init", [], []) -> |[ aster-initialize-attribute-value(|x_all-parents, x_attr-cache) ]|
+    
+  assimilate-native-attr:
+    Attribute("signature", [], []) -> |[ !t_signature => Attribute(_, [], _) ]|
+    with
+      t_signature := <CurrentSignatureTerm <+ !|[ <fail> ]|>
+    
+  assimilate-native-attr:
+    Attribute("attribute-name", [], []) -> |[ !t_signature => Attribute(<id>, _, _) ]|
+    with
+      t_signature := <CurrentSignatureTerm <+ !|[ <fail> ]|>
+  
+  assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
+    Attribute("global-cache", [], []) -> |[ !x_attr-cache ]|
+    with
+      x_attr-cache := <AttrCacheVar>
+    
+  assimilate-native-attr:
+    Attribute("global-cache", [], []) -> Strat |[ attr-cache ]|
     
 rules // Native attributes on decorated evaluation functions
 
   is-native-attribute = is-decoration-native-attr
-  
+
+  // TODO2: Proper native attr checks for decoration attrs  
   is-decoration-native-attr =
-    where(assimilate-decoration-native-attr(|"d")) // TODO: Proper native attr checks for decoration attrs
+    where(assimilate-decoration-native-attr(|"d"))
 
   assimilate-native-decoration-ref(|x_decorated):
     AttributeRef(Var(x_decorated), attr) -> <assimilate-decoration-native-attr(|x_decorated)> attr
@@ -355,14 +386,12 @@ rules // Native attributes on decorated evaluation functions
       x_cached := <DecoratedValueVar>;
       x_node   := <NodeVar>
   
-  // FIXME: Decorator reflection
+  assimilate-decoration-native-attr(|x_decorated):
+    Attribute("attribute-name", [], []) -> |[ !x_signature => Attribute(<id>, _, _) ]|
+    with
+      x_signature := <SignatureVar>
   
   assimilate-decoration-native-attr(|x_decorated):
-    Attribute("name", [], []) -> |[ !~str:name ]|
+    Attribute("signature", [], []) -> |[ !x_signature => Attribute(_, [], _) ]|
     with
-      name := <conc-strings> ("<decorated-attribute-name-", x_decorated, ">")
-  
-  assimilate-decoration-native-attr(|x_decorated):
-    Attribute("signature", [], []) -> |[ !Attribute(~str:name, [], []) ]|
-    with
-      name := <conc-strings> ("<decorated-attribute-name-", x_decorated, ">")
+      x_signature := <SignatureVar>

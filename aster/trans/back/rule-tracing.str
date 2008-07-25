@@ -1,5 +1,5 @@
 /**
- * Rule tracing.
+ * Automatic rule tracing.
  *
  * @author Lennart Kats <lennart add lclnet.nl>
  */
@@ -17,17 +17,11 @@ strategies
   trace-rule =
     trace-rule(|"")
   
-  trace-default-rule =
-    trace-rule(|" (copy rule)")
-  
   trace-failed-rule =
     trace-rule(|" (failed)")
   
-  trace-fixpoint-rule =
-    trace-rule(|" (fixpoint)")
-  
   trace-rule(|comment) =
-    where(Attribute(real-name, _, _) := <attribute-signature>);
+    where(attribute-signature => Attribute(real-name, _, _));
     
     if <get-config> Trace(); not(<ignore-trace-def> real-name) then
       trace-rule(|comment, real-name)

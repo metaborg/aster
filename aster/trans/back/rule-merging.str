@@ -6,12 +6,11 @@ imports
   back/rule-tracing
   back/rule-caching
   back/rule-naming
-  back/rule-decorators
+  back/decorator-definitions
   back/assimilate
   front/analyze
 
 overlays
-  DEFAULT_RULE_INDEX = -1
   ROOT_RULE_INDEX    = 100000
   NO_CHILD_INDEX     = 10000
 
@@ -132,18 +131,6 @@ strategies
       rules(
         OrderedRuleDefs  :+ sig -> sig'
         OrderedRuleIndex :  sig' -> ROOT_RULE_INDEX()
-      )
-  
-  make-merged-def-default:
-    |[ x_eval(sa*|a*) = s ]| -> |[ x_eval-default(sa*|a*) = s ]|
-    with
-      ?eval;
-      sig            := <attribute-signature> eval;
-      x_eval-default := <default-rule-name> eval;
-      sig'           := <rename-signature(|x_eval-default)> sig;
-      rules(
-        OrderedRuleDefs  :+ sig -> sig'
-        OrderedRuleIndex :  sig' -> DEFAULT_RULE_INDEX()
       )
   
   pattern-to-name-suffix =

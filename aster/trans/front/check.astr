@@ -57,7 +57,6 @@ attributes
     where
       <oncetd(?RootApp(_))> args
 
-
     AttributeRef(_, _) -> "Illegal attribute reference in match pattern"
     where
       id.in-match
@@ -97,6 +96,18 @@ attributes
       id.in-match;
       not(id.in-pattern + id.is-def-param);
       (id.is-pattern-var(|x) + id.is-def-arg(|x))
+
+    AttributeRef(not-Id, Attribute("attribute-name", _, _)) -> "native attribute \"attribute-name\" should be referenced as id.attribute-name"
+    where
+      <not(RootApp(Id()) + Var(id))> not-Id // can be called on id, or a decorated function
+
+    AttributeRef(not-Id, Attribute("signature", _, _)) -> "native \"signature\" should be referenced as id.signature"
+    where
+      <not(RootApp(Id()) + Var(id))> not-Id // can be called on id, or a decorated function
+
+    AttributeRef(not-Id, Attribute("global-cache", _, _)) -> "native \"global-cache\" should be referenced as id.global-cache"
+    where
+      <not(RootApp(Id()))> not-Id // can be called on id, or a decorated function
     
     ADef(_, pattern, ADefStrategy(Child(child), _, _)).child -> "Pattern child equals pattern"
     where
@@ -145,8 +156,8 @@ attributes
     ADefStrategy(_, Attribute(_, _, t), _).t -> t
   
   // TODO2: Proper error pp
-  def plain pp:
-    id                   -> <try(attribute-signature); id.uninit>
+  def uninit pp:
+    id                   -> <try(attribute-signature)>
     Attribute(n, [], []) -> n
   
   def pp-context =

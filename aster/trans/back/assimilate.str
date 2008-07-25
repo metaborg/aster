@@ -6,7 +6,6 @@ imports
   back/default-attributes
   back/util
   back/rule-merging
-  back/rule-defaults
   back/rule-definitions
   back/rule-naming
   back/attribute-references
@@ -28,7 +27,6 @@ strategies
     ));
     
     one(
-      add-default-rules;
       add-merged-rules;
       add-rewrites-enabled
     )

@@ -1,0 +1,145 @@
+module decorator-wrapping
+
+imports
+  libstratego-lib
+  front/analyze
+  back/attribute-references
+  back/decorator-definitions
+
+rules // Adding decoration logic to decorated rules
+
+  add-decorated-rule-logic(|def):
+    |[ x_eval(sa*|a*) =
+         s_rewrite => x_node;
+         s_body
+    ]| ->
+    |[ x_eval(sa*|a*) =
+         s_rewrite => x_node;
+         s_body'
+    ]|
+    where // TODO: put his in an additional with clause
+      <get-attribute-decorators> def;
+      filter(not(Decorator("plain", [], []))) => ds;
+      
+      // where  
+      !ds => [_ | _]
+    with
+      (s*, t*) := <params-to-vars> (sa*, a*);
+      s_body'  := <try(add-ensure-init(|def));
+                   fold-decorated-with-caching(|ds, def, s*, t*)> s_body
+  
+  add-ensure-init(|def):
+    s ->
+    |[ s; (EVAL_FAILED <+ aster-initialize-attribute-value(|x_all-parents, x_attr-cache)) ]|
+    where
+      not(<has-plain-decorator> def)
+    with
+      x_all-parents := <AllParentsVar>;
+      x_attr-cache  := <AttrCacheVar>
+    
+  fold-decorated-with-caching(|decorators, def, s*, t*) =
+    ?s_body;
+    !decorators;
+    foldr(
+      !s_body
+    , make-decorated-with-caching(|def, s*, t*);
+      assimilate-all-inside-decorator;
+      rename-cached-var
+    )
+   
+  make-decorated-with-caching(|def, s*, t*):
+    (x_decorator, s_decorated) ->
+    |[ let x_cached =
+         s_cache-read // could be EVAL_FAILED
+       <+
+         s_ref; s_cache-write
+         // TODO: Should the decorated copy rule be applied here??
+       in
+         x_cached;
+         not(EVAL_FAILED)
+       end
+    ]|
+    with
+      x_decorated := <?Attribute(<id>, _, _)> def;
+      t_decorated := <to-attribute-signature-term> Attribute(x_decorated, s*, <drop(|DEFAULT_ARG_COUNT())> t*);
+      s_ref       := <make-decorated(|t_decorated)> (x_decorator, s_decorated);
+      x_cached    := <CachedVar>;
+      
+      if <has-plain-decorator> x_decorator then
+        s_cache-read  := Fail();
+        s_cache-write := Id()
+      else
+        s_cache-read  := <add-cache-read(|s*, t*)> def;
+        s_cache-write := <add-cache-write(|s*, t*)> def
+      end
+  
+  make-decorated(|t_decorated-signature):
+    (Decorator(x_decorator, s*, t*), s_decorated) ->
+    <desugar-all>
+    Strat |[
+      id.x_decorator'(x_cached, s_decorated', s* |t_decorated-signature, t*)
+    ]|
+    with
+      x_cached     := <CachedVar>;
+      x_decorator' := <DecoratorInternalName> x_decorator;
+      s_decorated' := s_decorated
+
+strategies // Reflective data helpers
+ 
+  to-attribute-signature-term =
+    try(?Scope(_, <id>));
+    try(?AttributeRef(_, <id>));
+    attribute-to-attribute-signature-term
+  <+
+    DecoratedAttributeSignature
+  <+
+    !Term |[ Anonymous() ]|
+  
+  /** @internal */
+  attribute-to-attribute-signature-term:
+    Attribute(x_name, sa*, a*) ->
+    Term |[ Attribute(~str:x_name, [~*sargs], [~*targs]) ]|
+    with
+      // Formal parameters
+      targs := <params-to-vars> a*;
+      sargs := <params-to-string-terms> sa*
+    <+
+      // Arguments
+      targs := <map(\|[ x @ t ]| -> Var(x)\ + Var(id))> a*;
+      sargs := <map(!Term |[ Anonymous() ]|)> sa*
+
+  // Ensure all decorator call arguments have a local variable binding:
+  add-argument-vars:
+    Strategy |[ t.x_name(s*|t*) ]| ->
+    Strategy |[ { ~vars: t.x_name(s*|t'*) } ]|
+    where
+      vars := <map(<newname> "arg")> t*;
+      t'*  := <zip(\(x_var, t) -> |[ x_var @ t ]|\)> (vars, t*)
+
+strategies // General helpers
+  
+  /**
+   * Provide new cache vars for each decorator application.
+   *
+   * For stacked decorations, a new cache variable name must be used
+   * for each decorator application.
+   */
+  rename-cached-var =
+    with(
+      old-name := <CachedVar>;
+      new-name := <newname>
+    );
+    alltd((old-name -> new-name))
+
+  assimilate-all-inside-decorator =
+    topdown(try(assimilate-expr-inside-decorator))
+  
+  assimilate-expr-inside-decorator =
+    with(
+      x_parent       := <ParentVar>;
+      x_all-parents  := <AllParentsVar>;
+      x_attr-cache   := <AttrCacheVar>;
+      x_node         := <NodeVar>;
+      s_parent       := |[ ?x_node < !x_parent + !UnknownParent() ]|
+    );
+    assimilate-expr-inside-ag(|None(), s_parent, s_parent, x_node, x_all-parents, x_attr-cache)

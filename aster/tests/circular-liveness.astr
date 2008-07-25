@@ -19,6 +19,19 @@ strategies // Set-up, testing
     option-wrap(
       verbose-option
     ,
+      /*
+      !Block([
+        Assign("a", "b")
+      , While("e", Block([Assign("a", "c")]))
+      , Return("a")
+      ]).init;
+      
+      oncetd(?Return(_) => it);
+      it.live-before.debug;
+    
+      <exit> 1;
+      */
+      
       input := <make-input>;
       
       <test-live-before> input;
@@ -42,6 +55,8 @@ strategies // Set-up, testing
       if(is-Stm, !id{^id.live-before.uninit}, !id{})
     );
     
+    debug(!"live-before: ");
+    
     ?Block([
        Assign("bogus1", "value")   {          "bogus3", "value"}
      , Assign("bogus2", "bogus1")  {"bogus1", "bogus3", "value"}
@@ -59,6 +74,8 @@ strategies // Set-up, testing
     topdown(
       if(is-Stm, !id{^id.live-after.uninit}, !id{})
     );
+    
+    debug(!"live-after: ");
       
     ?Block([
        Assign("bogus1", "value")   {"bogus1", "bogus3", "value"}
@@ -112,9 +129,12 @@ attributes // Control flow for specific statements
 attributes // Data flow
 
   def circular(|[]) stm:
-    id.live-before =
-      <id.union> (id.uses, <id.diff> (id.live-after, id.defines))
+    id.live-before :=
+      <id.union> (
+        id.uses
+      , <id.diff> (id.live-after, id.defines)
+      )
   
-    id.live-after =
+    id.live-after :=
       id.succ.map(id.live-before).union
 

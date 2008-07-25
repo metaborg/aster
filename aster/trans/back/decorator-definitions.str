@@ -1,0 +1,86 @@
+module decorator-definitions
+
+imports
+  libstratego-lib
+  front/analyze
+  back/rule-definitions
+  back/decorator-references
+  
+// TODO: Optimize: decorators should be inlined after the merging stage
+
+overlays
+
+  DECORATOR_SARG_COUNT = 1 // added system strategy args for decorator strategies
+  DECORATOR_TARG_COUNT = 1 // added system term args for decorator strategies
+
+rules // Assimilation of decorator definitions
+
+  // TODO: Caching of decorated attributes, in every `call`
+  //       (by passing a rec argument that performs memoization)
+  
+  assimilate-decorator-def =
+    ADef(
+      Type(Decorator(), id, id)
+    , id
+    , ADefStrategy(
+        id
+      , Attribute(
+          ?x_decorator; DecoratorInternalName
+        , ?[a_decorated | as*];
+          ![DefaultVarDec(<CachedVar>) | <id>]
+        , ?a*;
+          ![Var(<SignatureVar>) | a*]
+        ) => attr
+      , assimilate-decorator-body(|attr, x_decorator, as*, a*, a_decorated)
+      )
+    );
+    assimilate-def
+ 
+  assimilate-decorator-body(|attr, x_decorator, as*, a*, a_decorated):
+    s_body ->
+    |[ (id < id + ?x_decorated-value);
+       s_body'
+    ]|
+    with
+      x_decorated-value := <DecoratedValueVar>;
+      x_decorated       := <param-to-string> a_decorated;
+      (s_arg*, t_arg*)  := <params-to-vars> (as*, a*);
+
+      attribute-signature-wrap(
+        decorated-attribute-name-wrap(
+          !s_body;
+          
+          alltd(
+            assimilate-decorator-self-ref(|attr, x_decorator, s_arg*, t_arg*)
+          <+
+            assimilate-decorated-svar(|attr, x_decorated)
+          <+
+            assimilate-native-decoration-ref(|x_decorated)
+          ) => s_body'
+        | x_decorated
+        )
+      | Attribute(x_decorator, as*, a*)
+      )
+
+  decorated-attribute-name-wrap(s |x_decorated) =
+    {| DecoratedAttributeSignature:
+      rules(
+        DecoratedAttributeSignature: |[ x_decorated(|) ]| -> <SignatureVar>
+      );
+      s
+    |}
+
+  // TODO: Only use decorated value var caching if the function is not "plain"
+  // TODO2: Optimize - if this is done, it'd be safe to store the result in x_cached here
+  assimilate-decorated-svar(|attr, x_decorated):
+    |[ x_decorated(|) ]| ->
+    |[ if ?x_node then
+         !x_cached <+ x_decorated
+       else
+         x_decorated
+       end;
+       not(EVAL_FAILED)
+    ]|
+    with
+      x_node   := <NodeVar>;
+      x_cached := <DecoratedValueVar>

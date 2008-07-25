@@ -59,7 +59,7 @@ strategies // Providing information
     )
 
   // HACK: work-around to get def plain attributes for now
-  is-plain-decorator =
+  has-plain-decorator =
     where(
       get-attribute-decorators;
       fetch(Decorator("plain", [], []))
@@ -99,7 +99,7 @@ strategies // Helpers for accessing the implementing strategy of a decorator
 
   decorator-signature =
     attribute-signature;
-    Attribute(decorator-internal-name, <add> (DECORATOR_ARG_COUNT(), <id>), id)
+    Attribute(decorator-internal-name, <add> (DECORATOR_SARG_COUNT(), <id>), <add> (DECORATOR_TARG_COUNT(), <id>))
   
   decorator-internal-name =
     DecoratorInternalName

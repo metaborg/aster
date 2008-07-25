@@ -39,10 +39,6 @@ strategies // Util
   
   is-aster-initialized(|all-parents) = where(get-parent(|all-parents))
   
-  aster-remove-annos-persist(|attr-cache) =
-    aster-remove-annos;
-    set-keep-uninitialized(|attr-cache, <id>)
-  
   aster-node-path(|parent, all-parents, attr-cache) =
     if is-aster-initialized(|all-parents) then
       eval-path-and-node(|parent, all-parents, attr-cache, 0)
@@ -55,20 +51,14 @@ strategies // Util
 
 strategies // Node initialization
 
-  // TODO: Use an "uninit" annotation instead of get-keep-uninitialized, its overhead, and possible bugs because of it...
+  // TODO: Should reference lists and tuples just be dealt with by a decorator?
+  //       (this would help avoid problems when building regular lists and tuples)
 
   /**
-   * Initialize an attribute value.
-   *
-   * Attribute values are like any other node, but can explicitly be marked
-   * as uninitialized (using id.uninit / aster-remove-annos-persist).
-   * Additionally, attribute values may be lists or tuples of reference
-   * values.
+   * Initialize an attribute value, if required, with special
+   * support for reference lists and tuples.
    */
   aster-initialize-attribute-value(|all-parents, attr-cache) =
-    get-keep-uninitialized(|attr-cache, <id>)
-  <+
-    // TODO: What if the user was building a standard list?
     // Support reference collections
     map(aster-initialize-node-ensure(|all-parents, attr-cache))
   <+
@@ -79,6 +69,9 @@ strategies // Node initialization
   
   /**
    * Initialize a node if it was not yet initialized.
+   *
+   * @note Generally, aster-initialize-attribute-value should be used instead,
+   *       to support reference lists.
    */
   aster-initialize-node-ensure(|all-parents, attr-cache) =
     aster-initialize-node-ensure(id|all-parents, attr-cache)
@@ -173,9 +166,3 @@ strategies // Hash table storage for init/uninit
     set-cached-attribute(|attr-cache, node, "$inited", value)
   */
 
-  get-keep-uninitialized(|attr-cache, node) =
-    get-cached-attribute(|attr-cache, node, "$uninited")
- 
-  set-keep-uninitialized(|attr-cache, node) =
-    set-cached-attribute(|attr-cache, node, "$uninited", node)
-    

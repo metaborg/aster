@@ -6,9 +6,10 @@ imports
   back/default-attributes
   back/util
   back/rule-merging
-  back/rule-defaults
   back/rule-naming
   back/attribute-references
+  back/decorator-definitions
+  back/decorator-wrapping
 
 overlays
 
@@ -40,7 +41,7 @@ strategies
     ADef(
       Type(type, decorators, _)
     , t_pattern
-    , ADefStrategy(child, attr @ Attribute(name, sa*, a*), s)
+    , ADefStrategy(child, attr @ Attribute(x_name, sa*, a*), s)
     ) ->
     <make-merged-def(|t_pattern, child)>
     Def |[
@@ -65,11 +66,24 @@ strategies
                              <+ get-parent(|x_all-parents) ]|;
       s_parent-desired := |[ ?x_node < !x_parent + !UnknownParent() ]|;
       
-      !s;
-      topdown(try(
-        assimilate-expr-inside-ag(|sig, s_parent, s_parent-desired, x_node, x_all-parents, x_attr-cache)
-      ));
-      add-eval-failed => s'
+      attribute-signature-wrap(
+        !s;
+        topdown(try(
+          assimilate-expr-inside-ag(|sig, s_parent, s_parent-desired, x_node, x_all-parents, x_attr-cache)
+        ));
+        add-eval-failed => s'
+      | Attribute(x_name, sa*, a'*)
+      )
+
+  // TODO2: shouldn't a.signature be an initialized term?
+
+  attribute-signature-wrap(s|attribute) =
+    {| CurrentSignatureTerm:
+      rules(
+        CurrentSignatureTerm := <to-attribute-signature-term> attribute
+      );
+      s
+    |}
 
   assimilate-def:
     ADecl(_, _) -> []
@@ -100,6 +114,13 @@ rules // Argument patterns
     ]|
 
 rules // Semantic rule definition helpers
+
+  attribute-accessor-name =
+    attribute-signature => Attribute(name, _, _);
+    accessor := <conc-strings> ("eval-", name); // constant name to allow lib. access
+    rules(
+      UndoAccessorName: accessor -> name
+    )
 
   // TODO: Strategies should always cause "soft" failure, mainly to support stacked decorators
 

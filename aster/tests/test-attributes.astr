@@ -12,7 +12,8 @@ strategies
   test-attributes =
     test-default-attributes;
     test-attribute-behavior;
-    test-set-operations
+    test-set-operations;
+    test-reflective-attributes
     
   test-default-attributes =
     apply-and-check(
@@ -195,3 +196,52 @@ strategies
     , eq-ignore-annos(|[1,2,3])
     )
 
+attributes
+
+  def my-signature = id.signature
+
+  def my-attribute-name = id.attribute-name
+
+  def my-signature(s) = id.signature
+  
+  decorator signature-of(a) = a.signature
+
+strategies
+
+  test-reflective-attributes = 
+    apply-and-check(
+      !"id.signature"
+    , id.my-signature
+    , !1.init
+    , Attribute("my-signature", [], [])
+    );
+    apply-and-check(
+      !"id.attribute-name"
+    , id.my-attribute-name
+    , !1.init
+    , "my-attribute-name"
+    );
+    apply-and-check(
+      !"signature of remote attribute"
+    , id.signature-of(id.stupid)
+    , !1.init
+    , Attribute("stupid", [], [])
+    );
+    apply-and-check(
+      !"id.signature simply fails if there are strategy arguments (1)"
+    , id.my-signature(id) <+ !"failed"
+    , !1.init
+    , "failed"
+    );
+    apply-and-check(
+      !"id.signature simply fails if there are strategy arguments (2)"
+    , id.signature-of(id.my-signature(id)) <+ !"failed"
+    , !1.init
+    , "failed"
+    );
+    apply-and-check(
+      !"id.signature simply fails outside of signature context"
+    , id.signature <+ !"failed"
+    , !1.init
+    , "failed"
+    )

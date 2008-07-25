@@ -51,17 +51,28 @@ strategies
     DefaultVarDec(x) -> Var(x)
   
   param-to-var:
-    VarDec(x, _) -> CallNoArgs(Var(x))
+    VarDec(x, _) -> Var(x)
 
   param-to-svar:
     DefaultVarDec(x) -> CallNoArgs(SVar(x))
   
   param-to-svar:
-    VarDec(x, _) -> SVar(x)
+    VarDec(x, _) -> CallNoArgs(SVar(x))
 
+  param-to-string:
+    vardec -> name
+    where
+      try(param-to-var) => Var(name)
+
+  param-to-string-term:
+    vardec -> Term |[ ~str:<param-to-string> ]|
+
+  params-to-string-terms =
+    map(param-to-string-term)
+    
   params-to-vars =
     (alltd(param-to-svar), alltd(param-to-var)) <+ map(param-to-var)
-    
+  
   arity-to-string =
     (0, 0); !""
   <+

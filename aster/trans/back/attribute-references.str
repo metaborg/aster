@@ -5,6 +5,7 @@ imports
   aster
   back/default-attributes
   back/rule-naming
+  back/decorator-references
 
 rules // Evaluate attributes in AG context
 
@@ -13,11 +14,9 @@ rules // Evaluate attributes in AG context
   <+
     assimilate-native-ref
   <+
-    ?AttributeRef(_, attr);
-    assimilate-attr-ref-inside-ag(|s_parent, s_parent-desired, x_node, x_all-parents, x_attr-cache);
-    try(
-      assimilate-attr-self-ref-inside-ag(|sig, attr, s_parent, x_node)
-    )
+    assimilate-decorator-ref
+  <+
+    assimilate-attr-ref-inside-ag(|s_parent, s_parent-desired, x_node, x_all-parents, x_attr-cache)
   
   // TODO: Eliminate s_parent-desired param
   assimilate-attr-ref-inside-ag(|s_parent, s_parent-desired, x_node, x_all-parents, x_attr-cache):
@@ -30,29 +29,7 @@ rules // Evaluate attributes in AG context
       x_eval         := <attribute-accessor-name> attr;
       x_rewrite-mode := <RewriteModeVar>
 
-  // TODO2: Optimize - don't redirect attribute self-references for child terms
-  //       	e.g., syn Fork(t1, t2).min := <min> (t1.min, t2.min)
-
-  // TODO: Don't redirect attribute self-references, at all? (also see rule-definitions xdoc, todos)
-
-  /**
-   * Redirect attribute self-references.
-   *
-   * (e.g., 'def down foo = id.foo' effectively becomes 'def down foo = id.parent.foo').
-   */
-  assimilate-attr-self-ref-inside-ag(|sig, attr, s_parent, x_node):
-    |[ <s> t ]| ->
-    |[ <?x_node < warn(|~str:message); s_eval-default + s> t ]|
-    where
-      <attribute-signature> attr => sig
-    with
-      s_eval-default := <default-rule-call> attr;
-      name           := <?Attribute(<id>, _, _)> sig;
-      message        := <conc-strings> ("self-reference is not allowed in attribute ", name)
-
 rules // Evaluate attributes outside of AG context
-
-  // TODO2: Never eagerly get parent reference?
 
   assimilate-expr =
     assimilate-native-ref

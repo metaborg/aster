@@ -37,11 +37,11 @@ strategies
     (s <+ !EVAL_FAILED());
     
     if eq-ignore-annos(|old-value) then
-      // verbose-msg(!"  [circ.] No change @", <strip-annos> node, !"with", strip-annos);
+      // verbose-msg(!"  [circ.]", !sig => Attribute(<id>, _, _), !"no change @", <strip-annos> node, !"with", strip-annos);
       circular-add-participant(|global-cache, node, sig, old-value);
       set-last-value(|global-cache, node, sig, <id>) // remove CIRCULAR_BUSY
     else
-      // verbose-msg(!"  [circ.] Changed @", <strip-annos> node, !"with", strip-annos, !"was", <strip-annos> old-value);
+      // verbose-msg(!"  [circ.]", !sig => Attribute(<id>, _, _), !"CHANGED @", !node, !"with", strip-annos, !"was", <strip-annos> old-value);
       aster-initialize-attribute-value(|<all-parents>, global-cache);
       circular-set-has-changed(|global-cache);
       set-last-value(|global-cache, node, sig, <id>)

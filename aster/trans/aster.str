@@ -43,6 +43,7 @@ strategies
       RootVar           := <newname> "root"
       CachedVar         := <newname> "cached"
       DecoratedValueVar := <newname> "decorated-value-cache"
+      SignatureVar      := <newname> "name"
     )
 
 strategies // I/O
@@ -60,5 +61,5 @@ strategies // I/O
     Option(
       "--trace"
     , <set-config> (Trace(), <id>)
-    , !"--trace          Enable tracing messages (for debugging support)"
+    , !"--trace          Enable tracing messages for all attributes (for debugging support)"
     )
