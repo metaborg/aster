@@ -29,7 +29,7 @@ strategies
   recompute-circular-def(s|sig, old-value) =
     with(
       ?node;
-      global-cache := <attr-cache>
+      global-cache := <global-cache>
     );
     
     set-last-value(|global-cache, node, sig, CIRCULAR_BUSY(old-value));
@@ -50,7 +50,7 @@ strategies
   circular-fixpoint(s|sig, old-value) =
     with(
       ?node;
-      global-cache := <attr-cache>
+      global-cache := <global-cache>
     );
     
     if is-fixpoint-running(|global-cache) then

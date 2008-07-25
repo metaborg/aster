@@ -11,11 +11,11 @@ signature constructors
 
 strategies
 
-  get-cached-attribute(|attr-cache, node, sig) =
-    hashtable-get(|attr-cache, (node, sig))
+  get-cached-attribute(|global-cache, node, sig) =
+    hashtable-get(|global-cache, (node, sig))
   
-  set-cached-attribute(|attr-cache, node, sig, value) =
-    hashtable-put(|attr-cache, (node, sig), value)
+  set-cached-attribute(|global-cache, node, sig, value) =
+    hashtable-put(|global-cache, (node, sig), value)
 
-  attr-cache =
-    lookup-table(|"attr-cache")
+  global-cache =
+    lookup-table(|"global-cache")

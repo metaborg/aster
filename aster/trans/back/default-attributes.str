@@ -288,10 +288,10 @@ rules // Native attribute definitions
     where
       s := <assimilate-native-attr> attr
     
-  assimilate-native-ref-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
+  assimilate-native-ref-inside-ag(|s_parent, x_all-parents, x_current, x_global-cache):
     AttributeRef(t, attr) -> |[ !t; s ]|
     where
-      s := <assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache)> attr
+      s := <assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_global-cache)> attr
    
   assimilate-native-attr:
     Attribute("eq", [], [t]) -> |[ eq-ignore-annos(|t) ]|
@@ -313,35 +313,35 @@ rules // Native attribute definitions
   assimilate-native-attr:
     Attribute("parent", [], []) -> |[ get-parent(|<all-parents>); not(NoParent) ]|
 
-  assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
+  assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_global-cache):
     Attribute("parent", [], []) -> |[ s_parent; not(NoParent) ]|
   
   assimilate-native-attr:
     Attribute("path-list", [], []) -> |[ get-ancestor-list(|<all-parents>) ]|
 
-  assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
+  assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_global-cache):
     Attribute("path-list", [], []) -> |[ get-ancestor-list(|x_all-parents) ]|
 
   assimilate-native-attr:
     Attribute("uninit", [], []) -> |[ aster-remove-annos ]|
 
-  assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
+  assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_global-cache):
     Attribute("uninit", [], []) -> |[ aster-remove-annos ]|
   
   assimilate-native-attr:
-    Attribute("init", [], []) -> |[ aster-initialize-node(|<all-parents>, <attr-cache>) ]|
+    Attribute("init", [], []) -> |[ aster-initialize-node(|<all-parents>, <global-cache>) ]|
   
-  assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
-    Attribute("init", [], []) -> |[ aster-initialize-node(|x_all-parents, x_attr-cache) ]|
+  assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_global-cache):
+    Attribute("init", [], []) -> |[ aster-initialize-node(|x_all-parents, x_global-cache) ]|
   
   assimilate-native-attr:
     Attribute("eval", [s, s-default], []) -> |[ fatal-err(|"id.eval() not fully implemented yet") ]|
   
   assimilate-native-attr:
-    Attribute("ensure-init", [], []) -> |[ aster-initialize-attribute-value(|<all-parents>, <attr-cache>) ]|
+    Attribute("ensure-init", [], []) -> |[ aster-initialize-attribute-value(|<all-parents>, <global-cache>) ]|
   
-  assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
-    Attribute("ensure-init", [], []) -> |[ aster-initialize-attribute-value(|x_all-parents, x_attr-cache) ]|
+  assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_global-cache):
+    Attribute("ensure-init", [], []) -> |[ aster-initialize-attribute-value(|x_all-parents, x_global-cache) ]|
     
   assimilate-native-attr:
     Attribute("signature", [], []) -> |[ !t_signature => Attribute(_, [], _) ]|
@@ -353,13 +353,13 @@ rules // Native attribute definitions
     with
       t_signature := <CurrentSignatureTerm <+ !|[ <fail> ]|>
   
-  assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_attr-cache):
-    Attribute("global-cache", [], []) -> |[ !x_attr-cache ]|
+  assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_global-cache):
+    Attribute("global-cache", [], []) -> |[ !x_global-cache ]|
     with
-      x_attr-cache := <AttrCacheVar>
+      x_global-cache := <GlobalCacheVar>
     
   assimilate-native-attr:
-    Attribute("global-cache", [], []) -> Strat |[ attr-cache ]|
+    Attribute("global-cache", [], []) -> Strat |[ global-cache ]|
     
 rules // Native attributes on decorated evaluation functions
 

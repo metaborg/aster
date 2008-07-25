@@ -33,12 +33,12 @@ strategies
  
   init-shared-vars =
     // TODO2: Things like <all-parents> should be optimized in a post-processing stage, not right away
-    // TODO2: Rename attr-cache to cache or store, or something
+    // TODO2: Rename global-cache to cache or store, or something
     rules(
       ParentVar         := <newname> "parent"
       NodeVar           := <newname> "node"
       AllParentsVar     := <newname> "all-parents"
-      AttrCacheVar      := <newname> "attr-cache"
+      GlobalCacheVar    := <newname> "global-cache"
       RewriteModeVar    := <newname> "rewrite-mode"
       RootVar           := <newname> "root"
       CachedVar         := <newname> "cached"

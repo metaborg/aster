@@ -39,14 +39,14 @@ strategies // Util
   
   is-aster-initialized(|all-parents) = where(get-parent(|all-parents))
   
-  aster-node-path(|parent, all-parents, attr-cache) =
+  aster-node-path(|parent, all-parents, global-cache) =
     if is-aster-initialized(|all-parents) then
-      eval-path-and-node(|parent, all-parents, attr-cache, 0)
+      eval-path-and-node(|parent, all-parents, global-cache, 0)
     else
       <conc-strings> ("?", ".", <to-tiny-string>)
     end
   
-  eval-path-and-node(|parent, all-parents, attr-cache, rewrite-mode) =
+  eval-path-and-node(|parent, all-parents, global-cache, rewrite-mode) =
     fail // generator-defined rule
 
 strategies // Node initialization
@@ -58,14 +58,14 @@ strategies // Node initialization
    * Initialize an attribute value, if required, with special
    * support for reference lists and tuples.
    */
-  aster-initialize-attribute-value(|all-parents, attr-cache) =
+  aster-initialize-attribute-value(|all-parents, global-cache) =
     // Support reference collections
-    map(aster-initialize-node-ensure(|all-parents, attr-cache))
+    map(aster-initialize-node-ensure(|all-parents, global-cache))
   <+
     where(get-constructor => ""); // is-tuple
-    all(aster-initialize-node-ensure(|all-parents, attr-cache))
+    all(aster-initialize-node-ensure(|all-parents, global-cache))
   <+
-    aster-initialize-node-ensure(|all-parents, attr-cache)
+    aster-initialize-node-ensure(|all-parents, global-cache)
   
   /**
    * Initialize a node if it was not yet initialized.
@@ -73,13 +73,13 @@ strategies // Node initialization
    * @note Generally, aster-initialize-attribute-value should be used instead,
    *       to support reference lists.
    */
-  aster-initialize-node-ensure(|all-parents, attr-cache) =
-    aster-initialize-node-ensure(id|all-parents, attr-cache)
+  aster-initialize-node-ensure(|all-parents, global-cache) =
+    aster-initialize-node-ensure(id|all-parents, global-cache)
 
-  aster-initialize-node-ensure(warning|all-parents, attr-cache) =
+  aster-initialize-node-ensure(warning|all-parents, global-cache) =
     if not(is-aster-initialized(|all-parents)) then
       where(warning);    
-      aster-initialize-node(|all-parents, attr-cache)
+      aster-initialize-node(|all-parents, global-cache)
     end
 
   aster-initialize-node-warning(|all-parents, attribute) =
@@ -156,13 +156,13 @@ strategies // Hash table storage for init/uninit
   // - cheap equality checks after every rewrite or circular evaluation
   //   (not really, unless you add an expensive remove-annos before caching)
 
-  get-initialize-cache(|attr-cache, parent, node) =
+  get-initialize-cache(|global-cache, parent, node) =
     where(NoParent() := parent);
-    get-cached-attribute(|attr-cache, node, "$inited")
+    get-cached-attribute(|global-cache, node, "$inited")
  
-  set-initialize-cache(|attr-cache, parent, node, value) =
+  set-initialize-cache(|global-cache, parent, node, value) =
     not(NoParent() := parent) // no caching for you
   <+
-    set-cached-attribute(|attr-cache, node, "$inited", value)
+    set-cached-attribute(|global-cache, node, "$inited", value)
   */
 

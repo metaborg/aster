@@ -27,11 +27,11 @@ strategies
     with(
       x_parent       := <ParentVar>;
       x_all-parents  := <AllParentsVar>;
-      x_attr-cache   := <AttrCacheVar>;
+      x_global-cache := <GlobalCacheVar>;
       x_rewrite-mode := <RewriteModeVar>
     );
     
-    !Typedid* |[ x_parent, x_all-parents, x_attr-cache, x_rewrite-mode ]|
+    !Typedid* |[ x_parent, x_all-parents, x_global-cache, x_rewrite-mode ]|
   
   default-args =
     default-params;
@@ -45,7 +45,7 @@ strategies
     ) ->
     <make-merged-def(|t_pattern, child)>
     Def |[
-      x_eval(sa* |x_parent, x_all-parents, x_attr-cache, x_rewrite-mode, a'*) =
+      x_eval(sa* |x_parent, x_all-parents, x_global-cache, x_rewrite-mode, a'*) =
         ?x_node;
         s_pattern;
         where(s_init-args); // TODO: init args first if built-in pattern?
@@ -55,7 +55,7 @@ strategies
       x_parent           := <ParentVar>;
       x_node             := <NodeVar>;
       x_all-parents      := <AllParentsVar>;
-      x_attr-cache       := <AttrCacheVar>;
+      x_global-cache     := <GlobalCacheVar>;
       x_rewrite-mode     := <RewriteModeVar>;
       s_pattern          := <assimilate-pattern(|child)> t_pattern;
       sig                := <attribute-signature> attr;
@@ -69,7 +69,7 @@ strategies
       attribute-signature-wrap(
         !s;
         topdown(try(
-          assimilate-expr-inside-ag(|sig, s_parent, s_parent-desired, x_node, x_all-parents, x_attr-cache)
+          assimilate-expr-inside-ag(|sig, s_parent, s_parent-desired, x_node, x_all-parents, x_global-cache)
         ));
         add-eval-failed => s'
       | Attribute(x_name, sa*, a'*)

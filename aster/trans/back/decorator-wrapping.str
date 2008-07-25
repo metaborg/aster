@@ -30,12 +30,12 @@ rules // Adding decoration logic to decorated rules
   
   add-ensure-init(|def):
     s ->
-    |[ s; (EVAL_FAILED <+ aster-initialize-attribute-value(|x_all-parents, x_attr-cache)) ]|
+    |[ s; (EVAL_FAILED <+ aster-initialize-attribute-value(|x_all-parents, x_global-cache)) ]|
     where
       not(<has-plain-decorator> def)
     with
-      x_all-parents := <AllParentsVar>;
-      x_attr-cache  := <AttrCacheVar>
+      x_all-parents   := <AllParentsVar>;
+      x_global-cache  := <GlobalCacheVar>
     
   fold-decorated-with-caching(|decorators, def, s*, t*) =
     ?s_body;
@@ -138,8 +138,8 @@ strategies // General helpers
     with(
       x_parent       := <ParentVar>;
       x_all-parents  := <AllParentsVar>;
-      x_attr-cache   := <AttrCacheVar>;
+      x_global-cache := <GlobalCacheVar>;
       x_node         := <NodeVar>;
       s_parent       := |[ ?x_node < !x_parent + !UnknownParent() ]|
     );
-    assimilate-expr-inside-ag(|None(), s_parent, s_parent, x_node, x_all-parents, x_attr-cache)
+    assimilate-expr-inside-ag(|None(), s_parent, s_parent, x_node, x_all-parents, x_global-cache)

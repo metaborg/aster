@@ -51,7 +51,7 @@ rules // Assimilation of decorator definitions
           !s_body;
           
           alltd(
-            assimilate-decorator-self-ref(|attr, x_decorator, s_arg*, t_arg*)
+            assimilate-decorator-self-ref(|x_decorated, x_decorator, s_arg*, t_arg*)
           <+
             assimilate-decorated-svar(|attr, x_decorated)
           <+

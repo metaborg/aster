@@ -26,29 +26,29 @@ rules
              s_cache-write;
              fail
            else
-             aster-initialize-attribute-value(|x_all-parents, x_attr-cache);
+             aster-initialize-attribute-value(|x_all-parents, x_global-cache);
              s_cache-write
            end
     ]|
     where
       ([], a*) := <RuleParams> def     
     with
-      ([], t*)      := <params-to-vars> ([], a*);
-      s_cache-read  := <add-cache-read(|t*)> def;
-      s_cache-write := <add-cache-write(|t*)> def;
-      x_all-parents := <AllParentsVar>;
-      x_attr-cache  := <AttrCacheVar>
+      ([], t*)        := <params-to-vars> ([], a*);
+      s_cache-read    := <add-cache-read(|t*)> def;
+      s_cache-write   := <add-cache-write(|t*)> def;
+      x_all-parents   := <AllParentsVar>;
+      x_global-cache  := <GlobalCacheVar>
   
   add-uncached-rule-logic:
     |[ x_eval(sa*|a*) = s ]| ->
     |[ x_eval(sa*|a*) =
          s;
          not(EVAL_FAILED);
-         aster-initialize-attribute-value(|x_all-parents, x_attr-cache)
+         aster-initialize-attribute-value(|x_all-parents, x_global-cache)
     ]|
     with
       x_all-parents  := <AllParentsVar>;
-      x_attr-cache   := <AttrCacheVar>
+      x_global-cache := <GlobalCacheVar>
 
   add-cache-read(|sargs, targs) =
     if [] := sargs then
@@ -66,19 +66,19 @@ rules
   
   add-cache-read(|targs):
     def ->
-    |[ get-cached-attribute(|x_attr-cache, <id>, t_key) ]|
+    |[ get-cached-attribute(|x_global-cache, <id>, t_key) ]|
     with
-      x_all-parents := <AllParentsVar>;
-      x_attr-cache  := <AttrCacheVar>;
-      t_key         := <make-cache-key(|targs)> def
+      x_all-parents   := <AllParentsVar>;
+      x_global-cache  := <GlobalCacheVar>;
+      t_key           := <make-cache-key(|targs)> def
 
   add-cache-write(|targs):
     def ->
-    |[ set-cached-attribute(|x_attr-cache, x_node, t_key, <id>) ]|
+    |[ set-cached-attribute(|x_global-cache, x_node, t_key, <id>) ]|
     with
-      x_attr-cache  := <AttrCacheVar>;
-      x_node        := <NodeVar>;
-      t_key         := <make-cache-key(|targs)> def
+      x_global-cache  := <GlobalCacheVar>;
+      x_node          := <NodeVar>;
+      t_key           := <make-cache-key(|targs)> def
 
   make-cache-key(|targs):
     Attribute(name, sarity, tarity) -> key

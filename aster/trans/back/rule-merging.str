@@ -65,22 +65,22 @@ strategies
       (sa*, a*)      := <RuleParams> def;
       (s*, t*)       := <params-to-vars> (sa*, a*);
       x_all-parents  := <AllParentsVar>;
-      x_attr-cache   := <AttrCacheVar>;
+      x_global-cache := <GlobalCacheVar>;
       x_node         := <NodeVar>;
       x_eval         := <RuleAccessorName> def;
       defs           := <sort-ordered-defs> <make-set> <bagof-OrderedRuleDefs> def;
       s              := <fold-lchoice> <map(def-call(|s*, t*))> defs;
       s_trace        := <trace-rule> def;
       s_trace-failed := <trace-failed-rule> def;
-      s_rewrite      := <add-rewrite(|x_all-parents, x_attr-cache)>
+      s_rewrite      := <add-rewrite(|x_all-parents, x_global-cache)>
 
   // TODO2: Move this
-  add-rewrite(|x_all-parents, x_attr-cache) =
+  add-rewrite(|x_all-parents, x_global-cache) =
     if UsesAnonymousRewriteRules then
       x_rewrite-mode := <RewriteModeVar>;
       !Strat |[
         if 1 := x_rewrite-mode then
-          eval-anonymous-rewrites-cached(|x_all-parents, x_attr-cache)
+          eval-anonymous-rewrites-cached(|x_all-parents, x_global-cache)
         end
       ]|
     else

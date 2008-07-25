@@ -34,17 +34,17 @@ strategies
     Strat |[
         say(<conc-strings> (
              ~str:message
-           , <aster-node-path(|x_parent, x_all-parents, x_attr-cache)>
+           , <aster-node-path(|x_parent, x_all-parents, x_global-cache)>
            , t_comment*
         ))
       ]|
     with
-      arity'        := <arity-to-string> (sarity, tarity);
-      message       := <conc-strings> ("  [trace] ", real-name, arity', " @ ");
-      x_parent      := <ParentVar>;
-      x_all-parents := <AllParentsVar>;
-      x_attr-cache  := <AttrCacheVar>;
-      t_arg*        := <default-args>;
+      arity'          := <arity-to-string> (sarity, tarity);
+      message         := <conc-strings> ("  [trace] ", real-name, arity', " @ ");
+      x_parent        := <ParentVar>;
+      x_all-parents   := <AllParentsVar>;
+      x_global-cache  := <GlobalCacheVar>;
+      t_arg*          := <default-args>;
       
       if "" := comment then
         t_comment* := []
@@ -57,7 +57,7 @@ strategies
       !Strat |[
         say(<conc-strings> (
           "  [rewr.] "
-        , <aster-node-path(|UnknownParent(), <all-parents>, <attr-cache>)> ~id:<NodeVar>
+        , <aster-node-path(|UnknownParent(), <all-parents>, <global-cache>)> ~id:<NodeVar>
         , " -> "
         , <to-tiny-string>
         ))
