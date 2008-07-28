@@ -59,6 +59,8 @@ strategies // Set-up, testing
   
   // is-Stm can normally be generated from the grammar, but is simply hardcoded here
   is-Stm = ?Block(_) + ?While(_, _) + ?If(_, _, _) + ?Assign(_, _) + ?Return(_)
+
+decorators
   
   decorator apply-to-stm(a) = is-Stm; a
 
@@ -83,37 +85,14 @@ attributes // Control flow (also defined in circular-liveness)
 attributes // Reverse control flow
   
   // for each id.succ: pred = id  
-  def contribute-to-idsucc pred = id
-  
-  // TODO: promote collect-foreach-idsucc to a library decorator
-  //       id.succ should not be hardcoded in here, but should be a strategy argument 'targets'
-  decorator node.contribute-to-idsucc(s) =
-    if not(<CompletedSurvey> s.signature) then
-      rules(CompletedSurvey: s.signature);
-      
-      id.root;
-      topdown(where(try(
-        { contribution:
-          ?contribution;
-          id.succ; // targets
-          map({ target:
-            ?target;
-            rules(
-              CollectForeachContributions :+ (s.signature, target) -> contribution
-            )
-          })
-        }
-      )))
-    end;
-    
-    <bagof-CollectForeachContributions; s> (s.signature, node)
+  def contribute-to(id.succ) pred = id
 
 attributes // Extract constant values
 
   // TODO: cover(|"Expr")
   def constant-value:
     Int(i)       -> id
-    Var(v)       -> id.constant-before.lookup(|v) where verbose-msg(!"looked up", !v.uninit, !"in", id.parent.uninit, !id.parent.constant-before.uninit, !"=", id.parent.constant-before.lookup(|v))
+    Var(v)       -> id.constant-before.lookup(|v)
 
   // TODO: default(|[])
   def Assign(var, e):
@@ -122,7 +101,7 @@ attributes // Extract constant values
 
 attributes // Data flow
 
-  def down apply-to-stm stm circular []:
+  def down apply-to-stm circular(|[]) stm:
     id.constant-before =
       id.pred;
       map(id.constant-after);

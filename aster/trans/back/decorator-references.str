@@ -1,3 +1,8 @@
+/**
+ * Aster decorator reference assimilation.
+ *
+ * @author Lennart Kats <lennart add lclnet.nl>
+ */
 module decorator-references
 
 imports
@@ -23,8 +28,13 @@ rules // Decorator references
     with
       x_cached     := <CachedVar>; // not actually cached
       s_decorated' := <try(add-argument-vars)> s_decorated;
-      t_decorated  := <to-attribute-signature-term> s_decorated';
+      t_decorated  := <try-to-attribute-signature-term> s_decorated';
       s_eval       := <make-decorated(|t_decorated)> (Decorator(x_name, s*, t*), s_decorated')
+
+  try-to-attribute-signature-term =
+    to-attribute-signature-term
+  <+
+    !Term |[ Anonymous() ]|
   
   // Recursive decorator reference
   assimilate-decorator-self-ref(|x_decorated, x_decorator, s_arg*, t_arg*):

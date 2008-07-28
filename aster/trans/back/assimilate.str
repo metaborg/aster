@@ -1,20 +1,24 @@
+/**
+ * Aster main assimilation strategies.
+ *
+ * @author Lennart Kats <lennart add lclnet.nl>
+ */
 module back/assimilate
 
 imports
   Stratego-Attributes
   aster
-  back/default-attributes
+  back/native-attributes
   back/util
   back/rule-merging
   back/rule-definitions
-  back/rule-naming
   back/attribute-references
   back/anonymous-rewrites
 
 strategies
 
   assimilate-all =
-    map(add-imports);
+    one(try(add-imports));
     
     all-stratego-defs(try(
       assimilate-decorator-def
@@ -33,5 +37,7 @@ strategies
 
   add-imports:
     Module(x, decl*) -> Module(x, [imports | decl*])
+    where
+      not(oncetd(Import("libstratego-lib") + Import("stratego-lib")))
     with
-      imports := |[ imports aster-runtime ]|
+      imports := |[ imports libstratego-lib ]|

@@ -1,9 +1,13 @@
+/**
+ * Aster semantic checks.
+ *
+ * @author Lennart Kats <lennart add lclnet.nl>
+ */
 module check
 
 imports
   libstratego-lib
   Stratego-Attributes
-  // back/default-attributes
   front/analyze
 
 rules
@@ -29,7 +33,7 @@ rules
 
 attributes
   
-  def error:
+  def after(try(concat-strings)) error:
     Attribute(name, _, _) -> "Undefined attribute referenced"
     where
       not(get-attribute-decorators + is-native-attribute);
@@ -38,6 +42,10 @@ attributes
     Decorator(name, _, _) -> "Undefined decorator referenced"
     where
       not(get-attribute-decorators)
+    
+    ADef(Def(), _, ADefStrategy(_, attr, _)).attr -> "Attribute and decorator signature overlap"
+    where
+      <is-decorator> attr
     
     ADefStrategy(_, attr, _) -> "Semantic rule type not declared using 'def'"
     where
@@ -122,7 +130,6 @@ attributes
   //   (should probably be := instead!)
   // - warn for rules(...id... -> foo); id does not bind to the current term but acts as a wild card
   // - decorators have no sort or pattern spec
-  // - disallow attributes with the same signature as the declared signature of a decorator
 
 strategies
 
@@ -160,7 +167,7 @@ attributes
     id                   -> <try(attribute-signature)>
     Attribute(n, [], []) -> n
   
-  def pp-context =
+  def string pp-context =
     id.ancestor(?ADef(_, _, <id>));
     ?ADefStrategy(_, <id.pp>, _);
     <conc-strings> (" in attribute ", <as-string>)

@@ -1,0 +1,31 @@
+/**
+ * Tree access attributes.
+ *
+ * @author Lennart Kats <lennart add lclnet.nl>
+ */
+module aster/attributes/tree-access
+
+imports
+  libstratego-lib
+  aster/decorators/common
+  aster/decorators/flow
+
+attributes
+
+  def plain tree-access:
+    id.prev-sibling  = get-prev-sibling(|id.parent)
+    id.next-sibling  = get-next-sibling(|id.parent)
+    id.first-sibling = get-first-child(|id.parent)
+    id.last-sibling = get-last-child(|id.parent)
+    id.first-child = get-first-child(|id)
+    id.last-child = get-last-child(|id)
+    id.prev-sibling(a) = get-prev-sibling(a|id.parent)
+    id.next-sibling(a) = get-next-sibling(a|id.parent)
+    id.child(a) = one(a; ?it); !it
+  
+  def plain root.is-root = id
+    
+  def down tree-access-ancestors:
+    id.root = try(id.root)
+    id.ancestor(p) = p <+ id.parent.ancestor(p)
+    // id.ancestors(p,path) := <p <+ path; id.ancestors(p, path)>

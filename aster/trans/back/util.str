@@ -1,8 +1,13 @@
+/**
+ * Aster utility strategies.
+ *
+ * @author Lennart Kats <lennart add lclnet.nl>
+ */
 module back/util
 
 imports
   libstratego-lib
-  aster/runtime/annotations
+  aster/lang/annotations
 
 strategies
     

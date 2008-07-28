@@ -1,3 +1,11 @@
+/**
+ * Aster rule merging.
+ *
+ * This module generates rewrite rules that combine different
+ * attribute equations.
+ *
+ * @author Lennart Kats <lennart add lclnet.nl>
+ */
 module back/rule-merging
 
 imports
@@ -5,7 +13,6 @@ imports
   back/util
   back/rule-tracing
   back/rule-caching
-  back/rule-naming
   back/decorator-definitions
   back/assimilate
   front/analyze

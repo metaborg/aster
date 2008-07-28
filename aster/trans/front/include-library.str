@@ -1,0 +1,27 @@
+/**
+ * Aster runtime library inclusion.
+ *
+ * Currently, the runtime library is simply added to the
+ * first output file.
+ *
+ * @author Lennart Kats <lennart add lclnet.nl>
+ */
+module front/include-library
+
+imports
+  libstratego-lib
+  libstrc
+
+strategies
+
+  aster-runtime-library-term =
+    AsterRuntimeLibrary
+  <+
+    import-term(aster-runtime.packed-rtree) => Specification(<id>);
+    map(all(filter(not(is-external-def))));
+    rules(AsterRuntimeLibrary := <id>)
+  
+  aster-include-library:
+    Module(name, decl*) -> Module(name, [decl*, lib*])
+    with
+      lib* := <aster-runtime-library-term>

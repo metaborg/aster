@@ -1,12 +1,16 @@
+/**
+ * Aster rule definitions.
+ *
+ * @author Lennart Kats <lennart add lclnet.nl>
+ */
 module back/rule-definitions
 
 imports
   Stratego-Attributes
   aster
-  back/default-attributes
+  back/native-attributes
   back/util
   back/rule-merging
-  back/rule-naming
   back/attribute-references
   back/decorator-definitions
   back/decorator-wrapping
@@ -72,16 +76,16 @@ strategies
           assimilate-expr-inside-ag(|sig, s_parent, s_parent-desired, x_node, x_all-parents, x_global-cache)
         ));
         add-eval-failed => s'
-      | Attribute(x_name, sa*, a'*)
+      | <CurrentSignatureTerm <+ !Attribute(x_name, sa*, a'*)>
       )
 
   // TODO2: shouldn't a.signature be an initialized term?
 
   attribute-signature-wrap(s|attribute) =
     {| CurrentSignatureTerm:
-      rules(
+      with(rules(
         CurrentSignatureTerm := <to-attribute-signature-term> attribute
-      );
+      ));
       s
     |}
 
@@ -98,8 +102,13 @@ strategies
 rules // Argument patterns
    
   extract-arg-patterns =
-    unzip(extract-arg-pattern);
+    unzip(extract-arg-pattern-override <+ extract-arg-pattern);
     (id, fold-seq)
+
+  extract-arg-pattern-override:
+    Var(sig) -> (DefaultVarDec(sig), Id())
+    where
+      <eq> (<SignatureVar>, sig)
   
   extract-arg-pattern:
     t -> (DefaultVarDec(x_name), |[ !x_name => t' ]|)

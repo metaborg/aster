@@ -1,3 +1,8 @@
+/**
+ * Aster decorator wrapping.
+ *
+ * @author Lennart Kats <lennart add lclnet.nl>
+ */
 module decorator-wrapping
 
 imports
@@ -61,9 +66,14 @@ rules // Adding decoration logic to decorated rules
     ]|
     with
       x_decorated := <?Attribute(<id>, _, _)> def;
-      t_decorated := <to-attribute-signature-term> Attribute(x_decorated, s*, <drop(|DEFAULT_ARG_COUNT())> t*);
-      s_ref       := <make-decorated(|t_decorated)> (x_decorator, s_decorated);
-      x_cached    := <CachedVar>;
+      if <IsDecoratorAccessorName> x_decorated then
+        t_decorated := Var(<SignatureVar>)
+      else
+        t_decorated := <to-attribute-signature-term> Attribute(x_decorated, s*, <drop(|DEFAULT_ARG_COUNT())> t*)
+      end;
+
+      s_ref    := <make-decorated(|t_decorated)> (x_decorator, s_decorated);
+      x_cached := <CachedVar>;
       
       if <has-plain-decorator> x_decorator then
         s_cache-read  := Fail();
@@ -77,12 +87,11 @@ rules // Adding decoration logic to decorated rules
     (Decorator(x_decorator, s*, t*), s_decorated) ->
     <desugar-all>
     Strat |[
-      id.x_decorator'(x_cached, s_decorated', s* |t_decorated-signature, t*)
+      id.x_decorator'(x_cached, s_decorated, s* |t_decorated-signature, t*)
     ]|
     with
       x_cached     := <CachedVar>;
-      x_decorator' := <DecoratorInternalName> x_decorator;
-      s_decorated' := s_decorated
+      x_decorator' := <DecoratorAccessorName> x_decorator
 
 strategies // Reflective data helpers
  
@@ -93,7 +102,7 @@ strategies // Reflective data helpers
   <+
     DecoratedAttributeSignature
   <+
-    !Term |[ Anonymous() ]|
+    Var(id)
   
   /** @internal */
   attribute-to-attribute-signature-term:

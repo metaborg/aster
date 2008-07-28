@@ -31,7 +31,8 @@ rules
            end
     ]|
     where
-      ([], a*) := <RuleParams> def     
+      not(has-plain-decorator);
+      ([], a*) := <RuleParams> def // cacheable 
     with
       ([], t*)        := <params-to-vars> ([], a*);
       s_cache-read    := <add-cache-read(|t*)> def;
@@ -44,11 +45,16 @@ rules
     |[ x_eval(sa*|a*) =
          s;
          not(EVAL_FAILED);
-         aster-initialize-attribute-value(|x_all-parents, x_global-cache)
+         s_init
     ]|
     with
-      x_all-parents  := <AllParentsVar>;
-      x_global-cache := <GlobalCacheVar>
+      if has-plain-decorator then
+        s_init := Id()
+      else
+        x_all-parents  := <AllParentsVar>;
+        x_global-cache := <GlobalCacheVar>;
+        s_init := |[ aster-initialize-attribute-value(|x_all-parents, x_global-cache) ]|
+      end
 
   add-cache-read(|sargs, targs) =
     if [] := sargs then

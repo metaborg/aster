@@ -1,0 +1,36 @@
+/**
+ * Debugging attributes.
+ *
+ * @author Lennart Kats <lennart add lclnet.nl>
+ */
+module aster/attributes/debug
+
+imports
+  libstratego-lib
+  aster/decorators/common
+  aster/decorators/flow
+
+attributes
+
+  def enable-warnings = rules(AsterWarningsDisabled :- _)
+  
+  def path =
+    id.path-list;
+    reverse;
+    map(get-constructor; as-string);
+    separate-by(|".");
+    concat-strings
+  
+  def /*string*/ path-and-node =
+    where(node := <to-tiny-string>);
+    id.path;
+    (?"" < !node + <conc-strings> (<id>, ".", node));
+    string-as-chars(
+      truncate-path-lists;
+      if <gt> (<string-length>, 60) then
+        reverse;
+        take(|60);
+        reverse;
+        !['.', '.', '.' | <id>]
+      end
+    )

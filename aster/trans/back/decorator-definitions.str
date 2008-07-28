@@ -1,3 +1,8 @@
+/**
+ * Aster decorator definition assimilation.
+ *
+ * @author Lennart Kats <lennart add lclnet.nl>
+ */
 module decorator-definitions
 
 imports
@@ -25,7 +30,7 @@ rules // Assimilation of decorator definitions
     , ADefStrategy(
         id
       , Attribute(
-          ?x_decorator; DecoratorInternalName
+          ?x_decorator; DecoratorAccessorName
         , ?[a_decorated | as*];
           ![DefaultVarDec(<CachedVar>) | <id>]
         , ?a*;
@@ -34,7 +39,10 @@ rules // Assimilation of decorator definitions
       , assimilate-decorator-body(|attr, x_decorator, as*, a*, a_decorated)
       )
     );
-    assimilate-def
+    attribute-signature-wrap(
+      assimilate-def
+    | Var(<SignatureVar>)
+    )
  
   assimilate-decorator-body(|attr, x_decorator, as*, a*, a_decorated):
     s_body ->
@@ -59,13 +67,13 @@ rules // Assimilation of decorator definitions
           ) => s_body'
         | x_decorated
         )
-      | Attribute(x_decorator, as*, a*)
+      | Var(<SignatureVar>)
       )
 
   decorated-attribute-name-wrap(s |x_decorated) =
     {| DecoratedAttributeSignature:
       rules(
-        DecoratedAttributeSignature: |[ x_decorated(|) ]| -> <SignatureVar>
+        DecoratedAttributeSignature: |[ x_decorated(|) ]| -> Var(<SignatureVar>)
       );
       s
     |}

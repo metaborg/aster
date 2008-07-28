@@ -39,11 +39,15 @@ exports
     UNDEFINED %% matches nothing
   
   lexical syntax
+  
+    %% Unreserve some Id's specifically for (built-in) attributes
 
-    "all"  -> AttributeId %% reserved Id
-    "one"  -> AttributeId %% reserved Id
-    "some" -> AttributeId %% reserved Id
-    "signature" -> AttributeId %% reserved Id
+    "all"  -> AttributeId
+    "one"  -> AttributeId
+    "some" -> AttributeId
+    "test" -> AttributeId
+    "in"   -> AttributeId
+    "signature" -> AttributeId
   
   context-free restrictions
   
@@ -161,6 +165,8 @@ exports
     %%  Either reject suffices, but the first may be too specific/confusing
     %%  "<" Strategy ">" AttributeKeyword -> Term {reject}
     AttributeKeyword -> Var {reject}
+    
+    AttributeKeyword -> ImportModName {reject}
   
   lexical syntax
     

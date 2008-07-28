@@ -14,13 +14,19 @@ strategies
   
   input-stratego-file =
     xtc-ensure-file => FILE(file);
-    parse-stratego-trm(
-    | [ "-i", file
-      , "--default-syntax", "Stratego-Attributes"
-      , "-I", <xtc-find; dirname <+ !"../syntax"> "Stratego-Attributes.tbl"
-      , "-I", <xtc-find; dirname <+ !"../runtime"> "aster-runtime.str"
-      ]
+    scope-whoami(
+      parse-stratego-trm(
+      | [ "-i", file
+        , "--default-syntax", "Stratego-Attributes"
+        , "-I", <xtc-find; dirname <+ !"../syntax"> "Stratego-Attributes.tbl"
+        , "-I", <xtc-find; dirname <+ !"../runtime"> "aster-runtime.str"
+        ]
+      )
     )
+  
+  scope-whoami(s) =
+    with(<get-config> "program" => whoami);
+    finally(s, <set-config> ("program", whoami))
 
   output-stratego-file =
     write-to;

@@ -1,19 +1,36 @@
 /**
- * Circular attribute evaluation run-time.
- * Uses the attribute cache table to store a worklist.
+ * Circular attribute evaluation decorator.
  *
- * @internal
  * @author Lennart Kats <lennart add lclnet.nl>
  */
-module aster/runtime/circular
+module aster/decorators/circular
 
 imports
   libstratego-lib
-  aster/runtime/hashtables
+  aster/decorators/common
+  aster/decorators/flow
 
 signature constructors
   CIRCULAR_FINISHED : Term -> Term
   CIRCULAR_BUSY     : Term -> Term
+
+decorators
+  
+  decorator plain circular(a|initial-value) =
+    if stored := <get-last-value(|id.global-cache, id, a.signature)> then
+      if <?CIRCULAR_FINISHED(old-value) + ?CIRCULAR_BUSY(old-value)> stored then
+        !old-value
+      else
+        recompute-circular-def(id.plain(a) |a.signature, stored)
+      end
+        else
+      where(
+        old-value := <id.ensure-init <+ !EVAL_FAILED()> initial-value
+      );
+      circular-fixpoint(id.plain(a) |a.signature, old-value)
+    end;
+    
+    not(EVAL_FAILED)
 
 strategies
 
@@ -40,7 +57,7 @@ strategies
       // verbose-msg(!"  [circ.]", !sig => Attribute(<id>, _, _), !"no change @", <strip-annos> node, !"with", strip-annos);
       circular-add-participant(|global-cache, node, sig, old-value);
       set-last-value(|global-cache, node, sig, <id>) // remove CIRCULAR_BUSY
-    else
+        else
       // verbose-msg(!"  [circ.]", !sig => Attribute(<id>, _, _), !"CHANGED @", !node, !"with", strip-annos, !"was", <strip-annos> old-value);
       aster-initialize-attribute-value(|<all-parents>, global-cache);
       circular-set-has-changed(|global-cache);
@@ -58,7 +75,7 @@ strategies
     else
       set-fixpoint-running(|global-cache);
       recompute-circular-def(s|sig, old-value);
-      
+  
       while(circular-get-remove-has-changed(|global-cache),
         { old-value: ?old-value;
           circular-reset-participants(|global-cache);
@@ -101,7 +118,7 @@ strategies // Maintain a list of attributes participating in the latest fixpoint
     with(
       hashtable-get(|global-cache, "$circular-unchanged") => set;
       iset-elements;
-      
+  
       list-loop(
         { node, sig, value:
           ?(node, sig, value);

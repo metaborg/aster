@@ -28,7 +28,7 @@ RTREES=$(STRS:.str=.rtree)
 cleanstrap :
 	rm -f aster.copy aster-no-check aster front/check.str
 
-aster.c : $(RTREES) ../runtime/aster-runtime.rtree
+aster.c : $(RTREES) ../runtime/aster-runtime.packed-rtree
 	$(SCOMPILE) -c -i $< -o $@ $(SCFLAGS) $(STRINCLUDES) -m main-aster
 	
 aster.copy : aster

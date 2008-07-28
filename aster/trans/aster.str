@@ -1,3 +1,8 @@
+/**
+ * Aster main module.
+ *
+ * @author Lennart Kats <lennart add lclnet.nl>
+ */
 module aster
 
 imports
@@ -7,7 +12,8 @@ imports
   back/assimilate
   front/check
   front/desugar
-  aster/runtime/debug
+  front/include-library
+  aster/lang/debug
   io
   lib/xtc-multi-options
 
@@ -21,7 +27,7 @@ strategies
   
   aster =
     init-shared-vars;
-    one(add-default-attributes);
+    one(aster-include-library);
     desugar-all;
     
     // init-check; // TODO: init-check, if working w/ dyn. rules...?
@@ -43,7 +49,7 @@ strategies
       RootVar           := <newname> "root"
       CachedVar         := <newname> "cached"
       DecoratedValueVar := <newname> "decorated-value-cache"
-      SignatureVar      := <newname> "name"
+      SignatureVar      := <newname> "signature"
     )
 
 strategies // I/O

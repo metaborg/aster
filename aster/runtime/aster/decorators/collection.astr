@@ -1,0 +1,52 @@
+/**
+ * Collection attributes.
+ *
+ * @author Lennart Kats <lennart add lclnet.nl>
+ */
+module aster/attributes/collection
+
+imports
+  libstratego-lib
+  aster/decorators/common
+  aster/decorators/flow
+
+decorators
+  
+  /**
+   * Collects all nodes in the tree where the attribute can be applied,
+   * including subnodes of the results.
+   */
+  decorator at-root collect-all(a) =
+    collect-all(a, conc)
+  
+  /**
+   * Maps over a list.
+   *
+   * def map(id.attr) is cached per list, while map(id.s) is cached per item.
+   */
+  decorator map(a) = map(a)
+  
+  // TODO2: Optimize - avoid dynamic rules in contributes-to decorator?
+  
+  decorator node.contribute-to(a, targets) =
+    if not(<CompletedSurvey> a.signature) then
+      with(sig := a.signature);
+      rules(CompletedSurvey: sig);
+      
+      id.root;
+      topdown(where(try(
+        { contribution:
+          ?contribution;
+          targets;
+          map({ target, sig:
+            ?target;
+            sig := a.signature;
+            rules(
+              CollectForeachContributions :+ (sig, target) -> contribution
+            )
+          })
+        }
+      )))
+    end;
+    
+    <bagof-CollectForeachContributions; a> (a.signature, node)

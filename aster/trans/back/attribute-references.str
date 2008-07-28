@@ -1,10 +1,14 @@
+/**
+ * Attribute references.
+ *
+ * @author Lennart Kats <lennart add lclnet.nl>
+ */
 module back/attribute-references
 
 imports
   Stratego-Attributes
   aster
-  back/default-attributes
-  back/rule-naming
+  back/native-attributes
   back/decorator-references
 
 rules // Evaluate attributes in AG context
@@ -56,6 +60,6 @@ rules // Evaluate attributes outside of AG context
     with
       x_eval         := <attribute-accessor-name> attr;
       x_all-parents  := <AllParentsVar>;
-      x_global-cache   := <GlobalCacheVar>;
+      x_global-cache := <GlobalCacheVar>;
       name'          := name
 

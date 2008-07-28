@@ -1,10 +1,14 @@
+/**
+ * Aster analysis strategies.
+ *
+ * @author Lennart Kats <lennart add lclnet.nl>
+ */
 module analyze
 
 imports
   libstratego-lib
   Stratego-Attributes
   back/assimilate
-  back/rule-naming
 
 strategies // Analysis
   
@@ -58,11 +62,21 @@ strategies // Providing information
       IsDecorator
     )
 
-  // HACK: work-around to get def plain attributes for now
   has-plain-decorator =
     where(
-      get-attribute-decorators;
-      fetch(Decorator("plain", [], []))
+      ?Decorator("plain", [], [])
+    <+
+      if HasPlainDecorator => cached then
+        1 := cached
+      else
+        ?node;
+        rules(HasPlainDecorator: node -> 0);
+        
+        get-attribute-decorators;
+        fetch(has-plain-decorator);
+        
+        rules(HasPlainDecorator: node -> 1)
+      end
     )
   
   // TODO: Explicit constructors / tuples for attribute signatures
@@ -77,14 +91,15 @@ strategies // Providing information
   attribute-signature:
     |[ x_eval(sa*|a*) = s ]| -> Attribute(x_eval', sarity, tarity)
     with
+      x_eval' := <UndoAccessorName> x_eval;
       sarity  := <length> sa*;
-      tarity  := <subt> (<length> a*, DEFAULT_ARG_COUNT());
-      x_eval' := <try(UndoAccessorName)> x_eval
+      tarity  := <subt> (<length> a*, DEFAULT_ARG_COUNT())
   
   attribute-signature:
     Decorator(name, s*, a*) -> sig
     where
-      sig := <attribute-signature> Attribute(name, [(), s*], a*);
+      fake-sig    := Attribute(name, ["decorated" | s*], a*);
+      sig         := <attribute-signature> fake-sig;
       IsDecorator
   
   rename-signature(|name'):
@@ -99,13 +114,14 @@ strategies // Helpers for accessing the implementing strategy of a decorator
 
   decorator-signature =
     attribute-signature;
-    Attribute(decorator-internal-name, <add> (DECORATOR_SARG_COUNT(), <id>), <add> (DECORATOR_TARG_COUNT(), <id>))
+    Attribute(decorator-accessor-name, <add> (DECORATOR_SARG_COUNT(), <id>), <add> (DECORATOR_TARG_COUNT(), <id>))
   
-  decorator-internal-name =
-    DecoratorInternalName
+  decorator-accessor-name =
+    DecoratorAccessorName
   <+
     ?attr-name;
-    internal := <newname> <conc-strings> (attr-name, "-decorator");
+    accessor := <newname> <conc-strings> (attr-name, "-decorator");
     rules(
-      DecoratorInternalName: attr-name -> internal
+      DecoratorAccessorName: attr-name -> accessor
+      IsDecoratorAccessorName: accessor
     )

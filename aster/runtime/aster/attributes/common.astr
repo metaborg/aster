@@ -1,0 +1,23 @@
+/**
+ * Assertion attributes.
+ *
+ * @author Lennart Kats <lennart add lclnet.nl>
+ */
+module aster/attributes/assert
+
+imports
+  libstratego-lib
+  aster/decorators/common
+  aster/decorators/flow
+
+attributes   
+   
+  def plain all(a) =
+    ?before;
+    all(a);
+    (?before <+ id.init)
+  
+  def plain some(a) =
+    ?before;
+    some(a);
+    (?before <+ id.init)

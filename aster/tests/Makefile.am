@@ -4,9 +4,10 @@ STRCFLAGS = \
 	-I ../trans \
 	-I ../runtime \
 	--format-check 0 \
+	-O 0 \
 	-Xcc -O0
 
-RUNTESTS = empty find-minimum repmin repmin-no-copy-rules repmin-anonymous repmin-hag repmin-hag-decorated binary-numbers caching cons-nil anonymous-rules decorators circular-basic circular-liveness circular-liveness-rewrites
+RUNTESTS = empty find-minimum repmin repmin-no-copy-rules repmin-anonymous repmin-hag repmin-hag-decorated binary-numbers caching cons-nil anonymous-rules decorators circular-basic circular-liveness circular-liveness-rewrites # circular-propconst
 
 check : Stratego-Attributes.runtestsuite \
         test-aster test-aster.run \

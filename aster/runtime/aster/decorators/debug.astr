@@ -1,0 +1,15 @@
+/**
+ * Debugging decorators.
+ *
+ * @author Lennart Kats <lennart add lclnet.nl>
+ */
+module aster/decorators/debug
+
+imports
+  libstratego-lib
+  aster/decorators/common
+  aster/decorators/flow
+
+attributes
+
+  // TODO: decorator trace = ...

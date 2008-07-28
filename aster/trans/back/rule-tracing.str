@@ -8,7 +8,7 @@ module back/rule-tracing
 imports
   libstratego-lib
   back/util
-  back/default-attributes
+  back/native-attributes
   back/attribute-references
   front/analyze
 

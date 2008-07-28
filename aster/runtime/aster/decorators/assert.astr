@@ -1,0 +1,45 @@
+/**
+ * Assertion decorators.
+ *
+ * @author Lennart Kats <lennart add lclnet.nl>
+ */
+module aster/decorators/assert
+
+imports
+  libstratego-lib
+  aster/decorators/common
+
+decorators
+
+  decorator assert-input(a, condition) =
+    id.assert-input(a, condition | "Assertion failed")
+
+  decorator assert-input(a, condition |message) =
+    if not(condition) then
+      log(|Critical(), [message, " at attribute ", a.attribute-name, " for: "], id.path);
+      print-stacktrace';
+      <exit> 1 
+    end;
+    a
+
+  decorator assert-output(a, condition) =
+    id.assert-output(a, condition | "Assertion failed")
+
+  decorator assert-output(a, condition |message) =
+    a;
+    if not(condition) then
+      log(|Critical(), [message, " at attribute ", a.attribute-name, " for ", id.path, ":"], id.uninit);
+      print-stacktrace';
+      <exit> 1 
+    end
+
+decorators
+  
+  /**
+   * Terminate with a fatal error if the decorated attribute results in a hard failure.
+   */
+  decorator fail-fatal(a) =
+    id.assert-input(a, a.defined |"No attribute equation matches for input")
+  
+  decorator uninit string(a) =
+    id.assert-output(a, is-string | "Result must be a string")

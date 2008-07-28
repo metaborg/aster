@@ -1,11 +1,16 @@
-module aster/runtime/rewrites
+/**
+ * Assertion runtime: anonymous rewrite rules.
+ *
+ * @author Lennart Kats <lennart add lclnet.nl>
+ */
+module aster/lang/rewrites
 
 imports
   libstratego-lib
-  aster/runtime/annotations
-  aster/runtime/hashtables
-  aster/runtime/parents
-  aster/runtime/lists
+  aster/lang/annotations
+  aster/lang/hashtables
+  aster/lang/parents
+  aster/lang/lists
 
 strategies
 

@@ -1,4 +1,9 @@
-module aster/runtime/lists
+/**
+ * Assertion runtime: lists.
+ *
+ * @author Lennart Kats <lennart add lclnet.nl>
+ */
+module aster/lang/lists
 
 strategies
 

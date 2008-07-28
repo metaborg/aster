@@ -9,7 +9,8 @@ strategies
       root := "root".init;
       <debug(!1); eq>      (root.get-new-1, root.get-new-1);
       <debug(!2); eq>      (root.get-new-2, root.get-new-2);
-      <debug(!3); not(eq)> (root.get-new-3, root.get-new-3)
+      <debug(!3); not(eq)> (root.get-new-3, root.get-new-3);
+      <debug(!4); not(eq)> (root.get-new-4, root.get-new-4)
     )
 
 attributes
@@ -18,7 +19,9 @@ attributes
   
   def noop get-new-2 = new
   
-  def uncached get-new-3 = new
+  def plain get-new-3 = new
+  
+  def uncached get-new-4 = new
   
 decorators
 

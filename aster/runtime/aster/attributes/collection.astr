@@ -1,0 +1,26 @@
+/**
+ * Collection decorators
+ *
+ * @author Lennart Kats <lennart add lclnet.nl>
+ */
+module aster/decorators/collection
+
+imports
+  libstratego-lib
+  aster/decorators/common
+  aster/decorators/flow
+
+attributes  
+    
+  // TODO: Could the language indicate that these operate on uninitialized terms?
+  // TODO: Could the language indicate that these don't require caching?
+  //       (maybe a modifier 'plain' for both these, as not caching is still expensive if you have to init the term)
+  def set:
+    id.union = union(id.eq) <+ foldr(![], union(id.eq))
+    id.diff = diff(id.eq)   <+ foldr(![], diff(id.eq))
+    id.isect = isect(id.eq) <+ foldr(<Hd> set, isect(id.eq)) <+ ![]
+    id.make-set = foldr(![], id.union, ![<id>])
+  
+  def (key,list).lookup = lookup(id.eq)
+  def list.lookup(|keyb) = <lookup(id.eq)> (keyb, list)
+  

@@ -1,10 +1,15 @@
-module aster/runtime/annotations
+/**
+ * Assertion runtime: annotations.
+ *
+ * @author Lennart Kats <lennart add lclnet.nl>
+ */
+module aster/lang/annotations
 
 imports
   libstratego-lib
-  aster/runtime/parents
-  aster/runtime/lists
-  aster/runtime/attributes
+  aster/lang/parents
+  aster/lang/lists
+  aster/lang/attributes
 
 strategies // Util
 

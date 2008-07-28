@@ -1,9 +1,10 @@
 /**
- * Debugging strategies, originally defined in dryad-compiler/lib-ext/debug.
+ * Aster runtime: debugging strategies,
+ * originally defined in dryad-compiler/lib-ext/debug.
  *
  * @author Lennart Kats <lennart add lclnet.nl>
  */
-module aster/runtime/debug // dryad-compiler/lib-ext/debug
+module aster/lang/debug // dryad-compiler/lib-ext/debug
 
 imports
   libstratego-lib

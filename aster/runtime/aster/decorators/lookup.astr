@@ -1,0 +1,34 @@
+/**
+ * Lookup decorators: handle looking up of identifiers, given a set of scopes
+ * and a local declaration identification/fetch function
+ *
+ * @author Lennart Kats <lennart add lclnet.nl>
+ */
+module aster/decorators/lookup
+
+imports
+  libstratego-lib
+  aster/decorators/common
+  aster/decorators/flow
+
+decorators
+    
+  decorator down lookup-ordered(fetch, is-scope) =
+    fetch
+  <+
+    id.prev-sibling(id.lookup-outside-scopes(is-scope, fetch))
+  
+  decorator down lookup-unordered(fetch, is-scope) =
+    (id.is-root + is-scope);
+    id.lookup-in-scope(is-scope, fetch)
+  
+  def plain lookup-in-scope(is-scope, fetch) =
+    fetch
+  <+
+    id.child(id.lookup-outside-scopes(is-scope, fetch))
+  
+  def plain lookup-outside-scopes(is-scope, fetch) =
+    fetch
+  <+
+    not(is-scope);
+    id.child(id.lookup-outside-scopes(is-scope, fetch))

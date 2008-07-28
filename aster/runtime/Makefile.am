@@ -1,12 +1,21 @@
 include $(top_srcdir)/Makefile.xt
 include $(wildcard *.dep)
 
-STRS   = aster-runtime.str $(wildcard aster/runtime/*.str)
-RTREES = $(STRS:.str=.rtree)
+PACKED  = aster-runtime.packed-rtree
+STRS    = aster-runtime.str $(wildcard aster/*.str) $(wildcard aster/*/*.str) $(wildcard aster/*/*/*.str)
+ASTRS   = $(wildcard aster/*.astr) $(wildcard aster/*/*.astr) $(wildcard aster/*/*/*.astr)
+RTREES  = $(STRS:.str=.rtree)
+ARTREES = $(ASTRS:.astr=.rtree)
 
-aster-runtime.rtree : $(STRS)
+$(PACKED) : $(RTREES) $(ARTREES)
+	strc -i aster-runtime.rtree --format-check 0 --ast -o $@
 
-pkgdata_DATA = $(STRS) $(RTREES)
-EXTRA_DIST   = $(STRS) $(RTREES)
-CLEANFILES   = $(RTREES)
+# HACK: for packing by strc, astr files must be called rtree files
+
+%.rtree : %.astr
+	sglri -p ../syntax/Stratego-Attributes.tbl -i $< -o $@
+
+pkgdata_DATA = $(PACKED) $(STRS) $(ASTRS)
+EXTRA_DIST   = $(PACKED) $(STRS) $(ASTRS)
+CLEANFILES   = $(PACKED) $(RTREES) $(ARTREES)
 

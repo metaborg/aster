@@ -1,4 +1,9 @@
-module aster/runtime/hashtables
+/**
+ * Assertion runtime: hash table management.
+ *
+ * @author Lennart Kats <lennart add lclnet.nl>
+ */
+module aster/lang/hashtables
 
 strategies
 

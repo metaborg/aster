@@ -1,8 +1,13 @@
-module aster/runtime/attributes
+/**
+ * Assertion runtime: attribute storage.
+ *
+ * @author Lennart Kats <lennart add lclnet.nl>
+ */
+module aster/lang/attributes
 
 imports
   libstratego-lib
-  aster/runtime/hashtables
+  aster/lang/hashtables
 
 signature constructors
   EVAL_FAILED : Term
