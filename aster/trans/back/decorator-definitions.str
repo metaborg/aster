@@ -10,8 +10,6 @@ imports
   front/analyze
   back/rule-definitions
   back/decorator-references
-  
-// TODO: Optimize: decorators should be inlined after the merging stage
 
 overlays
 
@@ -19,9 +17,6 @@ overlays
   DECORATOR_TARG_COUNT = 1 // added system term args for decorator strategies
 
 rules // Assimilation of decorator definitions
-
-  // TODO: Caching of decorated attributes, in every `call`
-  //       (by passing a rec argument that performs memoization)
   
   assimilate-decorator-def =
     ADef(
@@ -78,12 +73,10 @@ rules // Assimilation of decorator definitions
       s
     |}
 
-  // TODO: Only use decorated value var caching if the function is not "plain"
-  // TODO2: Optimize - if this is done, it'd be safe to store the result in x_cached here
   assimilate-decorated-svar(|attr, x_decorated):
     |[ x_decorated(|) ]| ->
     |[ if ?x_node then
-         !x_cached <+ x_decorated
+         !x_cached <+ x_decorated => x_cached
        else
          x_decorated
        end;
