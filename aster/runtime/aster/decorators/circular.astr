@@ -16,20 +16,13 @@ signature constructors
 
 decorators
   
-  decorator plain circular(a|initial-value) =
-    if stored := <get-last-value(|id.global-cache, id, a.signature)> then
-      if <?CIRCULAR_FINISHED(old-value) + ?CIRCULAR_BUSY(old-value)> stored then
-        !old-value
-      else
-        recompute-circular-def(id.plain(a) |a.signature, stored)
-      end
-        else
-      where(
-        old-value := <id.ensure-init <+ !EVAL_FAILED()> initial-value
-      );
-      circular-fixpoint(id.plain(a) |a.signature, old-value)
+  decorator plain node.circular(a|initial-value) =
+    stored := <get-last-value(|id.global-cache, id, a.signature) <+ initial-value.ensure-init <+ !EVAL_FAILED()>;
+    if ?CIRCULAR_FINISHED(value) + ?CIRCULAR_BUSY(value) then
+      !value
+    else
+      <circular-fixpoint(id.plain(a) |a.signature, stored)> node
     end;
-    
     not(EVAL_FAILED)
 
 strategies
@@ -37,7 +30,6 @@ strategies
   // TODO: Start a new fixpoint for a new strongly connected component? (helps performance and prevents premature caching)
   //       or could we give an error for attributes apply premature caching during circular fixpoint?
 
-  
   /**
    * Uncached evaluator for use in fixpoint loop.
    *
