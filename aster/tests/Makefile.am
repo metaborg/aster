@@ -9,6 +9,11 @@ STRCFLAGS = \
 
 RUNTESTS = empty find-minimum repmin repmin-no-copy-rules repmin-anonymous repmin-hag repmin-hag-decorated binary-numbers caching cons-nil anonymous-rules decorators circular-basic circular-liveness circular-liveness-rewrites # circular-propconst
 
+EXTRA_DIST =\
+  $(RUNTESTS:=.astr) \
+  Stratego-Attributes.testsuite \
+  test-aster.str test-aster.meta test-attributes.astr
+
 check : Stratego-Attributes.runtestsuite \
         test-aster test-aster.run \
         $(RUNTESTS:=.str) $(RUNTESTS) \

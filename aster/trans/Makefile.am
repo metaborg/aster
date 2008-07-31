@@ -1,5 +1,6 @@
 include $(top_srcdir)/Makefile.xt
 
+EXTRA_DIST = $(STRS) $(METAS) front/check.astr
 bin_PROGRAMS                  = aster
 nodist_stratego_rerag_SOURCES = aster.c
 nobase_pkgdata_DATA = $(RTREES)
@@ -22,19 +23,20 @@ STRINCLUDES = \
 	-I ../syntax \
 	-I ../runtime
 
-STRS=aster.str  $(wildcard *.str) $(wildcard */*.str) $(wildcard ../runtime/*.str) $(wildcard ../runtime/*/*.str) front/check.str
+STRS  =aster.str  $(wildcard *.str)  $(wildcard */*.str)
+METAS =           $(wildcard *.meta) $(wildcard */*.meta)
 RTREES=$(STRS:.str=.rtree)
 
 cleanstrap :
 	rm -f aster.copy aster-no-check aster front/check.str
 
-aster.c : $(RTREES) ../runtime/aster-runtime.packed-rtree
+aster.c : $(RTREES) ../runtime/aster-runtime.packed-rtree front/check.rtree
 	$(SCOMPILE) -c -i $< -o $@ $(SCFLAGS) $(STRINCLUDES) -m main-aster
 	
 aster.copy : aster
 	cp aster aster.copy
 
-aster-no-check : aster.str $(RTREES)
+aster-no-check : aster.str $(RTREES) front/check.rtree
 	$(MAKE) -C .. all-local # ensure build-time XTC repository is complete at this point
 	[ -e aster.copy ] && cp aster.copy aster-no-check ||\
 	( rm -f $@.c && \
