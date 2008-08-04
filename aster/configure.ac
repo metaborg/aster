@@ -1,5 +1,5 @@
 AC_PREREQ([2.58])
-AC_INIT([ASTR],[0.1],[])
+AC_INIT([ASTER],[0.1],[])
 AM_INIT_AUTOMAKE
 
 test "x$prefix" = xNONE && prefix=$ac_default_prefix

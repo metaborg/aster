@@ -89,33 +89,39 @@ strategies
  
   test-attribute-behavior =
     apply-and-check(
-      !"inherited attribute "
+      !"down copy rule"
     , fetchtd(1; id.test-root)
     , !Fork(Leaf(1), 2).init
     , ?Fork(_, _)
     );
     apply-and-check(
-      !"circular attribute initial value "
+      !"circular attribute initial value"
     , id.test-silly-circular
     , 1.init
     , ?2
     );
     apply-and-check(
-      !"inherite copy rule"
+      !"down copy rule"
     , fetchtd(3; id.test-copy-root)
     , !Fork(1, 3).init
     , ?Fork(1, 3)
     );
     apply-and-check(
-      !"synthesized copy rule (1)"
+      !"up copy rule (1)"
     , id.is-one
     , !Fork(1, 3).init
     , ?1
     );
     apply-and-check(
-      !"synthesized copy rule (2)"
+      !"up copy rule (2)"
     , id.is-one
     , !Fork(3, 1).init
+    , ?1
+    );
+    apply-and-check(
+      !"up copy rule (3)"
+    , id.is-one
+    , !Some(Some(Some(1))).init
     , ?1
     );
     apply-and-check(

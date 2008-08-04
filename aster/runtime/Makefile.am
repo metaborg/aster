@@ -8,7 +8,7 @@ RTREES  = $(STRS:.str=.rtree)
 ARTREES = $(ASTRS:.astr=.rtree)
 
 $(PACKED) : $(RTREES) $(ARTREES)
-	strc -i aster-runtime.rtree --format-check 0 --ast -o $@
+	strc -i aster-runtime.rtree --format-check 0 -I $(top_srcdir)/runtime --ast -o $@
 
 # HACK: for packing by strc, astr files must be called rtree files
 
