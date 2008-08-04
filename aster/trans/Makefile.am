@@ -20,8 +20,8 @@ SCFLAGS = \
 LDADD += $(STRATEGO_XTC_LIBS) $(STRATEGOXT)/lib/libstrc.la
 
 STRINCLUDES = \
-	-I ../syntax \
-	-I ../runtime
+	-I $(top_srcdir)/syntax \
+	-I $(top_srcdir)/runtime
 
 STRS  =aster.str  $(wildcard *.str)  $(wildcard */*.str)
 METAS =           $(wildcard *.meta) $(wildcard */*.meta)
