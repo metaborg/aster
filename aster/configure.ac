@@ -1,5 +1,5 @@
 AC_PREREQ([2.58])
-AC_INIT([ASTER],[0.1],[])
+AC_INIT([ASTER],[0.1],[stratego-bugs@cs.uu.nl])
 AM_INIT_AUTOMAKE
 
 test "x$prefix" = xNONE && prefix=$ac_default_prefix
@@ -19,6 +19,7 @@ AC_PROG_LIBTOOL
 
 AC_CONFIG_FILES([
   Makefile
+  aster.spec
   syntax/Makefile
   trans/Makefile
   tests/Makefile
