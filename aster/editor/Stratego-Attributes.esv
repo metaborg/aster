@@ -1,5 +1,0 @@
-module Stratego-Attributes
-  imports
-    Stratego-Attributes-Colorer
-    Stratego-Attributes-Outliner
-    Stratego-Attributes-Folding

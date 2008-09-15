@@ -1,0 +1,10 @@
+module Stratego-Attributes-Folding
+
+  folding Extension
+  
+    Def
+    
+    RuleDef
+    
+    StrategyDef
+
