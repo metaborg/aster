@@ -4,7 +4,7 @@ colorer Extension
   
   StrategyDef: 0 64 128 bold
   
-  RuleDef: _ bold
+  RuleDef: 0 64 128 bold
   
   _.Var: 0 128 64 italic
 

@@ -19,19 +19,6 @@ strategies // Set-up, testing
     option-wrap(
       verbose-option
     ,
-      /*
-      !Block([
-        Assign("a", "b")
-      , While("e", Block([Assign("a", "c")]))
-      , Return("a")
-      ]).init;
-      
-      oncetd(?Return(_) => it);
-      it.live-before.debug;
-    
-      <exit> 1;
-      */
-      
       input := <make-input>;
       
       <test-live-before> input;
@@ -108,11 +95,11 @@ attributes // Local variable use and define sites
 
 attributes // Control flow defaults
   
-  def down succ-enclosing: // next statement as determined by the enclosing control structures  
+  def down succ-enclosing: // statement following an enclosed statement
     root            -> []
     [s1, s2 | _].s1 -> [s2]
 
-  def succ = id.succ-enclosing // default next statement for a particular statement
+  def succ = id.succ-enclosing // default successor is determined by the enclosed statement
 
 attributes // Control flow for specific statements
   
