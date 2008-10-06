@@ -12,7 +12,9 @@ imports
 
 attributes
 
-  def enable-warnings = rules(AsterWarningsDisabled :- _)
+  def plain enable-warnings = rules(AsterWarningsDisabled :- _)
+  
+  // disable-warnings is currently a built-in
   
   def path =
     id.path-list;

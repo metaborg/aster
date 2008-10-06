@@ -6,13 +6,13 @@
  *
  * @author Lennart Kats <lennart add lclnet.nl>
  */
-module back/rule-merging
+module back/equation-merging
 
 imports
   libstratego-lib
   back/util
-  back/rule-tracing
-  back/rule-caching
+  back/attribute-tracing
+  back/attribute-caching
   back/decorator-definitions
   back/assimilate
   front/analyze

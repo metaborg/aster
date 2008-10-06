@@ -43,15 +43,16 @@ strategies
     
     set-last-value(|global-cache, node, sig, CIRCULAR_BUSY(old-value));
     
-    (s <+ !EVAL_FAILED());
+    (s; id.ensure-init <+ !EVAL_FAILED());
     
     if eq-ignore-annos(|old-value) then
       // verbose-msg(!"  [circ.]", !sig => Attribute(<id>, _, _), !"no change @", <strip-annos> node, !"with", strip-annos);
       circular-add-participant(|global-cache, node, sig, old-value);
-      set-last-value(|global-cache, node, sig, <id>) // remove CIRCULAR_BUSY
-        else
+      // NOTE: this sets old-value as the result value, as it is already initialized, but this may not always be desirable
+      set-last-value(|global-cache, node, sig, old-value) // remove CIRCULAR_BUSY
+    else
       // verbose-msg(!"  [circ.]", !sig => Attribute(<id>, _, _), !"CHANGED @", !node, !"with", strip-annos, !"was", <strip-annos> old-value);
-      aster-initialize-attribute-value(|<all-parents>, global-cache);
+      // UNDONE: was only done here - aster-initialize-attribute-value(|<all-parents>, global-cache);
       circular-set-has-changed(|global-cache);
       set-last-value(|global-cache, node, sig, <id>)
     end

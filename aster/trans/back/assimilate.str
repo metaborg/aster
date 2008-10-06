@@ -8,11 +8,12 @@ module back/assimilate
 imports
   Stratego-Attributes
   aster
-  back/native-attributes
   back/util
-  back/rule-merging
-  back/rule-definitions
+  back/equation-merging
+  back/equation-definitions
+  back/equation-postprocess
   back/attribute-references
+  back/attribute-builtins
   back/anonymous-rewrites
 
 strategies
@@ -21,9 +22,13 @@ strategies
     one(try(add-imports));
     
     all-stratego-defs(try(
-      assimilate-decorator-def
+      assimilate-decorator-def;
+      equation-postprocess-def
     <+
-      assimilate-def
+      assimilate-def;
+      equation-postprocess-def
+    <+
+      assimilate-rewrite-def
     ));
     
     topdown(try(

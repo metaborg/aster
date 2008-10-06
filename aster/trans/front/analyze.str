@@ -9,11 +9,12 @@ imports
   libstratego-lib
   Stratego-Attributes
   back/assimilate
+  front/analyze-foreign-ops
 
-strategies // Analysis
+strategies // Information gathering
   
   analyze =
-    ( ?ADef(Type(type, decorators, sort), _, ADefStrategy(_, attribute, _))
+    ( ?ADef(Type(type, decorators, sort), pattern, ADefStrategy(child, attribute, body))
     + ?ADecl(Type(type, decorators, sort), [attribute])
     );
     with(
@@ -21,21 +22,11 @@ strategies // Analysis
       old-decorators := <AttributeDecorators <+ ![]> sig;
       decorators'    := <unify-decorators> (decorators, old-decorators);
       
-      switch !type
-        case Decorator():
-          sig' := <decorator-signature> sig;
-          rules(
-            IsDecorator: sig
-            HasDeclaration: sig
-            AttributeDecorators: sig' -> <AttributeDecorators> sig
-          )
-        case Def():
-          rules(
-            HasDeclaration: sig
-          )
-        case Eq():
-          id
+      record-equation-properties(|type, sig);
+      if !body then
+        record-equation-operations(|body, pattern, child, attribute, sig)
       end;
+      
       rules(
         AttributeDecorators: sig -> decorators'
       )
@@ -47,10 +38,28 @@ strategies // Analysis
       UsesAnonymousRewriteRules: _
     )
   
+  record-equation-properties(|type, sig) =
+    switch !type
+      case Decorator():
+        sig' := <decorator-signature> sig;
+        rules(
+          IsDecorator: sig
+          HasDeclaration: sig
+          AttributeDecorators: sig' -> <AttributeDecorators> sig
+        )
+      case Def():
+        rules(
+          HasDeclaration: sig
+        )
+      case Eq():
+        id
+    end
+  
   unify-decorators =
     union // TODO: Smart decorator unification
+
     
-strategies // Providing information
+strategies // Information providing
   
   get-attribute-decorators =
     attribute-signature;
@@ -61,8 +70,21 @@ strategies // Providing information
       attribute-signature;
       IsDecorator
     )
+  
+  /**
+   * Checks if an attribute has "foreign" operations, which may
+   * require caching and term initialization.
+   *
+   * @see is-foreign-operation
+   */
+  has-foreign-operations =
+    where(
+      attribute-signature;
+      HasForeignOperations
+    <+ verbose-msg(!"  does not have foreign operations:", attribute-signature); fail
+    )
 
-  has-plain-decorator =
+  has-plain-decorator = // TODO: Is this still required?
     where(
       ?Decorator("plain", [], [])
     <+

@@ -94,6 +94,8 @@ attributes // Local variable use and define sites
     Assign(var, _) -> [var]
 
 attributes // Control flow defaults
+
+  // TODO: perhaps a "first" attribute should be specified, to indicate the first substatement, and a corresponding decorator to auto-call it?
   
   def down succ-enclosing: // statement following an enclosed statement
     root            -> []

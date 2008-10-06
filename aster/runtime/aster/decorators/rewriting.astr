@@ -14,12 +14,13 @@ decorators
         
   decorator rewrite-td(a) =
     if a.defined then
-      a
+      ?before; a; (?before <+ id.ensure-init)
     end;
-    id.all(id.rewrite-td(a))
+    id.all(id.rewrite-td(a)) // TODO: use all-inline?
 
   decorator rewrite-bu(a) =
-    id.all(id.rewrite-bu(a));
+    id.all-inline(id.rewrite-bu(a));
     if a.defined then
       a
     end
+

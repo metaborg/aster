@@ -11,6 +11,7 @@ strategies
 
   test-attributes =
     test-default-attributes;
+    test-standard-library;
     test-attribute-behavior;
     test-set-operations;
     test-reflective-attributes
@@ -53,20 +54,23 @@ strategies
     , ?Leaf(_)
     )
 
-strategies
+strategies // Helpers
   
   fetchtd(s) = oncetd(s; ?x); !x
 
-attributes
+  test-set-operations =
+    apply-and-check(
+      !"non-reference attribute"
+    , id.union
+    , { a := [1,2,3].init;
+        b := [1,2,3].init;
+        !(a,b)
+      }
+    , eq-ignore-annos(|[1,2,3])
+    )
 
-  def down test-root = id.parent.test-root <+ id
-  
-  def circular(|0) test-silly-circular = !2
-  
-  def down root.test-copy-root = id
-  
-  def up 1.is-one = id
-  
+attributes // Test attribute behavior
+
   def Fork(a@1, 2).a.child-def = id
   
   def first-kid = one(?kid); !kid
@@ -84,46 +88,14 @@ attributes
   def Fork(a, b).b.parent-first-kid = id.first-kid
   
   def stupid.stupid.stupid = id
+  
+  def build2 := 2
+  
+  def init(|t) := t
 
 strategies
  
   test-attribute-behavior =
-    apply-and-check(
-      !"down copy rule"
-    , fetchtd(1; id.test-root)
-    , !Fork(Leaf(1), 2).init
-    , ?Fork(_, _)
-    );
-    apply-and-check(
-      !"circular attribute initial value"
-    , id.test-silly-circular
-    , 1.init
-    , ?2
-    );
-    apply-and-check(
-      !"down copy rule"
-    , fetchtd(3; id.test-copy-root)
-    , !Fork(1, 3).init
-    , ?Fork(1, 3)
-    );
-    apply-and-check(
-      !"up copy rule (1)"
-    , id.is-one
-    , !Fork(1, 3).init
-    , ?1
-    );
-    apply-and-check(
-      !"up copy rule (2)"
-    , id.is-one
-    , !Fork(3, 1).init
-    , ?1
-    );
-    apply-and-check(
-      !"up copy rule (3)"
-    , id.is-one
-    , !Some(Some(Some(1))).init
-    , ?1
-    );
     apply-and-check(
       !"attribute to get a child node"
     , id.first-kid
@@ -189,20 +161,97 @@ strategies
     , id.stupid
     , !1.init
     , 1
-    )
-
-  test-set-operations =
+    );
     apply-and-check(
-      !"non-reference attribute"
-    , id.union
-    , { a := [1,2,3].init;
-        b := [1,2,3].init;
-        !(a,b)
-      }
-    , eq-ignore-annos(|[1,2,3])
+      !"attribute result is an initialized term (1)"
+    , id.init
+    , !2
+    , ?2{_}
+    );
+    apply-and-check(
+      !"attribute result is an initialized term (2)"
+    , id.ensure-init
+    , !2
+    , ?2{_}
+    );
+    apply-and-check(
+      !"attribute result is an initialized term (3)"
+    , id.build2
+    , !1.init
+    , ?2{_}
+    );
+    apply-and-check(
+      !"attribute result is an initialized term (4)"
+    , id.test-silly-circular
+    , !1.init
+    , ?2{_}
+    );
+    apply-and-check(
+      !"attribute result is an initialized term (4)"
+    , id.init(|2)
+    , !1.init
+    , ?2{_}
     )
 
-attributes
+attributes // Standard library
+
+  def down test-root = id.parent.test-root <+ id
+  
+  def down root.test-copy-root = id
+  
+  def up 1.is-one = id
+
+  def circular(|0) test-silly-circular := 2
+
+  def rewrite-bu replace-nodes: Leaf(x) -> Leaf(6)
+
+strategies
+  
+  test-standard-library =
+      apply-and-check(
+      !"down copy rule"
+    , fetchtd(1; id.test-root)
+    , !Fork(Leaf(1), 2).init
+    , ?Fork(_, _)
+    );
+    apply-and-check(
+      !"circular attribute initial value"
+    , id.test-silly-circular
+    , 1.init
+    , ?2
+    );
+    apply-and-check(
+      !"down copy rule"
+    , fetchtd(3; id.test-copy-root)
+    , !Fork(1, 3).init
+    , ?Fork(1, 3)
+    );
+    apply-and-check(
+      !"up copy rule (1)"
+    , id.is-one
+    , !Fork(1, 3).init
+    , ?1
+    );
+    apply-and-check(
+      !"up copy rule (2)"
+    , id.is-one
+    , !Fork(3, 1).init
+    , ?1
+    );
+    apply-and-check(
+      !"up copy rule (3)"
+    , id.is-one
+    , !Some(Some(Some(1))).init
+    , ?1
+    );
+    apply-and-check(
+      !"basic rewriting"
+    , id.replace-nodes
+    , !Fork(Fork(Fork(Leaf(1), Leaf(2)), Leaf(3)), Fork(Leaf(4), Leaf(5))).init
+    , ?Fork(Fork(Fork(Leaf(6), Leaf(6)), Leaf(6)), Fork(Leaf(6), Leaf(6)))
+    )
+
+attributes // Reflective attributes
 
   def my-signature = id.signature
 
@@ -251,3 +300,4 @@ strategies
     , !1.init
     , "failed"
     )
+

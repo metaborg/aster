@@ -1,9 +1,9 @@
 /**
- * Rule caching.
+ * Attribute memoization.
  *
  * @author Lennart Kats <lennart add lclnet.nl>
  */
-module back/rule-caching
+module back/attribute-caching
 
 imports
   libstratego-lib
@@ -31,8 +31,9 @@ rules
            end
     ]|
     where
+      ([], a*) := <RuleParams> def; // no strategy args
       not(has-plain-decorator);
-      ([], a*) := <RuleParams> def // cacheable 
+      <has-foreign-operations> def
     with
       ([], t*)        := <params-to-vars> ([], a*);
       s_cache-read    := <add-cache-read(|t*)> def;
@@ -48,13 +49,15 @@ rules
          s_init
     ]|
     with
-      if has-plain-decorator then
+      if has-plain-decorator + not(has-foreign-operations) then
         s_init := Id()
       else
         x_all-parents  := <AllParentsVar>;
         x_global-cache := <GlobalCacheVar>;
         s_init := |[ aster-initialize-attribute-value(|x_all-parents, x_global-cache) ]|
       end
+
+strategies
 
   add-cache-read(|sargs, targs) =
     if [] := sargs then

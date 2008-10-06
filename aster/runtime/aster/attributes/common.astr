@@ -1,9 +1,9 @@
 /**
- * Assertion attributes.
+ * Common attributes.
  *
  * @author Lennart Kats <lennart add lclnet.nl>
  */
-module aster/attributes/assert
+module aster/attributes/common
 
 imports
   libstratego-lib
@@ -11,13 +11,51 @@ imports
   aster/decorators/flow
 
 attributes   
-   
+  
+  /**
+   * Rewrite all subterms using <a>, and reinitialize the result as necessary.
+   *
+   * @see all-inline(a)
+   */
   def plain all(a) =
     ?before;
     all(a);
     (?before <+ id.init)
   
+  /**
+   * Rewrite some subterms using <a>, and reinitialize the result as necessary.
+   */
   def plain some(a) =
     ?before;
     some(a);
     (?before <+ id.init)
+  
+  /**
+   * Rewrite one subterm using <a>, and reinitialize the result as necessary.
+   */
+  def plain one(a) =
+    ?before;
+    one(a);
+    (?before <+ id.init)
+
+attributes
+  
+  /**
+   * Rewrite all subterms using <a>, replacing the parent reference of all subterms,
+   * rather than completely re-initializing them.
+   *
+   * @see all(a)
+   */
+  def plain all-inline(a) =
+    ?before;
+    all(a);
+    if not(?before) then
+      ?after;
+      all(
+        aster-is-initialized(|<all-parents>)
+        < set-parent(|<all-parents>, after)
+        + aster-initialize-node(|<all-parents>, <global-cache>, after)
+      );
+      set-parent(|<all-parents>, NoParent())
+    end
+

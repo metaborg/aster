@@ -11,6 +11,9 @@ imports
   back/attribute-references
   back/decorator-definitions
 
+overlays
+  PLAIN_DECORATOR = Decorator("plain", [], [])
+
 rules // Adding decoration logic to decorated rules
 
   add-decorated-rule-logic(|def):
@@ -22,67 +25,118 @@ rules // Adding decoration logic to decorated rules
          s_rewrite => x_node;
          s_body'
     ]|
-    where // TODO: put his in an additional with clause
-      <get-attribute-decorators> def;
-      filter(not(Decorator("plain", [], []))) => ds;
+    where // TODO: put his in a separate with clause
+      with(
+        <get-attribute-decorators> def => ds
+      );
+      // UNDONE: filter(not(PLAIN_DECORATOR => is-caching-disabled)) => ds;
       
-      // where  
       !ds => [_ | _]
     with
       (s*, t*) := <params-to-vars> (sa*, a*);
-      s_body'  := <try(add-ensure-init(|def));
-                   fold-decorated-with-caching(|ds, def, s*, t*)> s_body
+      
+      let is-caching-disabled =
+        ?once;                            // only affect the inner attribute;
+        <not(has-foreign-operations)> def // disable caching if not required by the equations
+      in
+        s_body' :=
+          <try(add-ensure-init(|def));
+           fold-decorated-with-caching(is-caching-disabled|ds, def, s*, t*)> s_body
+      end
   
+  /**
+   * Adds strategy calls to the end of an attribute definition
+   * to ensure the resulting term is initialized.
+   */
   add-ensure-init(|def):
     s ->
     |[ s; (EVAL_FAILED <+ aster-initialize-attribute-value(|x_all-parents, x_global-cache)) ]|
     where
-      not(<has-plain-decorator> def)
+      not(<has-plain-decorator <+ has-foreign-operations> def)
     with
       x_all-parents   := <AllParentsVar>;
       x_global-cache  := <GlobalCacheVar>
     
-  fold-decorated-with-caching(|decorators, def, s*, t*) =
+  fold-decorated-with-caching(is-caching-disabled|decorators, def, s*, t*) =
     ?s_body;
     !decorators;
     foldr(
       !s_body
-    , make-decorated-with-caching(|def, s*, t*);
-      assimilate-all-inside-decorator;
-      rename-cached-var
+    , let
+        set-caching-disabled = try(?is-caching-disabled)
+        is-caching-disabled' = where(!is-caching-disabled) + is-caching-disabled
+      in
+        make-decorated-ignore-plain;
+        set-caching-disabled
+      <+
+        make-decorated-with-caching(set-caching-disabled, is-caching-disabled' |def, s*, t*);
+        assimilate-all-inside-decorator;
+        rename-cached-var
+      end
     )
+  
+  /**
+   * Avoids directly generating code for the special 'plain' decorator.
+   */
+  make-decorated-ignore-plain:
+    (PLAIN_DECORATOR(), s_decorated) -> s_decorated
    
-  make-decorated-with-caching(|def, s*, t*):
-    (x_decorator, s_decorated) ->
+  /**
+   * Creates a decorated attribute body, taking caching into consideration.
+   *
+   * @param set-caching-disabled  If invoked, caching is disabled from this decorator on
+   * @param is-caching-disabled   Checks if caching is disabled through success/failure
+   */
+  make-decorated-with-caching(set-caching-disabled, is-caching-disabled|def, s*, t*):
+    (decorator, s_decorated) ->
     |[ let x_cached =
-         s_cache-read // could be EVAL_FAILED
+         s_cache-read // note: this could be EVAL_FAILED
        <+
-         s_ref; s_cache-write
-         // TODO: Should the decorated copy rule be applied here??
+         { x_cached-node: ?x_cached-node;
+           s_ref;
+           s_cache-write
+         }
        in
          x_cached;
          not(EVAL_FAILED)
        end
     ]|
     with
-      x_decorated := <?Attribute(<id>, _, _)> def;
+      t_decorated   := <decorated-signature(|s*, t*)> def;
+      s_ref         := <make-decorated(|t_decorated)> (decorator, s_decorated);
+      x_cached      := <CachedVar>;
+      x_cached-node := <newname> "cached-node";
+      
+      if is-caching-disabled <+ <has-plain-decorator> decorator then
+        set-caching-disabled;
+        s_cache-read  := Fail();
+        s_cache-write := Id()
+      else
+        {| NodeVar:
+          rules(NodeVar := x_cached-node);
+          s_cache-read  := <add-cache-read(|s*, t*)> def;
+          s_cache-write := <add-cache-write(|s*, t*)> def
+        |}
+      end
+  
+  /**
+   * Determines the signature argument of a decorator call,
+   * for use with the id.signature attribute.
+   */
+  decorated-signature(|s*, t*):
+    Attribute(x_decorated, _, _) -> t_decorated
+    with
       if <IsDecoratorAccessorName> x_decorated then
         t_decorated := Var(<SignatureVar>)
       else
         t_decorated := <to-attribute-signature-term> Attribute(x_decorated, s*, <drop(|DEFAULT_ARG_COUNT())> t*)
-      end;
-
-      s_ref    := <make-decorated(|t_decorated)> (x_decorator, s_decorated);
-      x_cached := <CachedVar>;
-      
-      if <has-plain-decorator> x_decorator then
-        s_cache-read  := Fail();
-        s_cache-write := Id()
-      else
-        s_cache-read  := <add-cache-read(|s*, t*)> def;
-        s_cache-write := <add-cache-write(|s*, t*)> def
       end
   
+  /**
+   * Creates a decorated attribute body.
+   *
+   * @see make-decorated-with-caching
+   */
   make-decorated(|t_decorated-signature):
     (Decorator(x_decorator, s*, t*), s_decorated) ->
     <desugar-all>
@@ -145,10 +199,8 @@ strategies // General helpers
   
   assimilate-expr-inside-decorator =
     with(
-      x_parent       := <ParentVar>;
-      x_all-parents  := <AllParentsVar>;
-      x_global-cache := <GlobalCacheVar>;
-      x_node         := <NodeVar>;
-      s_parent       := |[ ?x_node < !x_parent + !UnknownParent() ]|
+      x_parent := <ParentVar>;
+      x_node   := <NodeVar>;
+      s_parent := |[ ?x_node < !x_parent + !UnknownParent() ]|
     );
-    assimilate-expr-inside-ag(|None(), s_parent, s_parent, x_node, x_all-parents, x_global-cache)
+    assimilate-expr-inside-ag(|s_parent, s_parent)

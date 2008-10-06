@@ -8,7 +8,7 @@ module decorator-definitions
 imports
   libstratego-lib
   front/analyze
-  back/rule-definitions
+  back/equation-definitions
   back/decorator-references
 
 overlays

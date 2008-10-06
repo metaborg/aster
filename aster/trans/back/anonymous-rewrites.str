@@ -10,7 +10,7 @@ strategies
    
   // TODO2: Apply partial ordering to anon. rewr. rules?
    
-  assimilate-def:
+  assimilate-rewrite-def:
     AnonymousRewriteRule(t_pattern, t_after, s_where) ->
     |[ eval-anonymous-rewrite =
          ?x_before;

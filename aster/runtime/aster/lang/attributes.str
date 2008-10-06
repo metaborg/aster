@@ -2,6 +2,8 @@
  * Assertion runtime: attribute storage.
  *
  * @author Lennart Kats <lennart add lclnet.nl>
+ *
+ * @internal
  */
 module aster/lang/attributes
 

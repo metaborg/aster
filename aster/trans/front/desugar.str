@@ -22,6 +22,7 @@ rules
     + desugar-fail-term
     + desugar-attribute-child
     + desugar-application
+    + desugar-build-apply
     ));
     
     try(
@@ -56,7 +57,7 @@ rules
 
 rules
 
-  // Desugar Stratego-Sugar a bit for decorator svarss
+  // Desugar Stratego-Sugar a bit for decorator svars
 
   desugar-application:
     Strat |[ x ]| -> |[ x(|) ]|
@@ -121,6 +122,15 @@ rules
   at-match(s) =
     Match(s) + NameDefBlock(id, s, id) + RuleNoCond(s, id) + Rule(s, id, id) + AM(id, s) + Assign(s, id)
   + ADefStrategy(id, Attribute(id, id, map(s)), id) + AnonymousRewriteRule(s, id, id)
+
+  desugar-build-apply:
+    Build(App(strategy, term)) -> BA(strategy, term)
+  
+  desugar-build-apply:
+    Build(NoAnnoList(RootApp(apply))) -> apply
+  
+  desugar-build-apply:
+    Build(NoAnnoList(AttributeTerm(apply))) -> apply
      
 rules // flatten block definitions to individual definitions
 

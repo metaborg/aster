@@ -2,6 +2,8 @@
  * Assertion runtime: annotations.
  *
  * @author Lennart Kats <lennart add lclnet.nl>
+ *
+ * @internal
  */
 module aster/lang/annotations
 
@@ -42,10 +44,10 @@ strategies // Util
       ?term' <+ aster-remove-annos => term'
     )
   
-  is-aster-initialized(|all-parents) = where(get-parent(|all-parents))
+  aster-is-initialized(|all-parents) = where(get-parent(|all-parents))
   
   aster-node-path(|parent, all-parents, global-cache) =
-    if is-aster-initialized(|all-parents) then
+    if aster-is-initialized(|all-parents) then
       eval-path-and-node(|parent, all-parents, global-cache, 0)
     else
       <conc-strings> ("?", ".", <to-tiny-string>)
@@ -64,13 +66,15 @@ strategies // Node initialization
    * support for reference lists and tuples.
    */
   aster-initialize-attribute-value(|all-parents, global-cache) =
-    // Support reference collections
-    map(aster-initialize-node-ensure(|all-parents, global-cache))
-  <+
-    where(get-constructor => ""); // is-tuple
-    all(aster-initialize-node-ensure(|all-parents, global-cache))
-  <+
-    aster-initialize-node-ensure(|all-parents, global-cache)
+    if not(aster-is-initialized(|all-parents)) then // be optimistic; start with this check
+      // Support reference lists/tuples
+      map(aster-initialize-node-ensure(|all-parents, global-cache))
+    <+
+      where(get-constructor => ""); // is-tuple
+      all(aster-initialize-node-ensure(|all-parents, global-cache))
+    <+
+      aster-initialize-node(|all-parents, global-cache)
+    end
   
   /**
    * Initialize a node if it was not yet initialized.
@@ -82,7 +86,7 @@ strategies // Node initialization
     aster-initialize-node-ensure(id|all-parents, global-cache)
 
   aster-initialize-node-ensure(warning|all-parents, global-cache) =
-    if not(is-aster-initialized(|all-parents)) then
+    if not(aster-is-initialized(|all-parents)) then
       where(warning);    
       aster-initialize-node(|all-parents, global-cache)
     end
@@ -101,8 +105,10 @@ strategies // Node initialization
     rules(AsterWarningsDisabled :- _) // ensure this rule is defined somewhere
   
   aster-is-reference-collection(|all-parents) = 
-    (is-list + is-tuple);
-    all(is-aster-initialized(|all-parents))
+    list-loop(aster-is-initialized(|all-parents))
+  <+
+    where(get-constructor => ""); // is-tuple
+    all(aster-is-initialized(|all-parents))
   
   aster-initialize-node-no-rewrite(|all-parents) =
     aster-initialize-node-no-rewrite(|all-parents, NoParent())
@@ -119,15 +125,17 @@ strategies // Node initialization
 strategies // Adding/removing node annotations
   
   aster-add-annos =
-    leaves-consnil(aster-add-anno)
+    leaves-consnil(
+      aster-add-anno
+    )
 
   aster-add-anno:
     t {a*} -> t {b*}
     where
       if [] := a* then
-        b* := [<newname> "@"]
+        b* := [<newname> "@"] // adding annos is expensive, but newname is as cheap as a counter or new
       else
-        b* := [<newname> "@" | <filter(not(is-aster-annotation))> a*]
+        b* := [<newname> "@"| <filter(not(aster-is-annotation))> a*]
       end
   
   aster-remove-annos =
@@ -137,19 +145,22 @@ strategies // Adding/removing node annotations
   
   aster-remove-anno =
     try(
-      \t {<is-aster-annotation>} -> t {}\
+      \t {<aster-is-annotation>} -> t {}\
     <+
       ?_{}
     <+
       \t {a*} -> t {b*}
        where
-         b* := <filter(not(is-aster-annotation))> a*\
+         b* := <filter(not(aster-is-annotation))> a*\
     )
   
-  is-aster-annotation =
+  /**
+   * @see aster-is-initialized
+   */
+  aster-is-annotation =
     is-string
     // TODO: Is this a sensible optimization?
-    // ; explode-string => ['@' | _] 
+    // ; explode-string => ['@' | _]
 
 strategies // Hash table storage for init/uninit
 

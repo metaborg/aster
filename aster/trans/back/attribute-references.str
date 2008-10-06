@@ -8,30 +8,32 @@ module back/attribute-references
 imports
   Stratego-Attributes
   aster
-  back/native-attributes
+  back/attribute-builtins
   back/decorator-references
 
 rules // Evaluate attributes in AG context
 
-  assimilate-expr-inside-ag(|sig, s_parent, s_parent-desired, x_node, x_all-parents, x_global-cache) =
-    assimilate-native-ref-inside-ag(|s_parent, x_all-parents, x_node, x_global-cache)
-  <+
+  assimilate-expr-inside-ag(|s_parent, s_parent-desired) =
     assimilate-native-ref
   <+
     assimilate-decorator-ref
   <+
-    assimilate-attr-ref-inside-ag(|s_parent, s_parent-desired, x_node, x_all-parents, x_global-cache)
+    assimilate-attr-ref-inside-ag(|s_parent, s_parent-desired)
   
   // TODO: Eliminate s_parent-desired param
-  assimilate-attr-ref-inside-ag(|s_parent, s_parent-desired, x_node, x_all-parents, x_global-cache):
+  assimilate-attr-ref-inside-ag(|s_parent, s_parent-desired):
     AttributeRef(t, attr @ Attribute(name, s*, t*)) ->
     |[ <x_eval(s* |<s_parent-desired>, x_all-parents, x_global-cache, x_rewrite-mode, t*)> t ]|
     where
       not(<is-decorator> attr)
     with
       !attr;
-      x_eval         := <attribute-accessor-name> attr;
-      x_rewrite-mode := <RewriteModeVar>
+      x_parent       := <ParentVar>;
+      x_all-parents  := <AllParentsVar>;
+      x_global-cache := <GlobalCacheVar>;
+      x_node         := <NodeVar>;
+      x_rewrite-mode := <RewriteModeVar>;
+      x_eval         := <attribute-accessor-name> attr
 
 rules // Evaluate attributes outside of AG context
 
@@ -42,7 +44,8 @@ rules // Evaluate attributes outside of AG context
   <+
     assimilate-decorator-ref
 
-  // TODO2: Optimize - use local variables to cache all <global-cache> and <all-parents> calls
+  // TODO2: Optimize - use local vars to cache all <global-cache> and <all-parents> calls
+  //        outside equations, similar to what is done in equation-postprocess atm
 
   assimilate-attr-ref:
     AttributeRef(t, attr @ Attribute(name, s*, t*)) ->

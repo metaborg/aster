@@ -7,21 +7,34 @@ strategies
       verbose-option
     ,
       root := "root".init;
-      <debug(!1); eq>      (root.get-new-1, root.get-new-1);
-      <debug(!2); eq>      (root.get-new-2, root.get-new-2);
-      <debug(!3); not(eq)> (root.get-new-3, root.get-new-3);
-      <debug(!4); not(eq)> (root.get-new-4, root.get-new-4)
+      <debug(!1); eq>      (root.get-cached-1, root.get-cached-1);
+      <debug(!2); eq>      (root.get-cached-2, root.get-cached-2);
+      <debug(!3); not(eq)> (root.get-uncached-3, root.get-uncached-3);
+      <debug(!4); not(eq)> (root.get-uncached-4, root.get-uncached-4);
+      <debug(!5); not(eq)> (root.get-uncached-5, root.get-uncached-5);
+      <debug(!6); not(eq)> (root.get-uncached-6, root.get-uncached-6);
+      <debug(!7); eq>      (root.get-cached-7, root.get-cached-7);
+      <debug(!8); eq>      (root.get-cached-8, root.get-cached-8)
     )
 
 attributes
   
-  def get-new-1 = new
+  def get-cached-1 = new
   
-  def noop get-new-2 = new
+  def noop get-cached-2 = new
   
-  def plain get-new-3 = new
+  def plain get-uncached-3 = new
   
-  def uncached get-new-4 = new
+  def uncached get-uncached-4 = new
+  
+  def down plain get-uncached-5 = new
+  
+  def down uncached get-uncached-6 = new
+  
+  // here, the equation result gets cached, but the decorated result does not
+  def plain down get-cached-7 = new
+  
+  def uncached down get-cached-8 = new
   
 decorators
 

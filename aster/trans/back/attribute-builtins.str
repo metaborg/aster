@@ -3,7 +3,7 @@
  *
  * @author Lennart Kats <lennart add lclnet.nl>
  */
-module back/native-attributes
+module back/attribute-builtins
 
 imports
   Stratego-Attributes
@@ -28,9 +28,7 @@ rules // Native attribute definitions
   // special or optimized operations not directly supported by regular
   // attributes.
   
-  // TODO2: Cleanup - remove all assimilate-native-ref-inside-ag rules, and perform the optimization elswehere
-  //        (preferably after doing an strc inlining pass)
-  // TODO2: Cleanup - move native attribute to the library, where possible
+  // TODO2: Cleanup - move native attributes such as global-cache to the library, where possible
   
   is-native-attribute =
     where(assimilate-native-attr)
@@ -39,11 +37,6 @@ rules // Native attribute definitions
     AttributeRef(t, attr) -> |[ !t; s ]|
     where
       s := <assimilate-native-attr> attr
-    
-  assimilate-native-ref-inside-ag(|s_parent, x_all-parents, x_current, x_global-cache):
-    AttributeRef(t, attr) -> |[ !t; s ]|
-    where
-      s := <assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_global-cache)> attr
    
   assimilate-native-attr:
     Attribute("eq", [], [t]) -> |[ eq-ignore-annos(|t) ]|
@@ -65,14 +58,8 @@ rules // Native attribute definitions
   assimilate-native-attr:
     Attribute("parent", [], []) -> |[ get-parent(|<all-parents>); not(NoParent) ]|
 
-  assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_global-cache):
-    Attribute("parent", [], []) -> |[ s_parent; not(NoParent) ]|
-  
   assimilate-native-attr:
     Attribute("path-list", [], []) -> |[ get-ancestor-list(|<all-parents>) ]|
-
-  assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_global-cache):
-    Attribute("path-list", [], []) -> |[ get-ancestor-list(|x_all-parents) ]|
 
   assimilate-native-attr:
     Attribute("uninit", [], []) -> |[ aster-remove-annos ]|
@@ -83,18 +70,12 @@ rules // Native attribute definitions
   assimilate-native-attr:
     Attribute("init", [], []) -> |[ aster-initialize-node(|<all-parents>, <global-cache>) ]|
   
-  assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_global-cache):
-    Attribute("init", [], []) -> |[ aster-initialize-node(|x_all-parents, x_global-cache) ]|
-  
   assimilate-native-attr:
     Attribute("eval", [s, s-default], []) -> |[ fatal-err(|"id.eval() not fully implemented yet") ]|
   
   assimilate-native-attr:
     Attribute("ensure-init", [], []) -> |[ aster-initialize-attribute-value(|<all-parents>, <global-cache>) ]|
   
-  assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_global-cache):
-    Attribute("ensure-init", [], []) -> |[ aster-initialize-attribute-value(|x_all-parents, x_global-cache) ]|
-    
   assimilate-native-attr:
     Attribute("signature", [], []) -> |[ !t_signature => Attribute(_, [], _) ]|
     with
@@ -105,11 +86,6 @@ rules // Native attribute definitions
     with
       t_signature := <CurrentSignatureTerm <+ !|[ <fail> ]|>
   
-  assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_global-cache):
-    Attribute("global-cache", [], []) -> |[ !x_global-cache ]|
-    with
-      x_global-cache := <GlobalCacheVar>
-    
   assimilate-native-attr:
     Attribute("global-cache", [], []) -> Strat |[ global-cache ]|
     

@@ -1,5 +1,6 @@
 STRCFLAGS = \
 	-la stratego-lib \
+	-la strc \
 	-I ../syntax \
 	-I ../trans \
 	-I ../runtime \
@@ -40,7 +41,6 @@ test-aster : test-attributes.str
 
 test-attributes.str : test-attributes.astr
 	$(top_srcdir)/trans/aster -i $< -o $@ --verbose 2
-	
 
 %.run : %
 	@echo

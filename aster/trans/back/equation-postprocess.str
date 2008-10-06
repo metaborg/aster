@@ -1,0 +1,72 @@
+/**
+ * Aster equation post-processing:
+ * small desugarings and optimizations after
+ * assimilation.
+ *
+ * @author Lennart Kats <lennart add lclnet.nl>.
+ 
+ */
+module back/equation-postprocess
+
+imports
+  aster
+
+strategies
+
+  equation-postprocess-def =
+    if equation-postprocess-allowed then
+      topdown(repeat(equation-postprocess))
+    end
+
+rules // Simple desugarings
+  
+  equation-postprocess:
+    BA(s, RootApp(Id())) -> s
+  
+  equation-postprocess:
+    Where(Id()) -> Id()
+  
+  equation-postprocess:
+    Seq(Id(), s) -> s
+  
+  equation-postprocess:
+    Seq(s, Id()) -> s
+
+rules // Prefer local variables
+
+  equation-postprocess-allowed =
+    not(oncetd(
+      RDefNoArgs(is-equation-postprocessed, id)
+    + RDef(is-equation-postprocessed, [], id)
+    + RDefT(is-equation-postprocessed, [], [], id)
+    + SDefNoArgs(is-equation-postprocessed, id)
+    + SDef(is-equation-postprocessed, [], id)
+    + SDefT(is-equation-postprocessed, [], [], id)
+    ))
+  
+  is-equation-postprocessed = "parent" + "all-parents" + "rewrite-mode" + "global-cache"
+
+  equation-postprocess:
+    CallNoArgs(s) -> <equation-postprocess> CallT(s, [], [])
+
+  equation-postprocess:
+    Call(s, s*) -> <equation-postprocess> CallT(s, s*, [])
+
+  equation-postprocess:
+    CallT(SVar("all-parents"), [], []) -> Build(Var(<AllParentsVar>))
+    
+  equation-postprocess:
+    CallT(SVar("rewrite-mode"), [], []) -> Build(Var(<RewriteModeVar>))
+    
+  equation-postprocess:
+    CallT(SVar("global-cache"), [], []) -> Build(Var(<GlobalCacheVar>))
+      
+  equation-postprocess:
+    CallT(SVar("parent"), [], []) ->
+    |[ ?x_node; !x_parent; not(UnknownParent)
+       <+ get-parent(|x_all-parents)
+    ]|
+    with
+      x_node        := <NodeVar>;
+      x_parent      := <ParentVar>;
+      x_all-parents := <AllParentsVar>

@@ -1,16 +1,16 @@
 /**
- * Aster rule definitions.
+ * Aster atttribute equation definition assimilation.
  *
  * @author Lennart Kats <lennart add lclnet.nl>
  */
-module back/rule-definitions
+module back/equation-definitions
 
 imports
   Stratego-Attributes
   aster
-  back/native-attributes
   back/util
-  back/rule-merging
+  back/equation-merging
+  back/attribute-builtins
   back/attribute-references
   back/decorator-definitions
   back/decorator-wrapping
@@ -73,7 +73,7 @@ strategies
       attribute-signature-wrap(
         !s;
         topdown(try(
-          assimilate-expr-inside-ag(|sig, s_parent, s_parent-desired, x_node, x_all-parents, x_global-cache)
+          assimilate-expr-inside-ag(|s_parent, s_parent-desired)
         ));
         add-eval-failed => s'
       | <CurrentSignatureTerm <+ !Attribute(x_name, sa*, a'*)>
@@ -192,4 +192,3 @@ rules // Semantic rule definition helpers
       end
     
     // TODO2: Optimize - ancestor-check should use intermediate patterns
-

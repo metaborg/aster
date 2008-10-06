@@ -45,5 +45,5 @@ aster-no-check : aster.str $(RTREES) front/check.rtree
 	  rm front/check.str $@.c )
 
 front/check.str : front/check.astr aster-no-check
-	./aster-no-check --verbose 2 -i $< -o $@ || $(MAKE) cleanstrap
+	./aster-no-check --verbose 2 -i $< -o $@ || ($(MAKE) cleanstrap; exit 1)
 

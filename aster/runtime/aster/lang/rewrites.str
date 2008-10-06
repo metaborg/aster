@@ -2,6 +2,8 @@
  * Assertion runtime: anonymous rewrite rules.
  *
  * @author Lennart Kats <lennart add lclnet.nl>
+ *
+ * @internal
  */
 module aster/lang/rewrites
 
@@ -51,8 +53,12 @@ strategies
 strategies
 
   // TODO: Optimize - don't reinitialize nodes if no attrs evaluated
-  
+  //       or check out if id.all-inline could work here
+
   aster-initialize-node(|all-parents, global-cache) =
+    aster-initialize-node(|all-parents, global-cache, NoParent())
+  
+  aster-initialize-node(|all-parents, global-cache, parent) =
     if aster-rewrites-enabled then
       set-rewrite-mode(|global-cache, 1);
       do-while(
@@ -72,7 +78,7 @@ strategies
       );
       set-rewrite-mode(|global-cache, 0)
     else
-      aster-initialize-node-no-rewrite(|all-parents)
+      aster-initialize-node-no-rewrite(|all-parents, parent)
     end
   
   /**

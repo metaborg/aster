@@ -55,13 +55,27 @@ strategies
 strategies // I/O
 
   main-aster =
+    ?args;
     xtc-multi-io-wrap(
       aster-options
     ,
+      with(<infer-output-option> args);
       map(input-stratego-file <+ <xtc-exit> 1);
       aster;
       map(output-stratego-file)
     )
+  
+  infer-output-option =
+    <get-config> "--multi-output"
+  <+
+    // one(multi-input-option)
+    <get-config> "--multi-input";
+    map(
+      has-extension(|"str")
+      < guarantee-extension(|"astr.str")
+      + guarantee-extension(|"str")
+    );
+    <set-config> ("--multi-output", <id>)
   
   aster-options =
     Option(

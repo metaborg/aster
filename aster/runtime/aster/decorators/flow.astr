@@ -12,14 +12,11 @@ imports
 
 decorators
   
-  /**
-   * Applies the attribute semantic rule at the root of the tree.
-   */
-  decorator down at-root(a) =
-    if id.is-root then
+  decorator up(a) =
+    if a.defined then
       a
     else
-      id.parent.at-root(a)
+      id.child(id.up(a))
     end
   
   decorator down(a) =
@@ -30,11 +27,14 @@ decorators
       id.down(a)
     end
   
-  decorator up(a) =
-    if a.defined then
+  /**
+   * Applies the attribute semantic rule at the root of the tree.
+   */
+  decorator down at-root(a) =
+    if id.is-root then
       a
     else
-      id.child(id.up(a))
+      id.parent.at-root(a)
     end
   
   decorator default(a|value) =

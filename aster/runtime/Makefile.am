@@ -8,10 +8,9 @@ RTREES  = $(STRS:.str=.rtree)
 ARTREES = $(ASTRS:.astr=.rtree)
 
 $(PACKED) : $(RTREES) $(ARTREES)
-	strc -i aster-runtime.rtree --format-check 0 -I $(top_srcdir)/runtime --ast -o $@
+	strc -i aster-runtime.rtree --format-check 0 --ast -o $@
 
-# HACK: for packing by strc, astr files must be called rtree files
-
+# To pack them using strc, astr files must be provided as rtree files
 %.rtree : %.astr
 	sglri -p ../syntax/Stratego-Attributes.tbl -i $< -o $@
 

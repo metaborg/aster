@@ -2,6 +2,7 @@ module test-aster
 
 imports
   libstratego-lib
+  libstrc
   aster
   test-attributes
 
@@ -16,8 +17,12 @@ strategies
       ,
         test-term-depth;
         test-eq-ignore-annos;
-        test-attributes
+        test-attributes;
+        test-foreign-ops;
+        test-equation-postprocess
       )
+    <+
+      <exit> 1 // no stacktrace
     )
   
   test-term-depth =
@@ -36,8 +41,35 @@ strategies
     apply-test(!"eq-ignore-annos (1)", eq-ignore-annos(|[]) <+ !"fail", ![], ![]);
     apply-test(!"eq-ignore-annos (2)", eq-ignore-annos(|[]) <+ !"fail", ![]{"@3"}, ![]{"@3"});
     apply-test(!"eq-ignore-annos (3)", eq-ignore-annos(|[]{"@3"}) <+ !"fail", ![], ![]);
-    apply-test(!"eq-ignore-annos (5)", eq-ignore-annos(|[]{"@4"}) <+ !"fail", ![]{"@3"}, ![]{"@3"});
-    apply-test(!"eq-ignore-annos (6)", eq-ignore-annos(|1{"@3"}) <+ !"fail", !1, !1);
-    apply-test(!"eq-ignore-annos (7)", eq-ignore-annos(|1{"@4"}) <+ !"fail", !1{"@3"}, !1{"@3"});
-    apply-test(!"eq-ignore-annos (8)", eq-ignore-annos(|[1]) <+ !"fail", ![], !"fail");
-    apply-test(!"eq-ignore-annos (9)", eq-ignore-annos(|[]) <+ !"fail", ![1], !"fail")
+    apply-test(!"eq-ignore-annos (4)", eq-ignore-annos(|[]{"@4"}) <+ !"fail", ![]{"@3"}, ![]{"@3"});
+    apply-test(!"eq-ignore-annos (5)", eq-ignore-annos(|1{"@3"}) <+ !"fail", !1, !1);
+    apply-test(!"eq-ignore-annos (6)", eq-ignore-annos(|1{"@4"}) <+ !"fail", !1{"@3"}, !1{"@3"});
+    apply-test(!"eq-ignore-annos (7)", eq-ignore-annos(|[1]) <+ !"fail", ![], !"fail");
+    apply-test(!"eq-ignore-annos (8)", eq-ignore-annos(|[]) <+ !"fail", ![1], !"fail")
+  
+  foreign(|decorated, safe-variables) =
+    desugar-all; has-foreign-operations(|decorated, safe-variables)
+  
+  test-foreign-ops =
+    apply-test(!"has-foreign-operations (1)",      foreign(|"",[]),     !|[ !1           ]|, id);
+    apply-test(!"has-foreign-operations (2)",      foreign(|"",[]),     !|[ \_ -> 2\     ]|, id);
+    apply-test(!"has-foreign-operations (3)",  not(foreign(|"",[])),    !|[ \1 -> <id>\  ]|, id);
+    apply-test(!"has-foreign-operations (4)",      foreign(|"",[]),     !|[ id.gimme(|1) ]|, id);	
+    apply-test(!"has-foreign-operations (5)",  not(foreign(|"",[])),    !|[ id.gimme-2   ]|, id);
+    apply-test(!"has-foreign-operations (6)",  not(foreign(|"",["v"])), !|[ !v           ]|, id);
+    apply-test(!"has-foreign-operations (7)",      foreign(|"",["v"]),  !|[ { !v }       ]|, id);
+    apply-test(!"has-foreign-operations (8)",  not(foreign(|"",["v"])), !|[ { w: !v }    ]|, id);
+    apply-test(!"has-foreign-operations (9)",      foreign(|"",["v"]),  !|[ { v: !v }    ]|, id);
+    apply-test(!"has-foreign-operations (10)", not(foreign(|"v",[])),   !|[ v; v         ]|, id);
+    apply-test(!"has-foreign-operations (11)",     foreign(|"v",[]),    !|[ w; w         ]|, id);
+    apply-test(!"has-foreign-operations (12)", not(foreign(|"",["v"])), !|[ <min> (v, v) ]|, id);
+    apply-test(!"has-foreign-operations (13)", not(foreign(|"",["v"])), !|[ id.w(|v)     ]|, id);
+    apply-test(!"has-foreign-operations (14)",     foreign(|"",[]),     !|[ id.w(id)     ]|, id);
+    apply-test(!"has-foreign-operations (15)", not(foreign(|"",[])),    !|[ id.child(id) ]|, id)
+
+  test-equation-postprocess =
+    where(init-shared-vars);
+    apply-test(!"equation-postprocess (1)", equation-postprocess-def, !|[ ?Foo(<all-parents>) ]|, ?|[ ?Foo(<!x>) ]|);
+    apply-test(!"equation-postprocess (2)", equation-postprocess-def, !|[ ?Foo(<all-parents(|)>) ]|, ?|[ ?Foo(<!x>) ]|);
+    apply-test(!"equation-postprocess (3)", equation-postprocess-def, !|[ all-parents(|v) ]|, ?|[ all-parents(|v) ]|)
+

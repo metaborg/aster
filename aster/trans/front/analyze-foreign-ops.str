@@ -1,0 +1,132 @@
+/**
+ * Gathering of foreign operations in equations,
+ * i.e., operations that may require caching or term initialization.
+ *
+ * This pessimistic heuristic affects caching and term initialization behavior, which
+ * can be manually overridden using the plain/uninit/uncached decorators.
+ *
+ * @see add-cached-rule-logic
+ */
+module analyze-foreign-ops
+
+imports
+  libstrc
+
+strategies // Gathering information
+  
+  record-equation-operations(|body, pattern, child, attribute, sig) =
+    <HasForeignOperations> sig // we already know this one's foreign
+  <+
+    safe-variables := <collect-term-arguments(|pattern, attribute)>;
+    decorated      := <decorated-variable> attribute;
+    
+    if has-parent-referencing-pattern(|pattern, child) 
+       <+ <has-foreign-operations(|decorated, safe-variables)> body
+    then
+      sig' := <decorator-signature> sig;
+      rules(
+        HasForeignOperations: sig
+        HasForeignOperations: sig'
+      )
+    end
+ 
+  collect-term-arguments(|pattern, attribute) =
+    // All pattern arguments can be "safely" called
+    !attribute => Attribute(_, _, t*);
+    results := <collect-all(try(param-to-var); ?Var(<id>) + ?ListVar(<id>))> pattern // UNDONE: (pattern, t*)  
+
+  decorated-variable =    
+    if is-decorator then
+      ?Attribute(_, [<id> | _], _);
+      param-to-var => Var(<id>)
+    else
+      !None()
+    end
+
+  /**
+   * Determines if an equation body contains foreign operations,
+   * maintaining a list of all "safe variables" that may
+   * be safely built without being considered a foreign operation.
+   *
+   * @see is-foreign-operation
+   */
+  has-foreign-operations(|decorated, safe-variables) =
+    switch id
+      case ?Scope([], body) + ?ScopeDefault(body):
+        <has-foreign-operations(|decorated, [])> body
+
+      case ?Scope(unsafe-variables, body):
+        <has-foreign-operations(|decorated, <diff> (safe-variables, unsafe-variables))> body
+
+      otherwise:
+        is-foreign-operation(|decorated, safe-variables)
+      <+
+        one(has-foreign-operations(|decorated, safe-variables))
+    end
+  
+  has-parent-referencing-pattern(|pattern, child) =
+    Root() := pattern <+ Child(_) := child // parent refs are considered foreign ops
+  
+  /**
+   * Caching is only enabled if at least one of these operations exist in the equations
+   * As such, a simple equation like X.foo = Y.bar is never cached locally.
+   */
+  is-foreign-operation(|decorated, safe-variables) =
+    switch strc-desugar // reveal hidden builds, desugar calls, etc.
+      case ?CallDynamic(_, _, _) + ?GenDynRules(_) + ?PrimT(_, _, _):
+        id
+
+      case ?AttributeRef(_, Attribute("parent", [], [])):
+        // TODO2: id.parent is not a standard foreign operation, as it does not require initialation
+        id // these cause a recursion risk, and they are currently about as expensive as caching
+
+      case ?AttributeRef(t, Attribute(x, s*, t*)):
+        <is-foreign-attribute> (x, s*, t*)
+      <+
+        <is-foreign-build(|safe-variables)> t
+      <+
+        <one(is-foreign-build(|safe-variables))> t*
+
+      case ?CallT(SVar(x), s*, t*):
+        <is-foreign-strategy(|decorated)> (x, s*, t*)
+
+      case ?Build(t) + ?Rule(_, t, _):
+        <is-foreign-build(|safe-variables)> t
+    end
+  
+  is-foreign-build(|safe-variables) =
+    not(
+      // to maintain the standard semantics, most builds need to be cached, and likely initialized
+      ?RootApp(Id())
+    <+
+      ?Var(x); <elem> (x, safe-variables)
+    )
+  
+  /**
+   * Determines that a strategy call is to be considered a foreign operation.
+   * Internally, this maintains a "while list" of strategies that
+   * should be O(1) operations and may not produce a new term, such as <add> or <subt>.
+   *
+   * @see add-cached-rule-logic
+   */
+  is-foreign-strategy(|decorated) =
+    not(
+      ("min", [], [])            + ("max", [], [])
+    + ("Hd", [], [])             + ("Tl", [], [])
+    + ("is-substring", [id], []) + ("is-string", [], [])
+    + ("get-annos", [], [])
+    + ("get-arguments", [], [])
+    + ("eq-ignore-annos", [], [id])
+    + ("try", [id], [])
+    + (?decorated, [], []) // decorated attribute calls
+    )
+  
+  is-foreign-attribute =
+    ?(_, [_ | _], _); // attributes with strategy args are uncacheable
+    not(
+      ("child", [id], [])
+    )
+  
+strategies
+
+  strc-desugar = repeat(Desugar) // libstrc's desugar
