@@ -22,6 +22,8 @@ attributes // Using library decorators
   def collect-all collect-lt(|i) = where(is-int; <lt> (id, i))
 
 attributes // Using local decorators
+
+  def children = get-arguments
   
   /**
    * Collects all values in the tree smaller than 'i'.
@@ -31,7 +33,19 @@ attributes // Using local decorators
   /**
    * Collects all nodes in the tree where the attribute can be applied.
    */
-  decorator _at-root _collect-all(s) = collect-all(s, conc)
+  decorator _collect-all(a) =
+    let children =
+      id.children
+    ; map(id._collect-all(a))
+    ; concat
+    in if a then
+         debug'(!"a");
+         ![<a> | <children>]
+       else
+         children
+       ; debug'(!"b")
+       end
+    end
   
   /**
    * Applies the attribute semantic rule at the root of the tree.

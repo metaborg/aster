@@ -44,7 +44,7 @@ rules // Prefer local variables
     + SDefT(is-equation-postprocessed, [], [], id)
     ))
   
-  is-equation-postprocessed = "parent" + "all-parents" + "rewrite-mode" + "global-cache"
+  is-equation-postprocessed = "parent" + "all-parents" + "rewrite-mode" + "global-cache" + "min" + "max"
 
   equation-postprocess:
     CallNoArgs(s) -> <equation-postprocess> CallT(s, [], [])
@@ -70,3 +70,16 @@ rules // Prefer local variables
       x_node        := <NodeVar>;
       x_parent      := <ParentVar>;
       x_all-parents := <AllParentsVar>
+
+rules // Avoid builds of annotated terms
+
+  equation-postprocess:
+    |[ <min> (t1, t2) ]| -> |[ (prim("SSL_gti", x1, x2) <+ prim("SSL_gtr", x1, x2)) < !x2 + !x1 ]|
+    with
+      x1 := <new>; x2 := <new>
+  
+  equation-postprocess:
+    |[ <max> (t1, t2) ]| -> |[ (prim("SSL_gti", x1, x2) <+ prim("SSL_gtr", x1, x2)) < !x1 + !x2q ]|
+    with
+      x1 := <new>; x2 := <new>
+
