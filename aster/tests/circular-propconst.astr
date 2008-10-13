@@ -85,7 +85,7 @@ attributes // Control flow (also defined in circular-liveness)
 attributes // Reverse control flow
   
   // for each id.succ: pred = id  
-  def contribute-to(id.succ) pred = id
+  def contributes-to(id.succ) pred = id
 
 attributes // Extract constant values
 

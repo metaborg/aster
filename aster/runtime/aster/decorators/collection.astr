@@ -28,7 +28,7 @@ decorators
   
   // TODO2: Optimize - avoid dynamic rules in contributes-to decorator?
   
-  decorator node.contribute-to(a, targets) =
+  decorator node.contributes-to(a, targets) =
     if not(<CompletedSurvey> a.signature) then
       with(sig := a.signature);
       rules(CompletedSurvey: sig);
