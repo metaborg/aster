@@ -7,7 +7,7 @@ nobase_pkgdata_DATA = $(RTREES)
 
 all : aster.copy
 
-CLEANFILES=aster aster-no-check aster.copy front/check.str $(RTREES)
+CLEANFILES=aster aster-no-check aster.copy aster.c aster-no-check.c front/check.str $(RTREES)
 
 SCFLAGS = \
 	--format-check 0 \
@@ -37,7 +37,7 @@ aster.copy : aster
 	cp aster aster.copy
 
 aster-no-check : aster.str $(RTREES) front/check.rtree
-	$(MAKE) -C .. all-local # ensure build-time XTC repository is complete at this point
+	@$(MAKE) -C .. all-local # ensure build-time XTC repository is complete at this point
 	[ -e aster.copy ] && cp aster.copy aster-no-check ||\
 	( rm -f $@.c && \
 	  cp front/check.bootstrap.str front/check.str && \

@@ -81,7 +81,6 @@ strategies // Information providing
     where(
       attribute-signature;
       HasForeignOperations
-    <+ verbose-msg(!"  does not have foreign operations:", attribute-signature); fail
     )
 
   has-plain-decorator = // TODO: Is this still required?

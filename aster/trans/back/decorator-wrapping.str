@@ -25,10 +25,9 @@ rules // Adding decoration logic to decorated rules
          s_rewrite => x_node;
          s_body'
     ]|
-    where // TODO: put his in a separate with clause
-      with(
+    with
         <get-attribute-decorators> def => ds
-      );
+    where
       // UNDONE: filter(not(PLAIN_DECORATOR => is-caching-disabled)) => ds;
       
       !ds => [_ | _]

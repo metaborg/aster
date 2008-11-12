@@ -134,6 +134,9 @@ rules // Semantic rule definition helpers
   // TODO: Strategies should always cause "soft" failure, mainly to support stacked decorators
 
   add-eval-failed =
+    add-eval-failed2
+  
+  add-eval-failed2 =
     oncetd(
       \InlineWhereClause(conditions, s) -> |[ where(s_conditions); (s <+ !EVAL_FAILED()) ]|
        with
@@ -141,7 +144,7 @@ rules // Semantic rule definition helpers
     )
   <+
     \s -> |[ s <+ !EVAL_FAILED() ]|\
-   
+  
   assimilate-pattern(|child) =
     ?t_pattern;
     switch !child

@@ -22,8 +22,9 @@ rules // Decorator references
          !t; x_cached
        end
     ]|
+    with
+      ?AttributeRef(_, attr)
     where
-      ?AttributeRef(_, attr); // TODO: Put this in a "with"
       <is-decorator> attr
     with
       x_cached     := <CachedVar>; // not actually cached

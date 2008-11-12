@@ -3,7 +3,6 @@ module Stratego-Attributes-in-Stratego
 imports
   Stratego-Sugar-in-Stratego
   Stratego-Attributes
-  Stratego-With-Hack
 
 hiddens
   context-free start-symbols StrategoModule
