@@ -20,17 +20,18 @@ exports
     AttributeCallLHS
     AttributeDecl
     AttributeType
+    AttributeTypeNoSort
     DecoratorRef
     DecoratorId
     AttributeKeyword
     ChildDot
     DotChild
     AttributeId
-    AttributeDefId
     AttributeDeclId
     OptChildDot
     OptDotChild
     OptSortDot
+    NoSortDot
     AttributeNameValue
     NameDefBlockDef
     PatternDefBlockDef
