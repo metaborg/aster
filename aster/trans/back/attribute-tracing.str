@@ -21,15 +21,16 @@ strategies
     trace-rule(|" (failed)")
   
   trace-rule(|comment) =
-    where(attribute-signature => Attribute(real-name, _, _));
-    
-    if <get-config> Trace(); not(<ignore-trace-def> real-name) then
-      trace-rule(|comment, real-name)
+    if where(<get-config> Trace()); not(has-marker-decorator(|DISABLE_TRACE_DECORATOR())) then
+      with(
+        attribute-signature => Attribute(real-name, _, _)
+      );
+      trace-rule'(|comment, real-name)
     else
       !Strat |[ id ]|
     end
   
-  trace-rule(|comment, real-name):
+  trace-rule'(|comment, real-name):
     def @ Attribute(name, sarity, tarity) ->
     Strat |[
         say(<conc-strings> (

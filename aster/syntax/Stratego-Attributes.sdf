@@ -22,6 +22,7 @@ exports
     AttributeType
     AttributeTypeNoSort
     DecoratorRef
+    DecoratorRefNoArgs
     DecoratorId
     AttributeKeyword
     ChildDot
@@ -54,7 +55,7 @@ exports
   
     AttributeId -/- [a-zA-Z0-9\'\-\_\*]
 
-    DecoratorRef -/- [\(]  %% decorator(arg,y) vs. decorator (tuple, y)
+    DecoratorRefNoArgs -/- [\(]  %% decorator(arg,y) vs. decorator (tuple, y)
   
   context-free syntax %% identifiers
   
@@ -84,7 +85,8 @@ exports
     
     DecoratorId "(" { Strategy "," }* "|" { Term "," }* ")" -> DecoratorRef {cons("Decorator")}
     DecoratorId "(" { Strategy "," }*                   ")" -> DecoratorRef {cons("DecoratorNoTerms")}
-    DecoratorId                                             -> DecoratorRef {cons("DecoratorNoArgs")}
+    DecoratorRefNoArgs                                      -> DecoratorRef
+    DecoratorId                                             -> DecoratorRefNoArgs {cons("DecoratorNoArgs")}
 
     AttributeCallLHS "." AttributeRef -> AttributeCall {cons("AttributeRef")}
     Term                              -> AttributeCallLHS

@@ -34,12 +34,6 @@ strategies
     lookup-table(|"all-parents")
 
 strategies
-  
-  get-ancestor-list(|all-parents) =
-    parent := <get-parent(|all-parents); not(NoParent)>;
-    ![ parent | <get-ancestor-list(|all-parents)>]
-  <+
-    ![]
 
   get-prev-sibling(|parent) =
     ?child;

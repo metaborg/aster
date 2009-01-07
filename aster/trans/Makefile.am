@@ -25,7 +25,7 @@ STRINCLUDES = \
 
 STRS  =aster.str  $(wildcard *.str)  $(wildcard */*.str)
 METAS =           $(wildcard *.meta) $(wildcard */*.meta)
-RTREES=$(STRS:.str=.rtree)
+RTREES=$(STRS:.str=.rtree) front/check.rtree
 
 cleanstrap :
 	rm -f aster.copy aster-no-check aster front/check.str

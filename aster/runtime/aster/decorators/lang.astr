@@ -1,0 +1,48 @@
+/**
+ * Built-in decorators with special capabilities
+ * and derived, regular decorators.
+ *
+ * @author Lennart Kats <lennart add lclnet.nl>
+ */
+module aster/decorators/common
+
+decorators // Internally defined marker decorators
+  
+  /**
+   * Plain attributes do not have the default behavior of
+   * caching and re-annotating a result term for re-attribution
+   */
+  decorator plain plain(a) =
+    a
+
+  /**
+   * Indicates that an attribute can be used
+   * on uninitialized terms, and that no warnings
+   * should be displayed about this.
+   */
+  decorator disable-trace disable-warnings(a) =
+    a
+  
+  /**
+   * Indicates that an attribute should not be included in tracing messages.
+   *
+   * @note This should be used sparingly, e.g. to prevent loops or
+   *       to hide trivial tree access attributes.
+   */
+  decorator disable-trace(a) =
+    a
+
+decorators // Derived decorators
+  
+  decorator plain uncached(a) =
+    a;
+    id.ensure-init
+  
+  decorator plain t.uninit(a) =
+    get-last-value(|id.global-cache, t, a.signature);
+    not(EVAL_FAILED)
+  <+
+    (a <+ !EVAL_FAILED());
+    id.uninit;
+    set-last-value(|id.global-cache, t, a.signature, id);
+    not(EVAL_FAILED)

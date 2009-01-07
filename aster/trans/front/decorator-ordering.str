@@ -1,0 +1,69 @@
+/**
+ * Aster stacked decorator declaration ordering.
+ *
+ * For example, unifies the following declarations:
+ * 
+ *   def foo bar x
+ *   def bar baz x
+ *
+ * into:
+ *
+ *   def foo bar bax x
+ *
+ * (respecting the relative ordering; see test-ordered-union).
+ *
+ * @author Lennart Kats <lennart add lclnet.nl>
+ */
+module decorator-ordering
+
+strategies
+
+  /**
+   * Returns the union of two sets,
+   * respecting their relative ordering.
+   */
+  ordered-union:
+    (s1, s2) -> s12
+    with
+      {| IndexA, IndexB, Before, After:
+        !s1;
+        record-before;
+        number({?(d, i); rules(IndexA: d -> i)});
+        
+        !s2;
+        record-before;
+        number({?(d, i); rules(IndexB: d -> i)});
+        
+        <union> (s1, s2);
+        s12 := <qsort({| Seen: ordered-union-lt |})>
+      |}
+  
+  record-before =
+    {| Prev:
+      list-loop({
+        ?x;
+        if prev := <Prev> then
+          rules(
+            Before: x -> prev
+          )
+        end;
+        rules(Prev := x)
+      })
+    |}
+  
+  ordered-union-lt =
+    if Seen then
+      fail
+    else
+      ?x;
+      rules(Seen: x);
+      (IndexA, IndexA)   // can only compare A's to A's
+      < lt
+      + (IndexB, IndexB) // or B's to B's
+      < lt
+      + (Before, id);    // check the predecessors
+        ordered-union-lt
+      <+
+        (id, Before);
+        ordered-union-lt
+    end

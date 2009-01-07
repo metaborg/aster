@@ -1,5 +1,6 @@
 /**
  * Aster decorator wrapping.
+ * Wraps decorator calls around attribute definitions.
  *
  * @author Lennart Kats <lennart add lclnet.nl>
  */
@@ -10,9 +11,6 @@ imports
   front/analyze
   back/attribute-references
   back/decorator-definitions
-
-overlays
-  PLAIN_DECORATOR = Decorator("plain", [], [])
 
 rules // Adding decoration logic to decorated rules
 
@@ -28,14 +26,15 @@ rules // Adding decoration logic to decorated rules
     with
         <get-attribute-decorators> def => ds
     where
-      // UNDONE: filter(not(PLAIN_DECORATOR => is-caching-disabled)) => ds;
+      // UNDONE: having a 'plain' decorator made _everything_ uncached
+      //         filter(not(PLAIN_DECORATOR => is-caching-disabled)) => ds;
       
       !ds => [_ | _]
     with
       (s*, t*) := <params-to-vars> (sa*, a*);
       
       let is-caching-disabled =
-        ?once;                            // only affect the inner attribute;
+        ?once;                            // only affect the inner attribute evaluation;
         <not(has-foreign-operations)> def // disable caching if not required by the equations
       in
         s_body' :=
@@ -53,8 +52,8 @@ rules // Adding decoration logic to decorated rules
     where
       not(<has-plain-decorator <+ has-foreign-operations> def)
     with
-      x_all-parents   := <AllParentsVar>;
-      x_global-cache  := <GlobalCacheVar>
+      x_all-parents  := <AllParentsVar>;
+      x_global-cache := <GlobalCacheVar>
     
   fold-decorated-with-caching(is-caching-disabled|decorators, def, s*, t*) =
     ?s_body;
@@ -65,7 +64,7 @@ rules // Adding decoration logic to decorated rules
         set-caching-disabled = try(?is-caching-disabled)
         is-caching-disabled' = where(!is-caching-disabled) + is-caching-disabled
       in
-        make-decorated-ignore-plain;
+        make-decorated-ignore-markers;
         set-caching-disabled
       <+
         make-decorated-with-caching(set-caching-disabled, is-caching-disabled' |def, s*, t*);
@@ -75,10 +74,12 @@ rules // Adding decoration logic to decorated rules
     )
   
   /**
-   * Avoids directly generating code for the special 'plain' decorator.
+   * Avoids directly generating code for marker decorator (e.g., 'plain').
    */
-  make-decorated-ignore-plain:
-    (PLAIN_DECORATOR(), s_decorated) -> s_decorated
+  make-decorated-ignore-markers:
+    (marker, s_decorated) -> s_decorated
+    where
+      <is-marker-decorator> marker
    
   /**
    * Creates a decorated attribute body, taking caching into consideration.
@@ -101,22 +102,36 @@ rules // Adding decoration logic to decorated rules
        end
     ]|
     with
-      t_decorated   := <decorated-signature(|s*, t*)> def;
-      s_ref         := <make-decorated(|t_decorated)> (decorator, s_decorated);
       x_cached      := <CachedVar>;
       x_cached-node := <newname> "cached-node";
-      
+      t_decorated   := <decorated-signature(|s*, t*)> def;
+
       if is-caching-disabled <+ <has-plain-decorator> decorator then
         set-caching-disabled;
         s_cache-read  := Fail();
-        s_cache-write := Id()
+        s_cache-write := Id();
+        s_decorated'  := s_decorated // don't disable inner caching
       else
         {| NodeVar:
           rules(NodeVar := x_cached-node);
           s_cache-read  := <add-cache-read(|s*, t*)> def;
           s_cache-write := <add-cache-write(|s*, t*)> def
-        |}
-      end
+        |};
+        s_decorated'  := <avoid-caching-undecorated-values> s_decorated
+      end;
+      
+      s_ref := <make-decorated(|t_decorated)> (decorator, s_decorated')
+
+  /**
+   * Removes global cache-writes from inner decorator applications.
+   * This avoids a potential problem with attributes that have 
+   * stacked decorators, each using a shared caching table.
+   * (Alternatively, they could use separate caching tables.)
+   */
+  avoid-caching-undecorated-values =
+    alltd(
+      \|[ set-cached-attribute(|~_, ~_, ~_, ~_) ]| -> Id()\
+    )
   
   /**
    * Determines the signature argument of a decorator call,

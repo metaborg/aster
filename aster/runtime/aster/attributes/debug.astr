@@ -10,11 +10,21 @@ imports
   aster/decorators/common
   aster/decorators/flow
 
-attributes
+attributes // Attribute initialization warnings
 
-  def plain enable-warnings = rules(AsterWarningsDisabled :- _)
+  def plain disable-warnings enable-warnings =
+    rules(AsterWarningsDisabled :- _)
   
-  // disable-warnings is currently a built-in
+  def plain disable-warnings disable-warnings =
+    rules(AsterWarningsDisabled: _)
+
+attributes // Debugging messages and strings
+
+  def plain disable-warnings debug =
+    where(aster-remove-annos; debug)
+  
+  def plain disable-warnings debug(m) =
+    where(aster-remove-annos; debug(m))
   
   def path =
     id.path-list;
@@ -23,7 +33,7 @@ attributes
     separate-by(|".");
     concat-strings
   
-  def /*string*/ path-and-node =
+  def path-and-node =
     where(node := <to-tiny-string>);
     id.path;
     (?"" < !node + <conc-strings> (<id>, ".", node));
@@ -36,3 +46,16 @@ attributes
         !['.', '.', '.' | <id>]
       end
     )
+  
+  def plain path-list =
+    id.parent;
+    ![ id | id.path-list]
+  <+
+    ![]
+
+attributes
+  
+  // Avoid loops in traces
+  def disable-trace path
+  def disable-trace path-list
+  def disable-trace path-and-node

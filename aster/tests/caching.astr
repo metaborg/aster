@@ -14,7 +14,8 @@ strategies
       <debug(!5); not(eq)> (root.get-uncached-5, root.get-uncached-5);
       <debug(!6); not(eq)> (root.get-uncached-6, root.get-uncached-6);
       <debug(!7); eq>      (root.get-cached-7, root.get-cached-7);
-      <debug(!8); eq>      (root.get-cached-8, root.get-cached-8)
+      <debug(!8); eq>      (root.get-cached-8, root.get-cached-8);
+      id.no-premature-caching
     )
 
 attributes
@@ -38,4 +39,17 @@ attributes
   
 decorators
 
-  decorator noop(a) = a
+  decorator noop(a) = a; noop
+  
+strategies
+
+  noop = id
+  
+attributes
+
+  def check-uncached noop no-premature-caching = new
+  
+  decorator check-uncached(a) =
+    a;
+    not(get-cached-attribute(|id.global-cache, id, a.signature); debug(!"b"))
+

@@ -76,6 +76,8 @@ strategies // I/O
       + guarantee-extension(|"str")
     );
     <set-config> ("--multi-output", <id>)
+  <+
+    ![stdout()]
   
   aster-options =
     Option(

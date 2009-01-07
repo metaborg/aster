@@ -8,9 +8,21 @@ module analyze
 imports
   libstratego-lib
   Stratego-Attributes
+  front/decorator-ordering
   back/assimilate
   front/analyze-foreign-ops
 
+overlays
+  PLAIN_DECORATOR            = Decorator("plain", [], [])
+  DISABLE_TRACE_DECORATOR    = Decorator("disable-trace", [], [])
+  DISABLE_WARNINGS_DECORATOR = Decorator("disable-warnings", [], [])
+
+strategies
+
+  // TODO2: Inspect decorators to tell if they are "marker" decorators?
+  is-marker-decorator =
+    PLAIN_DECORATOR + DISABLE_TRACE_DECORATOR + DISABLE_WARNINGS_DECORATOR
+  
 strategies // Information gathering
   
   analyze =
@@ -20,10 +32,14 @@ strategies // Information gathering
     with(
       sig            := <attribute-signature> attribute;
       old-decorators := <AttributeDecorators <+ ![]> sig;
-      decorators'    := <unify-decorators> (decorators, old-decorators);
+      decorators'    := <ordered-union> (decorators, old-decorators);
       
       record-equation-properties(|type, sig);
+      
       if !body then
+        rules(
+          HasEquations: sig
+        );
         record-equation-operations(|body, pattern, child, attribute, sig)
       end;
       
@@ -54,10 +70,6 @@ strategies // Information gathering
       case Eq():
         id
     end
-  
-  unify-decorators =
-    union // TODO: Smart decorator unification
-
     
 strategies // Information providing
   
@@ -82,21 +94,24 @@ strategies // Information providing
       attribute-signature;
       HasForeignOperations
     )
+  
+  has-plain-decorator =
+    has-marker-decorator(|PLAIN_DECORATOR())
 
-  has-plain-decorator = // TODO: Is this still required?
+  has-marker-decorator(|decorator) =
     where(
-      ?Decorator("plain", [], [])
+      ?decorator
     <+
-      if HasPlainDecorator => cached then
+      if <HasMarkerDecorator> (decorator, <id>) => cached then
         1 := cached
       else
         ?node;
-        rules(HasPlainDecorator: node -> 0);
+        rules(HasMarkerDecorator: (decorator, node) -> 0);
         
         get-attribute-decorators;
-        fetch(has-plain-decorator);
+        fetch(has-marker-decorator(|decorator));
         
-        rules(HasPlainDecorator: node -> 1)
+        rules(HasMarkerDecorator: (decorator, node) -> 1)
       end
     )
   

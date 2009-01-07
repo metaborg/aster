@@ -94,7 +94,7 @@ strategies
   
   assimilate-where-with =
     map(
-      ?Where(s)
+      ?Where(_)
     + \With(s) -> Strat |[ with'(s) ]|\
     );
     fold-seq
@@ -134,13 +134,10 @@ rules // Semantic rule definition helpers
   // TODO: Strategies should always cause "soft" failure, mainly to support stacked decorators
 
   add-eval-failed =
-    add-eval-failed2
-  
-  add-eval-failed2 =
     oncetd(
       \InlineWhereClause(conditions, s) -> |[ where(s_conditions); (s <+ !EVAL_FAILED()) ]|
        with
-        s_conditions := <assimilate-where-with> conditions\
+         s_conditions := <assimilate-where-with> conditions\
     )
   <+
     \s -> |[ s <+ !EVAL_FAILED() ]|\

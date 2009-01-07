@@ -23,7 +23,9 @@ rules // Evaluate attributes in AG context
   // TODO: Eliminate s_parent-desired param
   assimilate-attr-ref-inside-ag(|s_parent, s_parent-desired):
     AttributeRef(t, attr @ Attribute(name, s*, t*)) ->
-    |[ <x_eval(s* |<s_parent-desired>, x_all-parents, x_global-cache, x_rewrite-mode, t*)> t ]|
+    |[ <x_eval(s* |<s_parent-desired>, x_all-parents, x_global-cache, x_rewrite-mode, t*)> t;
+       not(EVAL_FAILED)
+    ]|
     where
       not(<is-decorator> attr)
     with
@@ -44,19 +46,23 @@ rules // Evaluate attributes outside of AG context
   <+
     assimilate-decorator-ref
 
-  // TODO2: Optimize - use local vars to cache all <global-cache> and <all-parents> calls
-  //        outside equations, similar to what is done in equation-postprocess atm
-
   assimilate-attr-ref:
     AttributeRef(t, attr @ Attribute(name, s*, t*)) ->
-    Strat |[
+    |[
+      (id < id + ?x_all-parents; ?x_global-cache; ?x_rewrite-mode); // never consider these unbound
       !t;
       aster-initialize-node-ensure(
-        aster-initialize-node-warning(|x_all-parents, ~str:name')
-      | <all-parents => x_all-parents>
-      , <global-cache => x_global-cache>
+        s_warning
+      | <!x_all-parents <+ all-parents => x_all-parents>
+      , <!x_global-cache <+ global-cache => x_global-cache>
       );
-      x_eval(s* |UnknownParent(), x_all-parents, x_global-cache, <get-rewrite-mode(|x_global-cache)>, t*)
+      x_eval(
+        s*
+      | UnknownParent(), x_all-parents, x_global-cache
+      , <!x_rewrite-mode <+ get-rewrite-mode(|x_global-cache) => x_rewrite-mode>
+      , t*
+      );
+      not(EVAL_FAILED)
     ]|
     where
       not(<is-decorator> attr)
@@ -64,5 +70,12 @@ rules // Evaluate attributes outside of AG context
       x_eval         := <attribute-accessor-name> attr;
       x_all-parents  := <AllParentsVar>;
       x_global-cache := <GlobalCacheVar>;
-      name'          := name
+      x_rewrite-mode := <RewriteModeVar>;
+      name'          := name;
+      
+      if <has-marker-decorator(|DISABLE_WARNINGS_DECORATOR())> attr then
+        s_warning := Id()
+      else
+        s_warning := |[ aster-initialize-node-warning(|x_all-parents, ~str:name') ]|
+      end
 

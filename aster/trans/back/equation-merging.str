@@ -25,8 +25,6 @@ strategies
   
   // TODO: Runtime circularity detection using counter argument?
 
-  // TODO2: Optimize - inline rule defs in ordered rule defs?
-
   // TODO: Fallthrough to alternatives on hard failure
   //
   // We now have: alt1 <+ alt2 <+ ... <+ default
@@ -45,6 +43,7 @@ strategies
     Module(x, decl*) -> Module(x, [decl*, merged])
     with
       bagof-AllRules;
+      reverse;
       map(make-merged-rule);
       flatten-list;
       merged := Rules(<id>)

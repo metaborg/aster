@@ -10,25 +10,11 @@ imports
   aster
   front/analyze
 
-rules
-
-  ignore-trace-def =
-    // traces on path attributes cause looping
-    "path" + "path-list" + "path-and-node"
-    // helper attributes where tracing is undesirable
-  + "debug" + "enable-warnings" + "all" + "uncached" + "uninit" + "string"
-  + "next-sibling" + "prev-sibling" + "first-sibling" + "last-sibling"
-  + "root" + "first-child" + "last-child"
-    // attributes dealing with uninitialized terms
-  + "union" + "diff" + "isect"
-
 rules // Native attribute definitions
 
   // Native attributes may work on non-annotated terms, or perform
   // special or optimized operations not directly supported by regular
   // attributes.
-  
-  // TODO2: Cleanup - move native attributes such as global-cache to the library, where possible
   
   is-native-attribute =
     where(assimilate-native-attr)
@@ -37,44 +23,13 @@ rules // Native attribute definitions
     AttributeRef(t, attr) -> |[ !t; s ]|
     where
       s := <assimilate-native-attr> attr
-   
-  assimilate-native-attr:
-    Attribute("eq", [], [t]) -> |[ eq-ignore-annos(|t) ]|
 
   assimilate-native-attr:
-    Attribute("eq", [], []) -> |[ where({ x: ?(<id>, x); eq-ignore-annos(|x) }) ]|
-    with
-      x := <new>
-
-  assimilate-native-attr:
-    Attribute("debug", [], []) -> |[ where(aster-remove-annos; debug) ]|
-
-  assimilate-native-attr:
-    Attribute("debug", [s], []) -> |[ where(aster-remove-annos; debug(s)) ]|
-    
-  assimilate-native-attr:
-    Attribute("disable-warnings", [], []) -> |[ rules(AsterWarningsDisabled: _) ]|
-
-  assimilate-native-attr:
-    Attribute("parent", [], []) -> |[ get-parent(|<all-parents>); not(NoParent) ]|
-
-  assimilate-native-attr:
-    Attribute("path-list", [], []) -> |[ get-ancestor-list(|<all-parents>) ]|
-
-  assimilate-native-attr:
-    Attribute("uninit", [], []) -> |[ aster-remove-annos ]|
-
-  assimilate-native-attr-inside-ag(|s_parent, x_all-parents, x_current, x_global-cache):
-    Attribute("uninit", [], []) -> |[ aster-remove-annos ]|
-  
-  assimilate-native-attr:
-    Attribute("init", [], []) -> |[ aster-initialize-node(|<all-parents>, <global-cache>) ]|
+    Attribute("parent", [], []) ->
+    |[ get-parent(|<all-parents>); not(NoParent) ]| // optimized in equation-postprocess
   
   assimilate-native-attr:
     Attribute("eval", [s, s-default], []) -> |[ fatal-err(|"id.eval() not fully implemented yet") ]|
-  
-  assimilate-native-attr:
-    Attribute("ensure-init", [], []) -> |[ aster-initialize-attribute-value(|<all-parents>, <global-cache>) ]|
   
   assimilate-native-attr:
     Attribute("signature", [], []) -> |[ !t_signature => Attribute(_, [], _) ]|
@@ -85,9 +40,6 @@ rules // Native attribute definitions
     Attribute("attribute-name", [], []) -> |[ !t_signature => Attribute(<id>, _, _) ]|
     with
       t_signature := <CurrentSignatureTerm <+ !|[ <fail> ]|>
-  
-  assimilate-native-attr:
-    Attribute("global-cache", [], []) -> Strat |[ global-cache ]|
     
 rules // Native attributes on decorated evaluation functions
 
@@ -99,8 +51,6 @@ rules // Native attributes on decorated evaluation functions
 
   assimilate-native-decoration-ref(|x_decorated):
     AttributeRef(Var(x_decorated), attr) -> <assimilate-decoration-native-attr(|x_decorated)> attr
-
-  // TODO: Ideally, "d.defined" wouldn't evaluate d
   
   assimilate-decoration-native-attr(|x_decorated):
     Attribute("defined", [], []) ->

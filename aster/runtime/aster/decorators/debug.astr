@@ -12,4 +12,17 @@ imports
 
 attributes
 
-  // TODO: decorator trace = ...
+  decorator trace(a):
+    t -> <a> t
+    with
+      a.signature => Attribute(x, [], args @ [_ | _]);
+      name := <conc-strings> (x, "_0_", <length; as-string> args)
+    <+
+      name := a.attribute-name
+    with
+      if <aster-is-initialized(|id.all-parents)> t then
+        say(<conc-strings> ("  [trace] ", name, " @ ", t.path-and-node))
+      else
+        say(<conc-strings> ("  [trace] ", name, " @ ?.", <to-tiny-string> t))
+      end
+

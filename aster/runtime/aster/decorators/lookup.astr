@@ -16,19 +16,23 @@ decorators
   decorator down lookup-ordered(fetch-decl, is-scope) =
     fetch-decl
   <+
-    id.prev-sibling(id.lookup-outside-scopes(is-scope, fetch-decl))
+    id.prev-sibling(lookup-outside-scopes(is-scope, fetch-decl))
   
   decorator down lookup-unordered(fetch-decl, is-scope) =
     (id.is-root + is-scope);
-    id.lookup-in-scope(fetch-decl, is-scope)
+    lookup-in-scope(fetch-decl, is-scope)
   
-  def plain lookup-in-scope(fetch-decl, is-scope) =
+/** @internal */
+strategies
+
+  lookup-in-scope(fetch-decl, is-scope) =
     fetch-decl
   <+
-    id.child(id.lookup-outside-scopes(fetch-decl, is-scope))
+    id.child(lookup-outside-scopes(fetch-decl, is-scope))
   
-  def plain lookup-outside-scopes(fetch-decl, is-scope) =
+  lookup-outside-scopes(fetch-decl, is-scope) =
     fetch-decl
   <+
     not(is-scope);
-    id.child(id.lookup-outside-scopes(fetch-decl, is-scope))
+    id.child(lookup-outside-scopes(fetch-decl, is-scope))
+

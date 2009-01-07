@@ -39,11 +39,9 @@ attributes // Using local decorators
     ; map(id._collect-all(a))
     ; concat
     in if a then
-         debug'(!"a");
          ![<a> | <children>]
        else
          children
-       ; debug'(!"b")
        end
     end
   

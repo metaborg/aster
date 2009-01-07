@@ -19,7 +19,8 @@ strategies
         test-eq-ignore-annos;
         test-attributes;
         test-foreign-ops;
-        test-equation-postprocess
+        test-equation-postprocess;
+        test-ordered-union
       )
     <+
       <exit> 1 // no stacktrace
@@ -66,6 +67,18 @@ strategies
     apply-test(!"has-foreign-operations (13)", not(foreign(|"",["v"])), !|[ id.w(|v)     ]|, id);
     apply-test(!"has-foreign-operations (14)",     foreign(|"",[]),     !|[ id.w(id)     ]|, id);
     apply-test(!"has-foreign-operations (15)", not(foreign(|"",[])),    !|[ id.child(id) ]|, id)
+  
+  test-ordered-union =
+    apply-test(!"ordered-union (1)", ordered-union, !([1,2,3],   [4,5,6]),   [1,2,3,4,5,6] + [4,5,6,1,2,3]);
+    apply-test(!"ordered-union (2)", ordered-union, !([1,2,3],   [3,4]),     [1,2,3,4]);
+    apply-test(!"ordered-union (3)", ordered-union, !([3,4],     [1,2,3]),   [1,2,3,4]);
+    apply-test(!"ordered-union (4)", ordered-union, !([2,1],     [4,3,2]),   [4,3,2,1]);
+    apply-test(!"ordered-union (5)", ordered-union, !([2,3],     [1,2,3,4]), [1,2,3,4]);
+    apply-test(!"ordered-union (6)", ordered-union, !([1,2,3,4], [2,3]),     [1,2,3,4]);
+    apply-test(!"ordered-union (7)", ordered-union, !([1,2,3],   [3,2,1]),   [1,2,3]);
+    apply-test(!"ordered-union (8)", ordered-union, !([3,2,1],   [1,2,3]),   [3,2,1]);
+    apply-test(!"ordered-union (9)", ordered-union, !([1,1],     [2,2]),     [1,1,2,2] + [2,2,1,1])
+    // apply-test(!"ordered-union (10)", ordered-union, !([1,1,2],     [2,2,1]),    not supported (duplicate decorators error))
 
   test-equation-postprocess =
     where(init-shared-vars);

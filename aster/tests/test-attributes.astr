@@ -87,11 +87,13 @@ attributes // Test attribute behavior
   
   def Fork(a, b).b.parent-first-kid = id.first-kid
   
-  def stupid.stupid.stupid = id
+  def silly.silly.silly = id
   
   def build2 := 2
   
   def init(|t) := t
+  
+  def fails = fail
 
 strategies
  
@@ -158,7 +160,7 @@ strategies
     );
     apply-and-check(
       !"attribute on id child"
-    , id.stupid
+    , id.silly
     , !1.init
     , 1
     );
@@ -191,6 +193,12 @@ strategies
     , id.init(|2)
     , !1.init
     , ?2{_}
+    );
+    apply-and-check(
+      !"attribute result is an initialized term (4)"
+    , not(id.fails)
+    , !1.init
+    , ?1
     )
 
 attributes // Standard library
@@ -278,9 +286,9 @@ strategies
     );
     apply-and-check(
       !"signature of remote attribute"
-    , id.signature-of(id.stupid)
+    , id.signature-of(id.silly)
     , !1.init
-    , Attribute("stupid", [], [])
+    , Attribute("silly", [], [])
     );
     apply-and-check(
       !"id.signature simply fails if there are strategy arguments (1)"

@@ -10,7 +10,17 @@ imports
   aster/decorators/common
   aster/decorators/flow
 
-attributes   
+attributes
+  
+  def plain disable-warnings eq(|t) =
+    eq-ignore-annos(|t)
+  
+  def plain disable-warnings eq:
+    (t1, t2) -> id
+    where
+      <eq-ignore-annos(|t2)> t1
+
+attributes
   
   /**
    * Rewrite all subterms using <a>, and reinitialize the result as necessary.
@@ -58,4 +68,3 @@ attributes
       );
       set-parent(|<all-parents>, NoParent())
     end
-

@@ -36,12 +36,11 @@ strategies // Gathering information
     results := <collect-all(try(param-to-var); ?Var(<id>) + ?ListVar(<id>))> pattern // UNDONE: (pattern, t*)  
 
   decorated-variable =    
-    if is-decorator then
-      ?Attribute(_, [<id> | _], _);
-      param-to-var => Var(<id>)
-    else
-      !None()
-    end
+    is-decorator;
+    ?Attribute(_, [<id> | _], _);
+    param-to-var => Var(<id>)
+  <+
+    !None()
 
   /**
    * Determines if an equation body contains foreign operations,

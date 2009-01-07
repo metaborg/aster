@@ -17,22 +17,24 @@ rules
   check-all =
     id.init;
     collect-all(where(id.error + id.warning));
-    list-loop({
-      where(context := <id.pp-context <+ !"">);
-      if id.error then
-        log(|Error(), <conc-strings> (id.error, context), id.pp)
-      else
-        where(as-string(id.warning));
-        log(|Warning(), <conc-strings> (id.warning, context), id.pp)
-      end
-    });
-      
+    list-loop(log-error);
+    
     if one(id.error) then
       <xtc-exit> 1
     end
+   
+  log-error =
+    with(
+      context := <id.pp-context <+ !"">
+    );
+    with(
+      log(|Error(), <conc-strings> (id.error, context), id.pp)
+    <+
+      log(|Warning(), <conc-strings> (id.warning, context), id.pp)
+    )
 
 attributes
-  
+
   def after(try(concat-strings)) error:
     Attribute(name, _, _) -> "Undefined attribute referenced"
     where
@@ -47,9 +49,13 @@ attributes
     where
       <is-decorator> attr
     
-    ADefStrategy(_, attr, _) -> "Semantic rule type not declared using 'def'"
+    ADefStrategy(_, attr, _) -> "Attribute not declared using 'def'"
     where
       not(<HasDeclaration> <attribute-signature> attr)
+
+    ADecl(_, [attr]) -> "No equations defined for this definition"
+    where
+      not(<attribute-signature; HasEquations + is-native-attribute> attr)
     
     amb(_) -> "Internal error: ambiguity in input"
     
@@ -60,6 +66,8 @@ attributes
     ADef(Type(Decorator(), _, _), _, ADefStrategy(_, Attribute(name, _, _), _)) -> "Illegal name for decorator"
     where
       <"def" + "eq" + "decorator"> name
+  
+    ADef(Type(Decorator(), _, _), _, ADefStrategy(_, Attribute(_, [], _), _)) -> "Must include attribute argument"
     
     ADefStrategy(_, Attribute(_, _, args), _) -> "Strategy applications not allowed in attribute argument patterns"
     where
@@ -68,28 +76,6 @@ attributes
     AttributeRef(_, _) -> "Illegal attribute reference in match pattern"
     where
       id.in-match
-    
-    /* UNDONE: Pre-decorator checks
-    ADefStrategy(_, attr, _) -> "Circular attributes cannot be decorated"
-    where
-      id.def-type => [_ | _];
-      <AttributeCircular> attr
-    
-    ADef(type, pattern, s) -> "Chained attributes must specify type inh or syn for each definition"
-    where
-      Chained() := id.def-type;
-      <not(Inh + Syn)> type;
-      <not(RootApp(Fail()))> pattern
-    
-    ADef(_, Root(), _) -> "Synthesized attribute cannot have a root definition"
-    where
-      id.def-type-local => Syn()
-    
-    ADef(_, _, ADefStrategy(_, attr @ Attribute([_ | _], _, _), _)) ->
-    "Circular attributes cannot have strategy arguments"
-    where
-      <AttributeCircular> attr
-    */
     
     ADef(_, Root(), ADefStrategy(Child(_), _, _)) -> "Illegal child pattern on root node definition"
     
@@ -120,16 +106,25 @@ attributes
     ADef(_, pattern, ADefStrategy(Child(child), _, _)).child -> "Pattern child equals pattern"
     where
       0 := <term-depth(|Var(child))> pattern
+  
+  def Type(_, decs, _):
+    id.warning := "Definition has duplicate decorators; merging of declared decorators not is allowed"
+    where
+      decs.has-duplicates;
+      <id.eq> (decs, id.def-type)
+    
+    id.error := "Definition has duplicate decorators; merging of declared decorators not is allowed"
+    where
+      decs.has-duplicates;
+      not(<id.eq> (decs, id.def-type))
     
   // TODO: confirm attribute applicability based on pattern, where possible
   
   // TODO: more checks
-  // - inh foo(x) = .... ?x -> Warning: should not use annotated terms in match?
   // - congruence in attribute strategy: Foo().x = Bar() always results in a hard failure
-  // - warn for "name1: name1 -> ... name2 -> ..." if name1 and name2 aren't used
+  // - warn for "def x: x -> ... y -> ..." if x and y aren't used
   //   (should probably be := instead!)
   // - warn for rules(...id... -> foo); id does not bind to the current term but acts as a wild card
-  // - decorators have no sort or pattern spec
 
 strategies
 
@@ -164,19 +159,22 @@ attributes
   
   // TODO2: Proper error pp
   def uninit pp:
-    id                   -> <try(attribute-signature)>
+    _                    -> <try(attribute-signature)>
     Attribute(n, [], []) -> n
   
   def string pp-context =
+    id.ancestor(?ADef(Type(Decorator(), _, _), _, <id>));
+    ?ADefStrategy(_, <id.pp>, _);
+    <conc-strings> (" in decorator ", <as-string>)
+  <+
     id.ancestor(?ADef(_, _, <id>));
     ?ADefStrategy(_, <id.pp>, _);
     <conc-strings> (" in attribute ", <as-string>)
   
-  // TODO: Rename def-type, def-type-local
   def down def-type:
     ADef(_, _, ADefStrategy(_, attr, _)) ->  <get-attribute-decorators> attr
   
-  def down def-type-local:
-    ADef(type, _, _) ->  type
+  def list.has-duplicates =
+    not(<id.eq> (list, <id.make-set> list))
   
   // def down root.has-root-def(|name) = oncetd(ADef(...

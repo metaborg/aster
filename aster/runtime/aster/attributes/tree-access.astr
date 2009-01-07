@@ -12,7 +12,7 @@ imports
 
 attributes
 
-  def plain tree-access:
+  def plain disable-trace tree-access:
     id.prev-sibling  = get-prev-sibling(|id.parent)
     id.next-sibling  = get-next-sibling(|id.parent)
     id.first-sibling = get-first-child(|id.parent)
@@ -23,7 +23,7 @@ attributes
     id.next-sibling(a) = get-next-sibling(a|id.parent)
     id.child(a) = one(a; ?it); !it
   
-  def plain root.is-root = id
+  def plain disable-trace root.is-root = id
     
   def down tree-access-ancestors:
     id.root = try(id.root)

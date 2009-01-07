@@ -43,10 +43,7 @@ decorators
   decorator default(a, value) =
     a <+ value
   
-  /* TODO: Sane definition of `chained`
-  //       should semantic rules be applied only once per node,
-  //       not also on the second traversal in the chain?
-  //       better way to express this?
+  /* TODO: Sane definition of `chained` using a.inherited and a.synthesized primitives
   
   local `chained-syn`(a) = // main chained attribute uses a and propagates upwards
     id.eval(

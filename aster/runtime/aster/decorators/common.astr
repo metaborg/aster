@@ -12,23 +12,6 @@ imports
 
 decorators
   
-  /**
-   * Plain attributes do not have the default behavior of
-   * caching and re-annotating a result term for re-attribution
-   */
-  decorator plain plain(a) = a // note that this is a special, built-in decorator
-  
-  decorator plain uncached(a) = a; id.ensure-init
-  
-  decorator plain node.uninit(a) =
-    get-last-value(|id.global-cache, node, a.signature);
-    not(EVAL_FAILED)
-  <+
-    (a <+ !EVAL_FAILED());
-    id.uninit;
-    set-last-value(|id.global-cache, node, a.signature, id);
-    not(EVAL_FAILED)
-  
   decorator test(a) =
     where(a)
   
