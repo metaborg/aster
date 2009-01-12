@@ -22,6 +22,7 @@ attributes
     id.prev-sibling(a) = get-prev-sibling(a|id.parent)
     id.next-sibling(a) = get-next-sibling(a|id.parent)
     id.child(a) = one(a; ?it); !it
+    id.children = ?[x | y] < ![x, y] + get-arguments
   
   def plain disable-trace root.is-root = id
     

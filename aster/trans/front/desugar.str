@@ -96,8 +96,8 @@ rules
   
   desugar-id-term = // match context
     at-match-all(
-      \NoAnnoList(IdTerm()) -> Wld()\
-    + \IdTerm() -> Wld()\
+      \NoAnnoList(IdTerm()) -> Wld(){IdTerm()}\ // annotate for IdTerm warning
+    + \IdTerm() -> Wld(){IdTerm()}\
     )
   
   desugar-id-term: // build context

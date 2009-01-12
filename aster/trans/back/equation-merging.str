@@ -170,4 +170,3 @@ strategies
       ops   := <length> <collect-all(?AnnoList(_, _) + ?NoAnnoList(_))> pattern;
       tails := <length> <collect-all(?ListTail(_, _))> pattern; // [_|_] > [_]
       bonus := <!child => NoChild() < !NO_CHILD_INDEX() + !0>
-

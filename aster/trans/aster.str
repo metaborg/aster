@@ -59,11 +59,29 @@ strategies // I/O
     xtc-multi-io-wrap(
       aster-options
     ,
-      with(<infer-output-option> args);
-      map(input-stratego-file <+ <xtc-exit> 1);
-      aster;
-      map(output-stratego-file)
+      log-timed-main(
+        with(<infer-output-option> args);
+        map(input-stratego-file);
+        aster;
+        map(output-stratego-file)
+      )
     )
+  
+  log-timed-main(s) =
+     with(
+       <get-config> "--statistics"
+     <+
+       <set-config> ("--statistics", 0)
+     );
+     log-timed(
+       s
+     <+
+       fatal-err-msg(|<conc-strings> ("Compilation failed (", <run-time ; real-to-string(|2)>, "s)"))
+     |"compilation succeeded", 0
+     );
+     with(
+       <set-config> ("--statistics", 0) // already displayed success and time
+     )
   
   infer-output-option =
     <get-config> "--multi-output"

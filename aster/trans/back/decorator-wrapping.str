@@ -21,6 +21,7 @@ rules // Adding decoration logic to decorated rules
     ]| ->
     |[ x_eval(sa*|a*) =
          s_rewrite => x_node;
+         where(s_init-args);
          s_body'
     ]|
     with
@@ -31,7 +32,8 @@ rules // Adding decoration logic to decorated rules
       
       !ds => [_ | _]
     with
-      (s*, t*) := <params-to-vars> (sa*, a*);
+      (s*, t*)    := <params-to-vars> (sa*, a*);
+      s_init-args := <decorator-init-args; fold-seq> a*;
       
       let is-caching-disabled =
         ?once;                            // only affect the inner attribute evaluation;
@@ -41,7 +43,24 @@ rules // Adding decoration logic to decorated rules
           <try(add-ensure-init(|def));
            fold-decorated-with-caching(is-caching-disabled|ds, def, s*, t*)> s_body
       end
-  
+
+  /**
+   * Handling of attribute term/pattern arguments used by decorators.
+   */  
+  decorator-init-args:
+    a* -> set-param*
+    with
+      // Ignore standard attribute and decorator parameters
+      <drop(|DEFAULT_ARG_COUNT())> a*;
+      filter(not(param-to-var; extract-arg-pattern-ignore));
+      
+      // TODO2: Optimize - only add arg initialization if used
+      map({
+        Var(x_param) := <param-to-var>;
+        t_user-param := <MatchingUserParam> x_param;
+        !|[ t_user-param := x_param ]|
+      }) => set-param*
+
   /**
    * Adds strategy calls to the end of an attribute definition
    * to ensure the resulting term is initialized.
@@ -182,16 +201,8 @@ strategies // Reflective data helpers
       sargs := <params-to-string-terms> sa*
     <+
       // Arguments
-      targs := <map(\|[ x @ t ]| -> Var(x)\ + Var(id))> a*;
+      targs := <map(attribute-var-to-arg <+ Var(id))> a*;
       sargs := <map(!Term |[ Anonymous() ]|)> sa*
-
-  // Ensure all decorator call arguments have a local variable binding:
-  add-argument-vars:
-    Strategy |[ t.x_name(s*|t*) ]| ->
-    Strategy |[ { ~vars: t.x_name(s*|t'*) } ]|
-    where
-      vars := <map(<newname> "arg")> t*;
-      t'*  := <zip(\(x_var, t) -> |[ x_var @ t ]|\)> (vars, t*)
 
 strategies // General helpers
   

@@ -53,13 +53,15 @@ rules // Assimilation of decorator definitions
         decorated-attribute-name-wrap(
           !s_body;
           
-          alltd(
+          topdown(try(
             assimilate-decorator-self-ref(|x_decorated, x_decorator, s_arg*, t_arg*)
           <+
             assimilate-decorated-svar(|attr, x_decorated)
           <+
             assimilate-native-decoration-ref(|x_decorated)
-          ) => s_body'
+          <+
+            assimilate-expr-inside-decorator
+          )) => s_body'
         | x_decorated
         )
       | Var(<SignatureVar>)

@@ -28,18 +28,18 @@ CLEANFILES = $(tests)
 clean :
 	rm -f $(RUNTESTS) $(RUNTESTS:=.str) test-attributes.str
 
-%.str : %.astr ../trans/aster
+%.str : %.astr $(top_srcdir)/trans/aster
 	$(top_srcdir)/trans/aster -i $< -o $@ --trace --verbose 2
 
-%$(EXEEXT) : %.str ../trans/aster
+%$(EXEEXT) : %.str
 	strc -i $< -m main-`basename $*` $(STRCFLAGS) >/dev/null
 
-../trans/aster :
-	$(MAKE) -C .. trans/aster
+$(top_srcdir)/trans/aster$(EXEEXT) :
+	$(MAKE) -C $(top_srcdir)/trans aster$(EXEEXT)
 
 test-aster : test-attributes.str
 
-test-attributes.str : test-attributes.astr
+test-attributes.str : test-attributes.astr $(top_srcdir)/trans/aster
 	$(top_srcdir)/trans/aster -i $< -o $@ --verbose 2
 
 %.run : %

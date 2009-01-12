@@ -13,6 +13,8 @@ imports
 
 strategies
 
+  // TODO2: Optimize - argument pattern matching is currently a pain
+
   equation-postprocess-def =
     if equation-postprocess-allowed then
       rec rec(

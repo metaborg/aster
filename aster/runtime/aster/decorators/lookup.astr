@@ -13,26 +13,128 @@ imports
 
 decorators
     
-  decorator down lookup-ordered(fetch-decl, is-scope) =
+  /**
+   * Ordered scoping lookup for identifiers.
+   *
+   * @param fetch-decl A local declaration fetching attribute that succeeds
+   *                   if a given declares the requested identifier.
+   *
+   * @param is-scope   Succeeds if a given term defines a scope.
+   */
+  decorator down plain lookup-ordered(fetch-decl, is-scope) =
     fetch-decl
   <+
     id.prev-sibling(lookup-outside-scopes(is-scope, fetch-decl))
   
-  decorator down lookup-unordered(fetch-decl, is-scope) =
-    (id.is-root + is-scope);
-    lookup-in-scope(fetch-decl, is-scope)
+  /**
+   * Unordered scoping lookup for identifiers.
+   *
+   * @param fetch-decl A local declaration fetching attribute that succeeds
+   *                   if a given declares the requested identifier.
+   *
+   * @param is-scope   Succeeds if a given term defines a scope.
+   */
+  decorator plain lookup-unordered(fetch-decl, is-scope) =
+    id.unordered-symbol-table(
+      fetch-decl.defined
+    , is-scope + id.is-root
+    | fetch-decl.signature
+    );
+    getfirst(fetch-decl)
   
+  /**
+   * Unscoped lookup for identifiers.
+   *
+   * @param fetch-decl A local declaration fetching attribute that succeeds
+   *                   if a given declares the requested identifier.
+   */
+  decorator lookup-global(fetch-decl) =
+    id.lookup-unordered(fetch-decl, fail)
+  
+attributes
+    
+  /**
+   * Ordered scoping lookup for multiply declared identifiers.
+   *
+   * @param fetch-decl A local declaration fetching attribute that succeeds
+   *                   if a given declares the requested identifier.
+   *
+   * @param is-scope   Succeeds if a given term defines a scope.
+   */
+  decorator down plain lookup-multiple-ordered(fetch-decl, is-scope) =
+    where(
+      results := id.prev-sibling(lookup-outside-scopes(is-scope, fetch-decl))
+    );
+    try(![<fetch-decl> | results])
+  <+
+    ![<fetch-decl>]
+
+  /**
+   * Unordered scoping lookup for multiply declared identifiers.
+   *
+   * @param fetch-decl A local declaration fetching attribute that succeeds
+   *                   if a given declares the requested identifier.
+   *
+   * @param is-scope   Succeeds if a given term defines a scope.
+   */
+  decorator plain lookup-multiple-unordered(fetch-decl, is-scope) =
+    id.unordered-symbol-table(
+      fetch-decl.defined
+    , is-scope + id.is-root
+    | fetch-decl.signature
+    );
+    collect-all(fetch-decl)
+  
+  /**
+   * Unscoped lookup for multiply declared identifiers.
+   *
+   * @param fetch-decl A local declaration fetching attribute that succeeds
+   *                   if a given declares the requested identifier.
+   */
+  decorator plain lookup-multiple-global(fetch-decl) =
+    id.lookup-multiple-unordered(fetch-decl, fail)
+  
+attributes
+  
+  /**
+   * Defines a list of declarations for a particular scope, associated
+   * with an unordered lookup attribute.
+   *
+   * This attribute is cached only for 'is-scope' nodes (for attribute 'lookup-signature'),
+   * and distributed downwards for other nodes.
+   *
+   * @internal
+   */
+  def down before(is-scope) cached(|lookup-signature.strip-arg-values)
+      unordered-symbol-table(fetch-decl-defined, is-scope |lookup-signature) =
+    collect-all-outside-scopes(fetch-decl-defined, is-scope)
+
 /** @internal */
 strategies
-
-  lookup-in-scope(fetch-decl, is-scope) =
-    fetch-decl
-  <+
-    id.child(lookup-outside-scopes(fetch-decl, is-scope))
   
+  /**
+   * Find the first term where fetch-decl succeeds,
+   * without entering scopes (defined by is-scope).
+   */
   lookup-outside-scopes(fetch-decl, is-scope) =
     fetch-decl
   <+
     not(is-scope);
     id.child(lookup-outside-scopes(fetch-decl, is-scope))
 
+  /**
+   * Collect all terms where fetch-decl-defined succeeds,
+   * without entering scopes (defined by is-scope).
+   */
+  collect-all-outside-scopes(fetch-decl-defined, is-scope) =
+    ?t;
+    id.children;
+    filter(
+      if is-scope then
+        fetch-decl-defined; ![id] // collect but do not enter scopes
+      else
+        collect-all-outside-scopes(fetch-decl-defined, is-scope)
+      end
+    );
+    concat;
+    try(![<fetch-decl-defined> t | id]) // add current term

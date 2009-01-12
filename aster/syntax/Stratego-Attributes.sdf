@@ -44,11 +44,11 @@ exports
   
     %% Unreserve some Id's specifically for (built-in) attributes
 
-    "all"  -> AttributeId
-    "one"  -> AttributeId
-    "some" -> AttributeId
-    "test" -> AttributeId
-    "in"   -> AttributeId
+    "all"       -> AttributeId
+    "one"       -> AttributeId
+    "some"      -> AttributeId
+    "test"      -> AttributeId
+    "in"        -> AttributeId
     "signature" -> AttributeId
   
   context-free restrictions

@@ -1,0 +1,29 @@
+/**
+ * Reflective attributes using the reflection primitives.
+ *
+ * @author Lennart Kats <lennart add lclnet.nl>
+ */
+module aster/attributes/internal
+
+imports
+  libstratego-lib
+  aster/lang/-
+
+attributes
+
+  // The following attributes are defined as decorators,
+  // since the primitives only work on decorator arguments.
+  // However, they can still be used as regular attributes.
+
+  /**
+   * Retrieves the signature of an attribute.
+   * For example, id.signature(id.all-parents) returns the signature of 'all-parents.'
+   */
+  decorator plain signature(a) =
+    a.signature
+  
+  decorator plain attribute-name(a) =
+    a.attribute-name
+  
+  decorator plain defined(a) =
+    a.defined

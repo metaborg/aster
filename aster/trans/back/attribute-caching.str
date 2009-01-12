@@ -23,8 +23,7 @@ rules
            (s_body <+ !EVAL_FAILED());
            
            if EVAL_FAILED then
-             s_cache-write;
-             fail
+             s_cache-write
            else
              aster-initialize-attribute-value(|x_all-parents, x_global-cache);
              s_cache-write
@@ -45,8 +44,7 @@ rules
     |[ x_eval(sa*|a*) = s ]| ->
     |[ x_eval(sa*|a*) =
          s;
-         not(EVAL_FAILED);
-         s_init
+         (EVAL_FAILED <+ s_init)
     ]|
     with
       if has-plain-decorator + not(has-foreign-operations) then

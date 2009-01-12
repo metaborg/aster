@@ -1,0 +1,46 @@
+module lookup-unordered
+
+signature constructors
+  Decl : Term * Term -> Decl
+
+strategies
+
+  main-lookup-unordered =
+    option-wrap(
+      verbose-option
+    ,
+      ![ Decl("x", 1)
+       , Some(
+           [Decl("x", 2), Decl("y", 3)]
+         )
+       ].init;
+
+      id.lookup-1(|"x").debug => Decl("x", 1);
+      id.lookup-2(|"x").debug => Decl("x", 1);
+      id.lookup-1(|"y").debug => Decl("y", 3);
+      id.lookup-all(|"x").debug => [Decl("x", 1), Decl("x", 2)];
+
+      where(
+        id.lookup-1-symbol-table.debug(!"end");
+        ?[Decl("x", 1), Decl("x", 2), Decl("y", 3)]
+      )
+    )
+
+attributes
+
+  def lookup-unordered(fail) lookup-1(|x):
+    Decl(x, _) -> id
+
+  def lookup-global          lookup-2(|x):
+    Decl(x, _) -> id
+
+  def lookup-multiple-global lookup-all(|x):
+    Decl(x, _) -> id
+  
+  def lookup-1-symbol-table =
+    id.unordered-symbol-table(
+      fatal-err(|"Should never be called")
+    , id.is-root
+    | Attribute("lookup-1", [], ["x"]) // id.lookup-1.signature
+    )
+

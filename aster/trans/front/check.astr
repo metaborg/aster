@@ -9,6 +9,7 @@ imports
   libstratego-lib
   Stratego-Attributes
   front/analyze
+  back/util
 
 rules
 
@@ -84,6 +85,14 @@ attributes
       <is-native-attribute> attr;
       not(is-decoration-native-attr)
 
+    AttributeRef(not-Id, Attribute("attribute-name", _, _)) -> "native attribute 'attribute-name' can only be referenced as 'id.attribute-name' or on a decorated attribute"
+    where
+      <not(RootApp(Id()) + Var(id))> not-Id // can be called on id, or a decorated function
+
+    AttributeRef(not-Id, Attribute("signature", _, _)) -> "native 'signature' can only be referenced as 'id.signature' or on a decorated attribute"
+    where
+      <not(RootApp(Id()) + Var(id))> not-Id // can be called on id, or a decorated function
+
   def warning:
     Var(x) -> "Performing match using annotated term - use id.eq instead"
     where
@@ -91,15 +100,14 @@ attributes
       not(id.in-pattern + id.is-def-param);
       (id.is-pattern-var(|x) + id.is-def-arg(|x))
 
-    AttributeRef(not-Id, Attribute("attribute-name", _, _)) -> "native attribute \"attribute-name\" should be referenced as id.attribute-name"
+    Wld(){a*} -> "Performing match using 'id' - use '_' or '<id>' instead"
     where
-      <not(RootApp(Id()) + Var(id))> not-Id // can be called on id, or a decorated function
-
-    AttributeRef(not-Id, Attribute("signature", _, _)) -> "native \"signature\" should be referenced as id.signature"
+      <getfirst(?IdTerm())> a*
     where
-      <not(RootApp(Id()) + Var(id))> not-Id // can be called on id, or a decorated function
+      id.in-match;
+      not(id.in-pattern + id.is-def-param)
 
-    AttributeRef(not-Id, Attribute("global-cache", _, _)) -> "native \"global-cache\" should be referenced as id.global-cache"
+    AttributeRef(not-Id, Attribute("global-cache", _, _)) -> "native 'global-cache' should be referenced as id.global-cache"
     where
       <not(RootApp(Id()))> not-Id // can be called on id, or a decorated function
     
@@ -148,8 +156,13 @@ attributes
   def down in-pattern:
     ADef(_, pattern, _).pattern -> pattern
   
+  def down in-anno-pattern:
+    AnnoList(_, annos).annos -> annos
+  
   def down is-pattern-var(|var):
-    ADef(_, pattern, _) -> <oncetd(id.eq(|Var(var)))> pattern
+    ADef(_, pattern, _) -> id 
+    where
+      <oncetd(id.eq(|Var(var)); not(id.in-anno-pattern))> pattern
   
   def down is-def-arg(|var):
     ADef(_, _, ADefStrategy(_, attr, _)) -> <oncetd(id.eq(|Var(var)))> attr
@@ -157,19 +170,20 @@ attributes
   def is-def-param:
     ADefStrategy(_, Attribute(_, _, t), _).t -> t
   
-  // TODO2: Proper error pp
+  // TODO: Proper error pp
   def uninit pp:
-    _                    -> <try(attribute-signature)>
-    Attribute(n, [], []) -> n
+    _ -> id
   
   def string pp-context =
     id.ancestor(?ADef(Type(Decorator(), _, _), _, <id>));
-    ?ADefStrategy(_, <id.pp>, _);
-    <conc-strings> (" in decorator ", <as-string>)
+    ?ADefStrategy(_, <attribute-signature>, _);
+    ?Attribute(name, s*, t*);
+    <conc-strings> (" in decorator '", name, <arity-to-string> (s*, t*), "'")
   <+
     id.ancestor(?ADef(_, _, <id>));
-    ?ADefStrategy(_, <id.pp>, _);
-    <conc-strings> (" in attribute ", <as-string>)
+    ?ADefStrategy(_, <attribute-signature>, _);
+    ?Attribute(name, s*, t*);
+    <conc-strings> (" in attribute '", name, <arity-to-string> (s*, t*), "'")
   
   def down def-type:
     ADef(_, _, ADefStrategy(_, attr, _)) ->  <get-attribute-decorators> attr

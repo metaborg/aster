@@ -147,6 +147,12 @@ strategies
     , ?1
     );
     apply-and-check(
+      !"attribute parameter used in pattern is ignored for id.defined"
+    , id.defined(id.is(|2))
+    , !1.init
+    , ?1
+    );
+    apply-and-check(
       !"patterns in attribute arguments"
     , id.tuple-first(|(1, 2))
     , !1.init
@@ -266,8 +272,6 @@ attributes // Reflective attributes
   def my-attribute-name = id.attribute-name
 
   def my-signature(s) = id.signature
-  
-  decorator signature-of(a) = a.signature
 
 strategies
 
@@ -286,7 +290,7 @@ strategies
     );
     apply-and-check(
       !"signature of remote attribute"
-    , id.signature-of(id.silly)
+    , id.signature(id.silly)
     , !1.init
     , Attribute("silly", [], [])
     );
@@ -298,7 +302,7 @@ strategies
     );
     apply-and-check(
       !"id.signature simply fails if there are strategy arguments (2)"
-    , id.signature-of(id.my-signature(id)) <+ !"failed"
+    , id.signature(id.my-signature(id)) <+ !"failed"
     , !1.init
     , "failed"
     );

@@ -45,15 +45,14 @@ strategies
     ADef(
       Type(type, decorators, _)
     , t_pattern
-    , ADefStrategy(child, attr @ Attribute(x_name, sa*, a*), s)
+    , ADefStrategy(child, attr @ Attribute(x_name, sa*, a*), s_body)
     ) ->
     <make-merged-def(|t_pattern, child)>
     Def |[
       x_eval(sa* |x_parent, x_all-parents, x_global-cache, x_rewrite-mode, a'*) =
         ?x_node;
         s_pattern;
-        where(s_init-args); // TODO: init args first if built-in pattern?
-        s'
+        ~<add-arg-init> (s_arg-init*, s_body')
     ]|
     with
       x_parent           := <ParentVar>;
@@ -64,18 +63,18 @@ strategies
       s_pattern          := <assimilate-pattern(|child)> t_pattern;
       sig                := <attribute-signature> attr;
       x_eval             := <attribute-accessor-name> attr;
-      (a'*, s_init-args) := <extract-arg-patterns> a*;
+      (a'*, s_arg-init*) := <extract-arg-patterns> a*;
      
       s_parent         := |[ ?x_node; !x_parent; not(UnknownParent)
                              <+ get-parent(|x_all-parents) ]|;
       s_parent-desired := |[ ?x_node < !x_parent + !UnknownParent() ]|;
       
       attribute-signature-wrap(
-        !s;
+        !s_body;
         topdown(try(
           assimilate-expr-inside-ag(|s_parent, s_parent-desired)
         ));
-        add-eval-failed => s'
+        add-eval-failed => s_body'
       | <CurrentSignatureTerm <+ !Attribute(x_name, sa*, a'*)>
       )
 
@@ -102,25 +101,51 @@ strategies
 rules // Argument patterns
    
   extract-arg-patterns =
-    unzip(extract-arg-pattern-override <+ extract-arg-pattern);
-    (id, fold-seq)
+    unzip(extract-arg-pattern-ignore <+ extract-arg-pattern)
 
-  extract-arg-pattern-override:
+  extract-arg-pattern-ignore:
     Var(sig) -> (DefaultVarDec(sig), Id())
     where
       <eq> (<SignatureVar>, sig)
   
   extract-arg-pattern:
-    t -> (DefaultVarDec(x_name), |[ !x_name => t' ]|)
+    t -> (DefaultVarDec(x_name), |[ !x_name; s_t ]|)
     with
-      t'     := <alltd(match-var-ignore-annos)> t; // don't care about annos
-      x_name := <newname> "arg"
+      s_t    := <alltd(match-var-ignore-annos)> t; // don't care about annos
+      x_name := <newname> "arg";
+      rules(
+        MatchingUserParam: x_name -> t
+      )
   
   match-var-ignore-annos:
-    Var(x) ->
-    |[ <(id < id + ?x); // x may be bound or not; avoid compiler complaints
-        (?x <+ eq-ignore-annos(|x))>
+    Var(x) -> |[ ?x <+ eq-ignore-annos(|x) ]|
+  
+  /**
+   * Add argument initialization to an equation body,
+   * ensuring that EVAL_FAILED is returned if an argument pattern
+   * did not match.
+   */
+  add-arg-init:
+    ([s_arg-init | s_arg-init*], s_body) ->
+    |[ s_init-all; // ignore unbound variable
+       if s_arg-init then
+         s_body'
+       else
+         s_build-all < !EVAL_FAILED() + fail
+       end
     ]|
+    where
+      <not(Id)> s_arg-init
+    with
+      s_init-all  := <fold-seq> <collect(\Var(x) -> |[ id < id + ?x ]|\)> s_arg-init;
+      s_build-all := <fold-seq> <collect(\Var(x) -> |[ !x ]|\)> s_arg-init;
+      s_body'     := <add-arg-init> (s_arg-init*, s_body)
+ 
+  add-arg-init:
+    ([Id(), s_arg-init*], s_body) -> <add-arg-init> (s_arg-init*, s_body)
+ 
+  add-arg-init:
+    ([], s_body) -> s_body
 
 rules // Semantic rule definition helpers
 
