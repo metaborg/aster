@@ -90,7 +90,7 @@ strategies
   make-cache-key(|targs):
     Attribute(name, sarity, tarity) -> Term |[ Attribute(~str:name, t_s, t_t) ]|
     with
+      t_s    := NoAnnoList(List(<copy> (sarity, Term |[ Anonymous() ]|)));
       targs' := <drop(|DEFAULT_ARG_COUNT())> targs;
-      t_s := NoAnnoList(List(targs'));
-      t_t := NoAnnoList(List(<copy> (sarity, Term |[ Anonymous() ]|)))
+      t_t    := NoAnnoList(List(targs'))
       
