@@ -10,6 +10,7 @@ decorators // Internally defined marker decorators
   /**
    * Plain attributes do not have the default behavior of
    * caching and re-annotating a result term for re-attribution
+   * (as defined by the 'cached' decorator).
    */
   decorator plain plain(a) =
     a

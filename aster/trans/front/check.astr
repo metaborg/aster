@@ -176,7 +176,7 @@ attributes
   def uninit pp:
     _ -> id
   
-  def string pp-context =
+  def String pp-context =
     id.ancestor(?ADef(Type(Decorator(), _, _), _, <id>));
     ?ADefStrategy(_, <attribute-signature>, _);
     ?Attribute(name, s*, t*);

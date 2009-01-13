@@ -1,8 +1,8 @@
 /**
  * Decorators that handle custom caching and term initialization strategies.
  *
- * By default, attributes are cached and initialized, unless
- * the 'plain' decorator is used.
+ * By default, attributes are cached and initialized as if they were
+ * used the 'cached' decorator. The 'plain' decorator disables this.
  *
  * @author Lennart Kats <lennart add lclnet.nl>
  */

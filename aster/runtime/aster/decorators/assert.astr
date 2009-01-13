@@ -41,5 +41,8 @@ decorators
   decorator fail-fatal(a) =
     id.assert-input(a, a.defined |"No attribute equation matches for input")
   
-  decorator uninit string(a) =
-    id.assert-output(a, is-string | "Result must be a string")
+  decorator uninit String(a) =
+    id.assert-output(a, is-string |"Result must be a string")
+
+  decorator List(a) =
+    id.assert-output(a, is-list |"Result must be a list")
