@@ -83,7 +83,7 @@ attributes
     , is-scope + id.is-root
     | fetch-decl.signature
     );
-    collect-all(fetch-decl)
+    filter(fetch-decl)
   
   /**
    * Unscoped lookup for multiply declared identifiers.
