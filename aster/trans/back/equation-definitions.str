@@ -47,7 +47,7 @@ strategies
     , t_pattern
     , ADefStrategy(child, attr @ Attribute(x_name, sa*, a*), s_body)
     ) ->
-    <make-merged-def(|t_pattern, child)>
+    <make-merged-def(|attr, t_pattern, child)>
     Def |[
       x_eval(sa* |x_parent, x_all-parents, x_global-cache, x_rewrite-mode, a'*) =
         ?x_node;

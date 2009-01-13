@@ -77,7 +77,7 @@ strategies
     with
       x_all-parents   := <AllParentsVar>;
       x_global-cache  := <GlobalCacheVar>;
-      t_key           := <make-cache-key(|targs)> def
+      t_key           := <to-static-signature-term> <LastAttribute> def
 
   add-cache-write(|targs):
     def ->
@@ -85,16 +85,10 @@ strategies
     with
       x_global-cache  := <GlobalCacheVar>;
       x_node          := <NodeVar>;
-      t_key           := <make-cache-key(|targs)> def
+      t_key           := <to-static-signature-term> <LastAttribute> def
 
-  make-cache-key(|targs):
-    Attribute(name, sarity, tarity) -> key
+  to-static-signature-term:
+    Attribute(name, s*, t*) -> Term |[ Attribute(~str:name, t_s, t_t) ]|
     with
-      arity' := <arity-to-string> (sarity, tarity);
-      name'  := <conc-strings> (name, arity');
-      targs' := <drop(|DEFAULT_ARG_COUNT())> targs;
-      
-      !NoAnnoList(Str(name'));
-      if not([] := targs') then
-        !NoAnnoList(Tuple([<id> | targs']))
-      end => key
+      t_s := NoAnnoList(List(<map(!Term |[ ~str:<param-to-string> ]|)> s*));
+      t_t := NoAnnoList(List(<map(!Term |[ ~str:<param-to-string> ]|)> t*))
