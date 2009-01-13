@@ -35,7 +35,7 @@ rules // Decorator references
         x_scoped*   := <AttributeArgValues>
       else
         s_decorated' := s_decorated;
-        t_decorated  := Term |[ Anonymous() ]|;
+        t_decorated  := <to-attribute-signature-term <+ !Term |[ Anonymous() ]|>;
         x_scoped*    := []
       end;
 

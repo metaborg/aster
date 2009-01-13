@@ -1,0 +1,22 @@
+module nested-decorator
+
+strategies
+
+  main-nested-decorator =
+    option-wrap(
+      verbose-option
+    ,
+      !1.init;
+      id.nested-get-signature(id.foo).debug => Attribute("foo", [], [])
+    )
+
+attributes
+
+  def foo := 1
+
+  decorator nested-get-signature(a) =
+    id.get-signature(a)
+  
+  decorator get-signature(a) =
+    id.signature(a)
+

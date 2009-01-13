@@ -74,6 +74,6 @@ decorators // Derived decorators
   /**
    * Strip the argument values from an attribute signature.
    */
-  def strip-arg-values:
+  def disable-warnings plain strip-arg-values:
     Attribute(name, sargs, targs) -> Attribute(name, <length> sargs, <length> targs)
 
