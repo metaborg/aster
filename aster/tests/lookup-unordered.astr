@@ -21,7 +21,7 @@ strategies
       id.lookup-all(|"x").debug => [Decl("x", 1), Decl("x", 2)];
 
       where(
-        id.lookup-1-symbol-table.debug(!"end");
+        id.lookup-1-all-decls.debug(!"end");
         ?[Decl("x", 1), Decl("x", 2), Decl("y", 3)]
       )
     )
@@ -37,8 +37,8 @@ attributes
   def lookup-multiple-global lookup-all(|x):
     Decl(x, _) -> id
   
-  def lookup-1-symbol-table =
-    id.unordered-symbol-table(
+  def lookup-1-all-decls =
+    id.all-decls(
       fatal-err(|"Should never be called")
     , id.is-root
     | Attribute("lookup-1", [], ["x"]) // id.lookup-1.signature

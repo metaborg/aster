@@ -1,0 +1,65 @@
+/**
+ * Decorators that handle custom caching and term initialization strategies.
+ *
+ * By default, attributes are cached and initialized, unless
+ * the 'plain' decorator is used.
+ *
+ * @author Lennart Kats <lennart add lclnet.nl>
+ */
+module aster/decorators/caching
+
+decorators
+  
+  /**
+   * Indicates that an attribute should not be cached.
+   * but should be initialized.
+   */
+  decorator plain uncached(a) =
+    a;
+    id.ensure-init
+  
+  /**
+   * Indicates that an attribute should be cached but not initialized.
+   */
+  decorator plain t.uninit(a) =
+    if get-cached-attribute(|id.global-cache, t, a.signature) => cached then
+      !cached;
+      not(EVAL_FAILED)
+    else
+      (a <+ !EVAL_FAILED());
+      id.uninit;
+      set-cached-attribute(|id.global-cache, t, a.signature, id);
+      not(EVAL_FAILED)
+    end
+
+  /**
+   * Indicates that an attribute should be cached for a specific signature.
+   * Useful for caching attributes with a signature different from
+   * a.signature, or attributes that take strategy arguments and are
+   * normally not cached.
+   */
+  decorator plain t.cached(a|sig) =
+    if get-cached-attribute(|id.global-cache, t, sig) => cached then
+      !cached;
+      not(EVAL_FAILED)
+    else
+      (a <+ !EVAL_FAILED());
+      id.ensure-init;
+      set-cached-attribute(|id.global-cache, t, sig, id);
+      not(EVAL_FAILED)
+    end
+
+  /**
+   * Indicates that an attribute should be cached and initialized.
+   * Note that this is the default behavior, unless overridden
+   * by the 'plain' decorator.
+   */
+  decorator plain cached(a) =
+    id.cached(a|a.signature)
+  
+  /**
+   * Strip the argument values from an attribute signature.
+   */
+  def disable-warnings plain strip-arg-values:
+    Attribute(name, sargs, targs) -> Attribute(name, <length> sargs, <length> targs)
+

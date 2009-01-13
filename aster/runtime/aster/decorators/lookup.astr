@@ -35,7 +35,7 @@ decorators
    * @param is-scope   Succeeds if a given term defines a scope.
    */
   decorator plain lookup-unordered(fetch-decl, is-scope) =
-    id.unordered-symbol-table(
+    id.all-decls(
       fetch-decl.defined
     , is-scope + id.is-root
     | fetch-decl.signature
@@ -78,7 +78,7 @@ attributes
    * @param is-scope   Succeeds if a given term defines a scope.
    */
   decorator plain lookup-multiple-unordered(fetch-decl, is-scope) =
-    id.unordered-symbol-table(
+    id.all-decls(
       fetch-decl.defined
     , is-scope + id.is-root
     | fetch-decl.signature
@@ -97,16 +97,18 @@ attributes
 attributes
   
   /**
-   * Defines a list of declarations for a particular scope, associated
-   * with an unordered lookup attribute.
+   * Defines a list of declarations for a particular scope,
+   * typically associated with an unordered lookup attribute.
    *
    * This attribute is cached only for 'is-scope' nodes (for attribute 'lookup-signature'),
    * and distributed downwards for other nodes.
    *
    * @internal
    */
-  def down before(is-scope) cached(|lookup-signature.strip-arg-values)
-      unordered-symbol-table(fetch-decl-defined, is-scope |lookup-signature) =
+  def down
+      before(is-scope)
+      cached(|lookup-signature.strip-arg-values)
+      all-decls(fetch-decl-defined, is-scope |lookup-signature) =
     collect-all-outside-scopes(fetch-decl-defined, is-scope)
 
 /** @internal */

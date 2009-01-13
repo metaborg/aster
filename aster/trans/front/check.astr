@@ -133,6 +133,8 @@ attributes
   // - warn for "def x: x -> ... y -> ..." if x and y aren't used
   //   (should probably be := instead!)
   // - warn for rules(...id... -> foo); id does not bind to the current term but acts as a wild card
+  
+  // TODO: error if an input module is never imported
 
 strategies
 

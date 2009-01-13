@@ -7,6 +7,7 @@ strategies
       verbose-option
     ,
       root := "root".init;
+      
       <debug(!1); eq>      (root.get-cached-1, root.get-cached-1);
       <debug(!2); eq>      (root.get-cached-2, root.get-cached-2);
       <debug(!3); not(eq)> (root.get-uncached-3, root.get-uncached-3);
@@ -16,7 +17,9 @@ strategies
       <debug(!7); eq>      (root.get-cached-7, root.get-cached-7);
       <debug(!8); eq>      (root.get-cached-8, root.get-cached-8);
       <debug(!9); eq>      (root.get-cached-9(|1), root.get-cached-9(|1));
-      <debug(!9); not(eq)> (root.get-cached-9(|1), root.get-cached-9(|2));
+      <debug(!10); eq>     (root.get-cached-10, root.get-cached-10);
+      <debug(!11); eq>     (root.get-cached-11, root.get-cached-11);
+      
       root.no-premature-caching
     )
 
@@ -40,6 +43,10 @@ attributes
   def uncached down get-cached-8 = new
   
   def get-cached-9(|arg) := (<new>, arg)
+  
+  def cached get-cached-10 = new
+  
+  def cached(|id.signature(id.get-cached-11)) get-cached-11 = new
   
 decorators
 
