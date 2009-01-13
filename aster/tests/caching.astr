@@ -15,7 +15,9 @@ strategies
       <debug(!6); not(eq)> (root.get-uncached-6, root.get-uncached-6);
       <debug(!7); eq>      (root.get-cached-7, root.get-cached-7);
       <debug(!8); eq>      (root.get-cached-8, root.get-cached-8);
-      id.no-premature-caching
+      <debug(!9); eq>      (root.get-cached-9(|1), root.get-cached-9(|1));
+      <debug(!9); not(eq)> (root.get-cached-9(|1), root.get-cached-9(|2));
+      root.no-premature-caching
     )
 
 attributes
@@ -36,6 +38,8 @@ attributes
   def plain down get-cached-7 = new
   
   def uncached down get-cached-8 = new
+  
+  def get-cached-9(|arg) := (<new>, arg)
   
 decorators
 
