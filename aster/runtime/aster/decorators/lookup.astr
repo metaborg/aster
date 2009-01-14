@@ -1,6 +1,6 @@
 /**
  * Lookup decorators: handle looking up of identifiers, given a set of scopes
- * and a local declaration identification/fetch function
+ * and a local declaration identification/fetch function.
  *
  * @author Lennart Kats <lennart add lclnet.nl>
  */

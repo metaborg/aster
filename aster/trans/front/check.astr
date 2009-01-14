@@ -94,7 +94,7 @@ attributes
       <not(RootApp(Id()) + Var(id))> not-Id // can be called on id, or a decorated function
 
   def warning:
-    Var(x) -> "Performing match using annotated term - use id.eq instead"
+    Var(x) -> "Performing match using annotated term - use 'id.eq' instead"
     where
       id.in-match;
       not(id.in-pattern + id.is-def-param);
@@ -134,6 +134,10 @@ attributes
   //   (should probably be := instead!)
   // - warn for rules(...id... -> foo); id does not bind to the current term but acts as a wild card
   
+  // TODO: bug patterns?? maybe optional?
+  // - def down is-foo - should not use 'down' without 'test' for testing attribute
+  
+  
   // TODO: error if an input module is never imported
 
 strategies
@@ -142,7 +146,7 @@ strategies
 
 attributes
   
-  def down in-match:
+  def test down in-match:
     Match(t).t         -> t
     Assign(t, _).t     -> t
     AM(_, t).t         -> t
@@ -155,22 +159,22 @@ attributes
     AnonymousRewriteRule(s, _, _).s -> s
     ADefStrategy(_, Attribute(_, _, t), _).t -> t
   
-  def down in-pattern:
+  def test down in-pattern:
     ADef(_, pattern, _).pattern -> pattern
   
-  def down in-anno-pattern:
+  def test down in-anno-pattern:
     AnnoList(_, annos).annos -> annos
   
-  def down is-pattern-var(|var):
+  def test down is-pattern-var(|var):
     ADef(_, pattern, _) -> id 
     where
       <oncetd(id.eq(|Var(var)); not(id.in-anno-pattern))> pattern
   
-  def down is-def-arg(|var):
+  def test down is-def-arg(|var):
     ADef(_, _, ADefStrategy(_, attr, _)) -> <oncetd(id.eq(|Var(var)))> attr
 
-  def is-def-param:
-    ADefStrategy(_, Attribute(_, _, t), _).t -> t
+  def test down is-def-param:
+    ADefStrategy(_, Attribute(_, _, t), _).t -> id
   
   // TODO: Proper error pp
   def uninit pp:

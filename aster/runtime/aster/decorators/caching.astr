@@ -8,6 +8,9 @@
  */
 module aster/decorators/caching
 
+imports
+  libstratego-lib
+
 decorators
   
   /**

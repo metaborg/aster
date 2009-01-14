@@ -1,5 +1,5 @@
 /**
- * Built-in decorators with special capabilities.
+ * Built-in decorators (defined internally).
  *
  * @author Lennart Kats <lennart add lclnet.nl>
  */
@@ -20,7 +20,7 @@ decorators // Internally defined marker decorators
    * on uninitialized terms, and that no warnings
    * should be displayed about this.
    */
-  decorator disable-trace disable-warnings(a) =
+  decorator disable-trace disable-warnings disable-warnings(a) =
     a
   
   /**
@@ -29,5 +29,5 @@ decorators // Internally defined marker decorators
    * @note This should be used sparingly, e.g. to prevent loops or
    *       to hide trivial tree access attributes.
    */
-  decorator disable-trace(a) =
+  decorator disable-trace disable-trace(a) =
     a

@@ -46,3 +46,6 @@ decorators
 
   decorator List(a) =
     id.assert-output(a, is-list |"Result must be a list")
+
+  decorator Int(a) =
+    id.assert-output(a, is-int |"Result must be an int")

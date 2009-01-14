@@ -38,9 +38,8 @@ decorators
         { contribution:
           ?contribution;
           targets;
-          map({ target, sig:
+          map({ target:
             ?target;
-            sig := a.signature;
             rules(
               CollectForeachContributions :+ (sig, target) -> contribution
             )
