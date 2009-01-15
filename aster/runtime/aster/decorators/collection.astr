@@ -29,7 +29,28 @@ decorators
   
   // TODO2: Optimize - avoid dynamic rules in contributes-to decorator?
   
-  decorator node.contributes-to(a, targets) =
+  /**
+   * Create collections by adding the attribute value to each of the nodes
+   * indicated by <targets>. When evaluated for one of the target nodes,
+   * an attibute decorated with this decorator will return all
+   * values contributed to it by other nodes.
+   *
+   * @param targets  The nodes to contribute this attribute value to.
+   */
+  decorator contributes-to(a, targets) =
+    id.contributes-to(a, targets, id)
+  
+  /**
+   * Create collections by adding the attribute value to each of the nodes
+   * indicated by <targets>, using <target-to-key> to transform the
+   * targets to a custom collection table key.
+   *
+   * @param targets        The nodes to contribute this attribute value to.
+   * @param target-to-key  A tranformation to apply to each target.
+   *                       For example, 'id.uninit' disregards the unique
+   *                       identity of a node in the tree.
+   */
+  decorator node.contributes-to(a, targets, target-to-key) =
     if not(<CompletedSurvey> a.signature) then
       with(sig := a.signature);
       rules(CompletedSurvey: sig);
@@ -41,13 +62,14 @@ decorators
           targets;
           (is-list <+ ![<id>]);
           map({ target:
-            ?target;
+            target-to-key => target;
             rules(
-              CollectForeachContributions :+ (sig, target) -> contribution
+              Contributions :+ (sig, target) -> contribution
             )
           })
         }
       )))
     end;
     
-    <bagof-CollectForeachContributions; a> (a.signature, node)
+    <bagof-Contributions> (a.signature, <target-to-key> node);
+    map(a)

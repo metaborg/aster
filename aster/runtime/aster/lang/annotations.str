@@ -15,9 +15,11 @@ imports
 
 strategies // Util
 
-  debug'(s) = where(strip-annos; debug(s))
+  debug'(s) =
+    where(strip-annos; debug(s))
 
-  debug' = where(strip-annos; debug)
+  debug' =
+    where(strip-annos; debug)
   
   with'(s) =
     s
