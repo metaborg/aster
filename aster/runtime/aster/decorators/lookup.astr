@@ -54,7 +54,7 @@ decorators
 attributes
     
   /**
-   * Ordered scoping lookup for multiply declared identifiers.
+   * Lexically ordered scoping lookup for multiply declared identifiers.
    *
    * @param fetch-decl A local declaration fetching attribute that succeeds
    *                   if a given declares the requested identifier.
@@ -70,7 +70,7 @@ attributes
     ![<fetch-decl>]
 
   /**
-   * Unordered scoping lookup for multiply declared identifiers.
+   * Unordered lexical scoping lookup for multiply declared identifiers.
    *
    * @param fetch-decl A local declaration fetching attribute that succeeds
    *                   if a given declares the requested identifier.
@@ -94,7 +94,26 @@ attributes
   decorator plain lookup-multiple-global(fetch-decl) =
     id.lookup-multiple-unordered(fetch-decl, fail)
   
-attributes
+attributes // Collecting declarations for lookup attributes
+
+  /**
+   * Lookup all declarations in scope for a given lookup attribute.
+   * Note that this decorator uses the signature of the targeted attribute,
+   * and therefore should be invoked as a regular attribute.
+   *
+   * Example:
+   *
+   *   def all-declarations =
+   *     id.decl(id.lookup(|"ignored"))
+   */
+  decorator all-decls(a) =
+    where(try(a)); // initialize declaration list if required
+    id.all-decls(
+      fatal-err(|"all-decls() only works for attributes decorated with lookup-unordered or derived decorators")
+    , // Instead of recognizing scopes, recognize cached lists
+      get-cached-attribute(|id.global-cache, id, a.signature.strip-arg-values)
+    | a.signature
+    )
   
   /**
    * Defines a list of declarations for a particular scope,
@@ -105,9 +124,7 @@ attributes
    *
    * @internal
    */
-  def down
-      before(is-scope)
-      cached(|lookup-signature.strip-arg-values)
+  def down before(where(is-scope)) cached(|lookup-signature.strip-arg-values)
       all-decls(fetch-decl-defined, is-scope |lookup-signature) =
     collect-all-outside-scopes(fetch-decl-defined, is-scope)
 
