@@ -34,7 +34,7 @@ decorators
       rules(CompletedSurvey: sig);
       
       id.root;
-      topdown(where(try(
+      topdown-consnil(where(try(
         { contribution:
           ?contribution;
           targets;

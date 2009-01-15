@@ -58,34 +58,52 @@ strategies // Util
 
 strategies // Node initialization
 
-  // TODO: Should reference lists and tuples just be dealt with by a decorator?
-  //       (this would help avoid problems when building regular lists and tuples)
+  // There is a bit of duplication here, since
+  // this is a particularly performance-sensitive part of the code
 
   /**
    * Initialize an attribute value, if required, with special
    * support for reference lists and tuples.
    */
-  aster-initialize-attribute-value(|all-parents, global-cache) =
+  aster-init-node-ensure(|all-parents, global-cache) =
     if not(aster-is-initialized(|all-parents)) then // be optimistic; start with this check
       // Support reference lists/tuples
-      map(aster-initialize-node-ensure(|all-parents, global-cache))
+      map(aster-init-single-node-ensure(|all-parents, global-cache))
     <+
       where(get-constructor => ""); // is-tuple
-      all(aster-initialize-node-ensure(|all-parents, global-cache))
+      all(aster-init-single-node-ensure(|all-parents, global-cache))
     <+
+      aster-initialize-node(|all-parents, global-cache)
+    end
+
+  /**
+   * Initialize an attribute value, if required, with special
+   * support for reference lists and tuples.
+   */
+  aster-init-node-ensure(warning|all-parents, global-cache) =
+    if not(aster-is-initialized(|all-parents)) then // be optimistic; start with this check
+      // Support reference lists/tuples
+      map(aster-init-single-node-ensure(warning|all-parents, global-cache))
+    <+
+      where(get-constructor => ""); // is-tuple
+      all(aster-init-single-node-ensure(warning|all-parents, global-cache))
+    <+
+      where(warning);
       aster-initialize-node(|all-parents, global-cache)
     end
   
   /**
    * Initialize a node if it was not yet initialized.
    *
-   * @note Generally, aster-initialize-attribute-value should be used instead,
-   *       to support reference lists.
+   * @note Generally, aster-init-node-ensure should be used instead,
+   *       to support reference lists/tuples.
    */
-  aster-initialize-node-ensure(|all-parents, global-cache) =
-    aster-initialize-node-ensure(id|all-parents, global-cache)
+  aster-init-single-node-ensure(|all-parents, global-cache) =
+    if not(aster-is-initialized(|all-parents)) then
+      aster-initialize-node(|all-parents, global-cache)
+    end
 
-  aster-initialize-node-ensure(warning|all-parents, global-cache) =
+  aster-init-single-node-ensure(warning|all-parents, global-cache) =
     if not(aster-is-initialized(|all-parents)) then
       where(warning);    
       aster-initialize-node(|all-parents, global-cache)
@@ -161,24 +179,3 @@ strategies // Adding/removing node annotations
     is-string
     // TODO: Is this a sensible optimization?
     // ; explode-string => ['@' | _]
-
-strategies // Hash table storage for init/uninit
-
-  /* UNDONE: Caching of node initialization
-  
-  // Caching of node initialization ensured:
-  // - caching of attributes accross tree copies and rewrites of complete trees
-  //   (but attribute caching and rewrite caching mostly takes care of that)
-  // - cheap equality checks after every rewrite or circular evaluation
-  //   (not really, unless you add an expensive remove-annos before caching)
-
-  get-initialize-cache(|global-cache, parent, node) =
-    where(NoParent() := parent);
-    get-cached-attribute(|global-cache, node, "$inited")
- 
-  set-initialize-cache(|global-cache, parent, node, value) =
-    not(NoParent() := parent) // no caching for you
-  <+
-    set-cached-attribute(|global-cache, node, "$inited", value)
-  */
-

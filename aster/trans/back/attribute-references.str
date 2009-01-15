@@ -51,7 +51,7 @@ rules // Evaluate attributes outside of AG context
     |[
       (id < id + ?x_all-parents; ?x_global-cache; ?x_rewrite-mode); // never consider these unbound
       !t;
-      aster-initialize-node-ensure(
+      aster-init-node-ensure(
         s_warning
       | <!x_all-parents <+ all-parents => x_all-parents>
       , <!x_global-cache <+ global-cache => x_global-cache>

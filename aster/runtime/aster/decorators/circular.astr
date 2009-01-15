@@ -52,7 +52,7 @@ strategies
       set-cached-attribute(|global-cache, node, sig, old-value) // remove CIRCULAR_BUSY
     else
       // verbose-msg(!"  [circ.]", !sig => Attribute(<id>, _, _), !"CHANGED @", !node, !"with", strip-annos, !"was", <strip-annos> old-value);
-      // UNDONE: was only done here - aster-initialize-attribute-value(|<all-parents>, global-cache);
+      // UNDONE: was only done here - aster-init-node-ensure(|<all-parents>, global-cache);
       circular-set-has-changed(|global-cache);
       set-cached-attribute(|global-cache, node, sig, <id>)
     end

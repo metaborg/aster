@@ -1,23 +1,21 @@
-module test-aster
+module test-aster-internals
 
 imports
   libstratego-lib
   libstrc
   aster
-  test-attributes
 
 strategies
 
-  main-test-aster =
+  main-test-aster-internals =
     option-wrap(
       verbose-option
     ,
       test-suite(
-        !"aster tests"
+        !"aster internals tests"
       ,
         test-term-depth;
         test-eq-ignore-annos;
-        test-attributes;
         test-foreign-ops;
         test-equation-postprocess;
         test-ordered-union

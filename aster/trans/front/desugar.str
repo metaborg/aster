@@ -11,8 +11,6 @@ signature constructors
   InlineWhereClause : List(Strategy) * Strategy        -> Strategy
 rules
 
-  // TODO: Desugar variable scopes, to fix "parent0 not found in { id.parent }"
-
   desugar-all =
     topdown(repeat(
       desugar-attribute-ref
@@ -27,7 +25,10 @@ rules
     
     try(
       all-stratego-defs(
-        try(aster-flatten-block-def)
+        try(aster-flatten-block-def);
+        try(
+          desugar-scope-default + map(desugar-scope-default)
+        )
       )
     )
 
@@ -131,6 +132,34 @@ rules
   
   desugar-build-apply:
     Build(NoAnnoList(AttributeTerm(apply))) -> apply
+
+rules
+
+  /**
+   * Avoid "parent0 not found" error in "{ id.parent }"
+   * by desugaring variable scopes.
+   */
+  desugar-scope-default =
+    where(
+      ?RDefNoArgs(_, _)
+    + ?RDef(_, _, _)
+    + ?RDefT(_, _, _, _)
+    + ?SDefNoArgs(_, _)
+    + ?SDef(_, _, _)
+    + ?SDefT(_, _, _, _)
+    + ?ADef(_, _, _)
+    + ?ADecl(_, _)
+    );
+    desugar-scope-default-in-def
+ 
+  desugar-scope-default-in-def =
+    oncetd(?ScopeDefault(_));
+    with(
+      scopeable := <collect-all(try(param-to-var); ?Var(<id>))>
+    );
+    topdown(try(
+      \ScopeDefault(s) -> Scope(scopeable, s)\
+    ))
      
 rules // flatten block definitions to individual definitions
 

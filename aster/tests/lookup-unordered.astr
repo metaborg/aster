@@ -9,21 +9,18 @@ strategies
     option-wrap(
       verbose-option
     ,
-      ![ Decl("x", 1)
-       , Some(
-           [Decl("x", 2), Decl("y", 3)]
-         )
-       ].init;
+      root :=
+        [ Decl("x", 1)
+         , Some(
+             [Decl("x", 2), Decl("y", 3)]
+           )
+         ].init;
 
       id.lookup-1(|"x").debug => Decl("x", 1);
       id.lookup-2(|"x").debug => Decl("x", 1);
       id.lookup-1(|"y").debug => Decl("y", 3);
       id.lookup-all(|"x").debug => [Decl("x", 1), Decl("x", 2)];
-
-      where(
-        id.lookup-1-all-decls.debug(!"end");
-        ?[Decl("x", 1), Decl("x", 2), Decl("y", 3)]
-      )
+      root.lookup-1-all-decls.debug => [Decl("x", 1), Decl("x", 2), Decl("y", 3)]
     )
 
 attributes
@@ -39,7 +36,7 @@ attributes
   
   def lookup-1-all-decls =
     id.all-decls(
-      fatal-err(|"Should never be called")
+      fatal-err(|"Should be cached and never be called")
     , id.is-root
     | Attribute("lookup-1", [], ["x"]) // id.lookup-1.signature
     )

@@ -24,4 +24,4 @@ attributes
     aster-initialize-node(|<all-parents>, <global-cache>)
   
   def plain disable-warnings ensure-init =
-    aster-initialize-attribute-value(|<all-parents>, <global-cache>)
+    aster-init-node-ensure(|<all-parents>, <global-cache>)

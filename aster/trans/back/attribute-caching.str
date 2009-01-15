@@ -25,7 +25,7 @@ rules
            if EVAL_FAILED then
              s_cache-write
            else
-             aster-initialize-attribute-value(|x_all-parents, x_global-cache);
+             aster-init-node-ensure(|x_all-parents, x_global-cache);
              s_cache-write
            end
     ]|
@@ -52,7 +52,7 @@ rules
       else
         x_all-parents  := <AllParentsVar>;
         x_global-cache := <GlobalCacheVar>;
-        s_init := |[ aster-initialize-attribute-value(|x_all-parents, x_global-cache) ]|
+        s_init := |[ aster-init-node-ensure(|x_all-parents, x_global-cache) ]|
       end
 
 strategies

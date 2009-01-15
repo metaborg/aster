@@ -9,12 +9,24 @@ signature constructors
 
 strategies
 
-  test-attributes =
-    test-default-attributes;
-    test-standard-library;
-    test-attribute-behavior;
-    test-set-operations;
-    test-reflective-attributes
+  main-test-attributes =
+    option-wrap(
+      verbose-option
+    ,
+      test-suite(
+        !"aster attribute tests"
+      ,
+        test-default-attributes;
+        test-standard-library;
+        test-attribute-behavior;
+        test-set-operations;
+        test-reflective-attributes
+      )
+    <+
+      <exit> 1 // no stacktrace
+    )
+
+strategies
     
   test-default-attributes =
     apply-and-check(

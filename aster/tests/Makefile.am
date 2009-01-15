@@ -8,7 +8,9 @@ STRCFLAGS = \
 	-O 0 \
 	-Xcc -O0
 
-RUNTESTS = empty find-minimum repmin repmin-no-copy-rules repmin-anonymous repmin-hag repmin-hag-decorated binary-numbers caching cons-nil anonymous-rules decorators circular-basic circular-liveness circular-liveness-rewrites # circular-propconst
+ASTRS=$(wildcard *.astr)
+
+RUNTESTS = $(ASTRS:.astr=)
 
 EXTRA_DIST =\
   $(RUNTESTS:=.astr) \
@@ -23,7 +25,7 @@ check : Stratego-Attributes.runtestsuite \
 # check-prepare : $(RUNTESTS:=.str)
 #	$(MAKE) -j3 $(RUNTESTS)
 
-CLEANFILES = $(tests)
+CLEANFILES = $(tests) $(ASTRS:.astr=.str)
 
 clean :
 	rm -f $(RUNTESTS) $(RUNTESTS:=.str) test-attributes.str

@@ -24,9 +24,12 @@ attributes
     id.child(a) = one(a; ?it); !it
     id.children = ?[x | y] < ![x, y] + get-arguments
   
-  def plain disable-trace root.is-root = id
+  def plain disable-trace is-root:
+    id -> id
+    where
+      not(id.parent)
     
-  def down tree-access-ancestors:
-    id.root = try(id.root)
+  def down _:
+    id.root := id where id.is-root
     id.ancestor(p) = p <+ id.parent.ancestor(p)
-    // id.ancestors(p,path) := <p <+ path; id.ancestors(p, path)>
+

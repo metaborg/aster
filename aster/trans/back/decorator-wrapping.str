@@ -67,7 +67,7 @@ rules // Adding decoration logic to decorated rules
    */
   add-ensure-init(|def):
     s ->
-    |[ s; (EVAL_FAILED <+ aster-initialize-attribute-value(|x_all-parents, x_global-cache)) ]|
+    |[ s; (EVAL_FAILED <+ aster-init-node-ensure(|x_all-parents, x_global-cache)) ]|
     where
       not(<has-plain-decorator <+ has-foreign-operations> def)
     with
