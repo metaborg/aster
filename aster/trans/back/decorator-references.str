@@ -29,18 +29,20 @@ rules // Decorator references
     where
       <is-decorator> attr
     with
-      if (s_decorated-renamed, s_decorated') := <assimilate-decorator-call-arg> s_decorated then
-        // Body is an attribute call; arguments are stored in local variables
-        t_decorated := <to-attribute-signature-term> s_decorated-renamed;
-        x_scoped*   := <AttributeArgValues>
-      else
-        s_decorated' := s_decorated;
-        t_decorated  := <to-attribute-signature-term <+ !Term |[ Anonymous() ]|>;
-        x_scoped*    := []
-      end;
-
-      x_cached := <CachedVar>; // (not actually cached)
-      s_eval   := <make-decorated(|t_decorated)> (Decorator(x_name, s*, t*), s_decorated')
+      {| AttributeArgValues:
+        if (s_decorated-renamed, s_decorated') := <assimilate-decorator-call-arg> s_decorated then
+          // Body is an attribute call; arguments are stored in local variables
+          t_decorated := <to-attribute-signature-term> s_decorated-renamed;
+          x_scoped*   := <AttributeArgValues>
+        else
+          s_decorated' := s_decorated;
+          t_decorated  := <to-attribute-signature-term <+ !Term |[ Anonymous() ]|>;
+          x_scoped*    := []
+        end;
+  
+        x_cached := <CachedVar>; // (not actually cached)
+        s_eval   := <make-decorated(|t_decorated)> (Decorator(x_name, s*, t*), s_decorated')
+      |}
   
   // Recursive decorator reference
   assimilate-decorator-self-ref(|x_decorated, x_decorator, s_arg*, t_arg*):
@@ -58,6 +60,8 @@ strategies // Wrapping helpers: directly invoked decorators (e.g., id.down(id.x)
    *
    * Returns the attribute with renamed arguments,
    * and a desugared version forming a regular strategy.
+   *
+   * Defines AttributeArgValues.
    */
   assimilate-decorator-call-arg:
     Strategy |[ t.x_name(s*|t*) ]| -> (s_ref-sugar, s_ref)
@@ -68,7 +72,7 @@ strategies // Wrapping helpers: directly invoked decorators (e.g., id.down(id.x)
       rules(AttributeArgValues := x_var*);
       
       s_ref-sugar := Strategy |[ t.x_name(s*|t'*) ]|;
-      s_ref       := <assimilate-attr-ref; try-remove-eval-failed>
+      s_ref       := <assimilate-expr; try-remove-eval-failed>
  
   try-remove-eval-failed =
     \|[ s; not(EVAL_FAILED) ]| -> s\

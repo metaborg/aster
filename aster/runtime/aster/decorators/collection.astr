@@ -22,9 +22,10 @@ decorators
   /**
    * Maps over a list.
    *
-   * def map(id.attr) is cached per list, while map(id.s) is cached per item.
+   * id.map(s) is cached per list, while map(s) is cached per item.
    */
-  decorator map(a) = map(a)
+  decorator map(a) =
+    map(a)
   
   // TODO2: Optimize - avoid dynamic rules in contributes-to decorator?
   
@@ -38,6 +39,7 @@ decorators
         { contribution:
           ?contribution;
           targets;
+          (is-list <+ ![<id>]);
           map({ target:
             ?target;
             rules(
