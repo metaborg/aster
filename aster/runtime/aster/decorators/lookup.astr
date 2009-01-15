@@ -28,11 +28,25 @@ decorators
   
   /**
    * Unordered scoping lookup for identifiers.
+   * Internally, this decorator maintains a list of declarations for each scope.
+   *
+   * Example:
+   *    
+   *    def lookup:
+   *      FunctionCall(f, args) -> id.lookup-function(|f, args) // inlined; not locally cached
+   *      Var(x)                -> id.lookup-var(|x)
+   *
+   *    def lookup-unordered lookup-function(|f, args):
+   *      FunctionDecl(f, params, body) -> id
+   *      where
+   *        <id.types-match> (params, args)
    *
    * @param fetch-decl A local declaration fetching attribute that succeeds
    *                   if a given declares the requested identifier.
    *
    * @param is-scope   Succeeds if a given term defines a scope.
+   *
+   * @see id.all-decls(a)
    */
   decorator plain lookup-unordered(fetch-decl, is-scope) =
     id.all-decls(
@@ -98,8 +112,10 @@ attributes // Collecting declarations for lookup attributes
 
   /**
    * Lookup all declarations in scope for a given lookup attribute.
-   * Note that this decorator uses the signature of the targeted attribute,
-   * and therefore should be invoked as a regular attribute.
+   * 
+   * @note This decorator uses the signature of the targeted attribute,
+   *       and therefore should be used inside an expression rather
+   *       than in the declaration of an attribute.
    *
    * Example:
    *
@@ -110,7 +126,8 @@ attributes // Collecting declarations for lookup attributes
     where(try(a)); // initialize declaration list if required
     id.all-decls(
       fatal-err(|"all-decls() only works for attributes decorated with lookup-unordered or derived decorators")
-    , // Instead of recognizing scopes, recognize cached lists
+    , 
+      // Instead of recognizing scopes, recognize cached lists
       get-cached-attribute(|id.global-cache, id, a.signature.strip-arg-values)
     | a.signature
     )
