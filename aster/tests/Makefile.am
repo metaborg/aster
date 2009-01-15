@@ -9,16 +9,16 @@ STRCFLAGS = \
 	-Xcc -O0
 
 ASTRS=$(wildcard *.astr)
+METAS=$(wildcard *.meta)
 
 RUNTESTS = $(ASTRS:.astr=)
 
 EXTRA_DIST =\
-  $(RUNTESTS:=.astr) \
-  Stratego-Attributes.testsuite \
-  test-aster.str test-aster.meta test-attributes.astr
+  $(ASTRS) \
+  $(METAS) \
+  Stratego-Attributes.testsuite
 
 check : Stratego-Attributes.runtestsuite \
-        test-aster test-aster.run \
         $(RUNTESTS:=.str) $(RUNTESTS) \
         $(RUNTESTS:=.run)
 
@@ -38,8 +38,6 @@ clean :
 
 $(top_srcdir)/trans/aster$(EXEEXT) :
 	$(MAKE) -C $(top_srcdir)/trans aster$(EXEEXT)
-
-test-aster : test-attributes.str
 
 test-attributes.str : test-attributes.astr $(top_srcdir)/trans/aster
 	$(top_srcdir)/trans/aster -i $< -o $@ --verbose 2
