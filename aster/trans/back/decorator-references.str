@@ -10,6 +10,7 @@ imports
   front/analyze
   back/attribute-references
   back/decorator-wrapping
+  back/decorator-definitions
   
 rules // Decorator references
       
@@ -72,14 +73,20 @@ strategies // Wrapping helpers: directly invoked decorators (e.g., id.down(id.x)
       rules(AttributeArgValues := x_var*);
       
       s_ref-sugar := Strategy |[ t.x_name(s*|t'*) ]|;
-      s_ref       := <assimilate-expr; try-remove-eval-failed>
+      s_ref       := <assimilate-expr; try(remove-eval-failed)>
  
-  try-remove-eval-failed =
-    \|[ s; not(EVAL_FAILED) ]| -> s\
-  <+
-    try(
-      \|[ s; s_tail ]| -> |[ s; ~<try-remove-eval-failed> s_tail ]|\
-    )
+   assimilate-decorator-call-arg:
+     |[ x_decorated(|) ]| -> (<id>, s)
+     where
+       CurrentDecoratorArgument => x_decorated
+     with
+       s := <remove-eval-failed> <assimilate-decorated-svar(|x_decorated)>;
+       rules(
+         AttributeArgValues := []
+       )
+  
+  remove-eval-failed: |[ s; not(EVAL_FAILED) ]| -> s
+  remove-eval-failed: |[ s; s_tail ]|           -> |[ s; ~<remove-eval-failed> s_tail ]|
  
   /** 
    * Converts a directly decorated attribute call argument into a variable.

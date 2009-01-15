@@ -56,7 +56,7 @@ rules // Assimilation of decorator definitions
           topdown(try(
             assimilate-decorator-self-ref(|x_decorated, x_decorator, s_arg*, t_arg*)
           <+
-            assimilate-decorated-svar(|attr, x_decorated)
+            assimilate-decorated-svar(|x_decorated)
           <+
             assimilate-native-decoration-ref(|x_decorated)
           <+
@@ -68,14 +68,15 @@ rules // Assimilation of decorator definitions
       )
 
   decorated-attribute-name-wrap(s |x_decorated) =
-    {| DecoratedAttributeSignature:
+    {| DecoratedAttributeSignature, CurrentDecoratorArgument:
       rules(
         DecoratedAttributeSignature: |[ x_decorated(|) ]| -> Var(<SignatureVar>)
+        CurrentDecoratorArgument := x_decorated
       );
       s
     |}
 
-  assimilate-decorated-svar(|attr, x_decorated):
+  assimilate-decorated-svar(|x_decorated):
     |[ x_decorated(|) ]| ->
     |[ if ?x_node then
          !x_cached <+ x_decorated => x_cached

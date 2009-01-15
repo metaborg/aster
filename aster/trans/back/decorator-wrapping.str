@@ -172,9 +172,8 @@ rules // Adding decoration logic to decorated rules
    */
   make-decorated(|t_decorated-signature):
     (Decorator(x_decorator, s*, t*), s_decorated) ->
-    <desugar-all>
     Strat |[
-      id.x_decorator'(x_cached, s_decorated, s* |t_decorated-signature, t*)
+      <id>.x_decorator'(x_cached, s_decorated, s* |t_decorated-signature, t*)
     ]|
     with
       x_cached     := <CachedVar>;

@@ -21,7 +21,12 @@ strategies
       where(
         id.lookup-all(|"x").debug => [Decl("x", 1), Decl("x", 2)]
       );
-      id.all-declarations.debug => [Decl("x", 1), Decl("x", 2), Decl("y", 3)]
+      where(
+        id.all-declarations.debug => [Decl("x", 1), Decl("x", 2), Decl("y", 3)]
+      );
+      where(
+        id.global-declarations.debug => [Decl("x", 1), Decl("x", 2), Decl("y", 3)]
+      )
     )
 
 attributes
@@ -37,3 +42,6 @@ attributes
   
   def all-declarations =
     id.all-decls(id.lookup-1(|"?"))
+  
+  def global-declarations =
+    id.all-decls(id.lookup-all(|"?"))
