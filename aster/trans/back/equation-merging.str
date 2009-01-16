@@ -106,9 +106,9 @@ strategies
 
 strategies
 
-  make-merged-def(|pattern, child) =
+  make-merged-def(|sig-term, pattern, child) =
     with(
-      record-def
+      record-def(|sig-term)
     );
     if Root() := pattern then
       make-merged-def-root
@@ -145,7 +145,7 @@ strategies
   <+
     !""
   
-  record-def =
+  record-def(|sig-term) =
     ?|[ x_eval(sa*|a*) = s ]|;
     sig := <attribute-signature>;
     
@@ -155,6 +155,7 @@ strategies
         IsKnownRule      :   sig
         RuleAccessorName :   sig -> x_eval
         RuleParams       :   sig -> (sa*, a*)
+        SignatureTerm    :   sig -> sig-term
       )
     end
   

@@ -47,7 +47,7 @@ strategies
     , t_pattern
     , ADefStrategy(child, attr @ Attribute(x_name, sa*, a*), s_body)
     ) ->
-    <make-merged-def(|t_pattern, child)>
+    <make-merged-def(|sig-term, t_pattern, child)>
     Def |[
       x_eval(sa* |x_parent, x_all-parents, x_global-cache, x_rewrite-mode, a'*) =
         ?x_node;
@@ -61,9 +61,9 @@ strategies
       x_global-cache     := <GlobalCacheVar>;
       x_rewrite-mode     := <RewriteModeVar>;
       s_pattern          := <assimilate-pattern(|child)> t_pattern;
-      sig                := <attribute-signature> attr;
       x_eval             := <attribute-accessor-name> attr;
       (a'*, s_arg-init*) := <extract-arg-patterns> a*;
+      sig-term           := <to-attribute-signature-term> Attribute(x_name, sa*, a'*);
      
       s_parent         := |[ ?x_node; !x_parent; not(UnknownParent)
                              <+ get-parent(|x_all-parents) ]|;
@@ -75,15 +75,13 @@ strategies
           assimilate-expr-inside-ag(|s_parent, s_parent-desired)
         ));
         add-eval-failed => s_body'
-      | <CurrentSignatureTerm <+ !Attribute(x_name, sa*, a'*)>
+      | sig-term
       )
 
-  // TODO2: shouldn't a.signature be an initialized term?
-
-  attribute-signature-wrap(s|attribute) =
+  attribute-signature-wrap(s|sig-term) =
     {| CurrentSignatureTerm:
       with(rules(
-        CurrentSignatureTerm := <to-attribute-signature-term> attribute
+        CurrentSignatureTerm := sig-term
       ));
       s
     |}

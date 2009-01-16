@@ -17,6 +17,10 @@ rules // Native attribute definitions
   // attributes.
   
   is-native-attribute =
+    Attribute("signature", [], [])
+  <+
+    Attribute("attribute-name", [], [])
+  <+
     where(assimilate-native-attr)
 
   assimilate-native-ref:
@@ -34,16 +38,17 @@ rules // Native attribute definitions
   assimilate-native-attr:
     Attribute("signature", [], []) -> |[ !t_signature => Attribute(_, [], _) ]|
     with
-      t_signature := <CurrentSignatureTerm <+ !|[ <fail> ]|>
+      t_signature := <CurrentSignatureTerm>
     
   assimilate-native-attr:
     Attribute("attribute-name", [], []) -> |[ !t_signature => Attribute(<id>, _, _) ]|
     with
-      t_signature := <CurrentSignatureTerm <+ !|[ <fail> ]|>
+      t_signature := <CurrentSignatureTerm>
     
 rules // Native attributes on decorated evaluation functions
 
-  is-native-attribute = is-decoration-native-attr
+  is-native-attribute =
+    is-decoration-native-attr
 
   // TODO2: Proper native attr checks for decoration attrs  
   is-decoration-native-attr =

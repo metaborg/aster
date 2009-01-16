@@ -25,7 +25,7 @@ rules // Adding decoration logic to decorated rules
          s_body'
     ]|
     with
-        <get-attribute-decorators> def => ds
+      <get-attribute-decorators> def => ds
     where
       // UNDONE: having a 'plain' decorator made _everything_ uncached
       //         filter(not(PLAIN_DECORATOR => is-caching-disabled)) => ds;
@@ -39,11 +39,14 @@ rules // Adding decoration logic to decorated rules
         ?once;                            // only affect the inner attribute evaluation;
         <not(has-foreign-operations)> def // disable caching if not required by the equations
       in
-        s_body' :=
-          <try(add-ensure-init(|def));
-           fold-decorated-with-caching(is-caching-disabled|ds, def, s*, t*)> s_body
+          attribute-signature-wrap(
+            s_body' :=
+              <try(add-ensure-init(|def));
+               fold-decorated-with-caching(is-caching-disabled|ds, def, s*, t*)> s_body
+          | <SignatureTerm> def
+          )
       end
-
+  
   /**
    * Handling of attribute term/pattern arguments used by decorators.
    */  

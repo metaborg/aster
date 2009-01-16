@@ -19,6 +19,7 @@ strategies
       <debug(!9); eq>      (root.get-cached-9(|1), root.get-cached-9(|1));
       <debug(!10); eq>     (root.get-cached-10, root.get-cached-10);
       <debug(!11); eq>     (root.get-cached-11, root.get-cached-11);
+      <debug(!12); eq>     (root.get-cached-12, root.get-cached-12);
       
       root.no-premature-caching
     )
@@ -47,6 +48,8 @@ attributes
   def cached get-cached-10 = new
   
   def cached(|id.signature(id.get-cached-11)) get-cached-11 = new
+  
+  def cached(|id.signature) get-cached-12 = new
   
 decorators
 

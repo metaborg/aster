@@ -317,11 +317,13 @@ strategies
     , id.signature(id.my-signature(id)) <+ !"failed"
     , !1.init
     , "failed"
-    );
+    )
+    /* No longer allowed
     apply-and-check(
       !"id.signature simply fails outside of signature context"
     , id.signature <+ !"failed"
     , !1.init
     , "failed"
     )
+    */
 

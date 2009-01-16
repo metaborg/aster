@@ -85,13 +85,27 @@ attributes
       <is-native-attribute> attr;
       not(is-decoration-native-attr)
 
-    AttributeRef(not-Id, Attribute("attribute-name", _, _)) -> "native attribute 'attribute-name' can only be referenced as 'id.attribute-name' or on a decorated argument"
+    AttributeRef(not-Id, Attribute("attribute-name", [], [])) -> "native attribute 'attribute-name' can only be referenced as 'id.attribute-name' in attributes, or on a decorated argument"
     where
-      <not(RootApp(Id()) + Var(id.is-decorated-arg(|id)))> not-Id
+      not(
+        Var(v) := not-Id;
+        id.is-decorated-arg(|v)
+      );
+      not(
+        id.in-attribute-def;
+        <RootApp(Id())> not-Id
+      )
 
-    AttributeRef(not-Id, Attribute("signature", _, _)) -> "native attribute 'signature' can only be referenced as 'id.signature' or on a decorator argument"
+    AttributeRef(not-Id, Attribute("signature", [], [])) -> "native attribute 'signature' can only be referenced as 'id.signature' in attributes, or on a decorator argument"
     where
-      <not(RootApp(Id()) + Var(id.is-decorated-arg(|id)))> not-Id
+      not(
+        Var(v) := not-Id;
+        id.is-decorated-arg(|v)
+      );
+      not(
+        id.in-attribute-def;
+        <RootApp(Id())> not-Id
+      )
 
   def warning:
     Var(x) -> "Performing match using annotated term - use 'id.eq' instead"
@@ -165,6 +179,10 @@ attributes
   
   def test down in-pattern:
     ADef(_, pattern, _).pattern -> pattern
+  
+  def test down in-attribute-def:
+    ADef(_, _, _) -> id
+    ADecl(_, _)   -> id
   
   def test down in-anno-pattern:
     AnnoList(_, annos).annos -> annos
