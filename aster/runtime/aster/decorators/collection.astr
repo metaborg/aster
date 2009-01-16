@@ -72,4 +72,11 @@ decorators
     end;
     
     <bagof-Contributions> (a.signature, <target-to-key> node);
-    map(a)
+    filter(
+      a
+    <+
+      if not(a.defined) then // sanity check
+        fatal-err(|["Internal error in attribute '", a.attribute-name, "':",
+                    "equation does not match targets definition"])
+      end
+    )

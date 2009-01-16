@@ -85,19 +85,19 @@ attributes
       <is-native-attribute> attr;
       not(is-decoration-native-attr)
 
-    AttributeRef(not-Id, Attribute("attribute-name", _, _)) -> "native attribute 'attribute-name' can only be referenced as 'id.attribute-name' or on a decorated attribute"
+    AttributeRef(not-Id, Attribute("attribute-name", _, _)) -> "native attribute 'attribute-name' can only be referenced as 'id.attribute-name' or on a decorated argument"
     where
-      <not(RootApp(Id()) + Var(id))> not-Id // can be called on id, or a decorated function
+      <not(RootApp(Id()) + Var(id.is-decorated-arg(|id)))> not-Id
 
-    AttributeRef(not-Id, Attribute("signature", _, _)) -> "native 'signature' can only be referenced as 'id.signature' or on a decorated attribute"
+    AttributeRef(not-Id, Attribute("signature", _, _)) -> "native attribute 'signature' can only be referenced as 'id.signature' or on a decorator argument"
     where
-      <not(RootApp(Id()) + Var(id))> not-Id // can be called on id, or a decorated function
+      <not(RootApp(Id()) + Var(id.is-decorated-arg(|id)))> not-Id
 
   def warning:
     Var(x) -> "Performing match using annotated term - use 'id.eq' instead"
     where
       id.in-match;
-      not(id.in-pattern + id.is-def-param);
+      not(id.in-pattern + id.in-def-param);
       (id.is-pattern-var(|x) + id.is-def-arg(|x))
 
     Wld(){a*} -> "Performing match using 'id' - use '_' or '<id>' instead"
@@ -105,11 +105,15 @@ attributes
       <getfirst(?IdTerm())> a*
     where
       id.in-match;
-      not(id.in-pattern + id.is-def-param)
+      not(id.in-pattern + id.in-def-param)
 
-    AttributeRef(not-Id, Attribute("global-cache", _, _)) -> "native 'global-cache' should be referenced as id.global-cache"
+    AttributeRef(not-Id, Attribute("global-cache", _, _)) -> "attribute 'global-cache' should be referenced as id.global-cache"
     where
-      <not(RootApp(Id()))> not-Id // can be called on id, or a decorated function
+      <not(RootApp(Id()))> not-Id
+
+    AttributeRef(not-Id, Attribute("all-parents", _, _)) -> "attribute 'all-parents' should be referenced as id.all-parents"
+    where
+      <not(RootApp(Id()))> not-Id
     
     ADef(_, pattern, ADefStrategy(Child(child), _, _)).child -> "Pattern child equals pattern"
     where
@@ -170,11 +174,16 @@ attributes
     where
       <oncetd(id.eq(|Var(var)); not(id.in-anno-pattern))> pattern
   
-  def test down is-def-arg(|var):
-    ADef(_, _, ADefStrategy(_, attr, _)) -> <oncetd(id.eq(|Var(var)))> attr
+  def test down is-def-arg(|x):
+    ADef(_, _, ADefStrategy(_, attr, _)) -> <oncetd(try(param-to-var); id.eq(|Var(x)))> attr
 
-  def test down is-def-param:
+  def test down in-def-param:
     ADefStrategy(_, Attribute(_, _, t), _).t -> id
+  
+  def test down is-decorated-arg(|x):
+    ADef(Type(Decorator(), _, _), _, ADefStrategy(_, Attribute(_, [p | _], _), _)) -> id
+    where
+      x.eq(|<param-to-string> p)
   
   // TODO: Proper error pp
   def uninit pp:
