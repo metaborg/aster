@@ -129,7 +129,7 @@ attributes // Collecting declarations for lookup attributes
   decorator plain all-decls(a) =
     where(try(a)); // initialize declaration list if required
     id.all-decls(
-      fatal-err(|["Internal error in attribute '", a.attribute-name, "':",
+      fatal-err(|["Internal error in attribute '", a.attribute-name, "': ",
                   "'all-decls' only works for attributes decorated with lookup-unordered or derived decorators"])
     , 
       // Instead of recognizing scopes, recognize cached lists

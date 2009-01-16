@@ -52,31 +52,40 @@ decorators
    */
   decorator node.contributes-to(a, targets, target-to-key) =
     if not(<CompletedSurvey> a.signature) then
-      with(sig := a.signature);
-      rules(CompletedSurvey: sig);
-      
-      id.root;
-      topdown-consnil(where(try(
-        { contribution:
-          ?contribution;
-          targets;
-          (is-list <+ ![<id>]);
-          map({ target:
-            target-to-key => target;
-            rules(
-              Contributions :+ (sig, target) -> contribution
-            )
-          })
-        }
-      )))
+      <contributes-to-survey(targets, target-to-key |a.signature)> id.root
     end;
     
     <bagof-Contributions> (a.signature, <target-to-key> node);
+    
     filter(
-      a
-    <+
-      if not(a.defined) then // sanity check
-        fatal-err(|["Internal error in attribute '", a.attribute-name, "':",
+      if a.defined then
+        a
+      else
+        fatal-err(|["Internal error in attribute '", a.attribute-name, "': ",
                     "equation does not match targets definition"])
       end
     )
+
+strategies
+
+  /**
+   * Survey phase of the 'contributes-to' collection decorator.
+   *
+   * @internal
+   */
+  contributes-to-survey(targets, target-to-key |sig) =
+    rules(CompletedSurvey: sig);
+    
+    topdown-consnil(where(try(
+      { contribution:
+        ?contribution;
+        targets;
+        (is-list <+ ![<id>]);
+        map({ target:
+          target-to-key => target;
+          rules(
+            Contributions :+ (sig, target) -> contribution
+          )
+        })
+      }
+    )))
