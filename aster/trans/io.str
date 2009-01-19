@@ -12,25 +12,15 @@ strategies
   // Using pack-stratego isn't really an option as long as
   // we want to support both .str/.rtree and .astr files
   
-  // TODO: -I option for parse tables
-  
   input-stratego-file =
     xtc-ensure-file => FILE(file);
-    scope-whoami(
-      parse-stratego-trm(
-      | [ "-i", file
-        , "--default-syntax", "Stratego-Attributes"
-        , "-I", <xtc-find; dirname <+ !"../syntax"> "Stratego-Attributes.tbl"
-        , "-I", <xtc-find; dirname <+ !"../runtime"> "aster-runtime.str"
-        ]
-      )
-    )
-  
-  scope-whoami(s) =
-    with(<get-config> "program" => whoami);
-    finally(
-      s
-    , <set-config> ("program", whoami)
+    parse-stratego-trm(
+    | [ "-i", file
+      , "--default-syntax", "Stratego-Attributes"
+      , "-I", <xtc-find; dirname <+ !"../syntax"> "Stratego-Attributes.tbl"
+      , "-I", <xtc-find; dirname <+ !"../runtime"> "aster-runtime.str"
+      | <get-config <+ ![]> "-I"
+      ]
     )
 
   output-stratego-file =

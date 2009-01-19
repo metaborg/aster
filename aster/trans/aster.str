@@ -7,19 +7,17 @@ module aster
 
 imports
   libstratego-lib
+  
+  lib/xtc-multi-options
 
-  front/analyze
+  io
+  options
+  aster/lang/debug
   back/assimilate
+  front/analyze
   front/check
   front/desugar
   front/include-library
-  aster/lang/debug
-  io
-  lib/xtc-multi-options
-
-signature constructors
-
-  Trace : OptionKey
 
 strategies
 
@@ -41,15 +39,16 @@ strategies
     // TODO2: Things like <all-parents> should be optimized in a post-processing stage, not right away
     // TODO2: Rename global-cache to cache or store, or something
     rules(
-      ParentVar         := <newname> "parent"
-      NodeVar           := <newname> "node"
-      AllParentsVar     := <newname> "all-parents"
-      GlobalCacheVar    := <newname> "global-cache"
-      RewriteModeVar    := <newname> "rewrite-mode"
-      RootVar           := <newname> "root"
-      CachedVar         := <newname> "cached"
-      DecoratedValueVar := <newname> "decorated-value-cache"
-      SignatureVar      := <newname> "signature"
+      ParentVar           := <newname> "parent"
+      NodeVar             := <newname> "node"
+      AllParentsVar       := <newname> "all-parents"
+      GlobalCacheVar      := <newname> "global-cache"
+      RewriteModeVar      := <newname> "rewrite-mode"
+      RootVar             := <newname> "root"
+      CachedVar           := <newname> "cached"
+      DecoratedValueVar   := <newname> "decorated-value-cache"
+      SignatureVar        := <newname> "signature"
+      AlteredSignatureVar := <newname> "altered-signature"
     )
 
 strategies // I/O
@@ -82,24 +81,3 @@ strategies // I/O
      with(
        <set-config> ("--statistics", 0) // already displayed success and time
      )
-  
-  infer-output-option =
-    <get-config> "--multi-output"
-  <+
-    // one(multi-input-option)
-    <get-config> "--multi-input";
-    map(
-      has-extension(|"str")
-      < guarantee-extension(|"astr.str")
-      + guarantee-extension(|"str")
-    );
-    <set-config> ("--multi-output", <id>)
-  <+
-    ![stdout()]
-  
-  aster-options =
-    Option(
-      "--trace"
-    , <set-config> (Trace(), <id>)
-    , !"--trace          Enable tracing messages for all attributes (for debugging support)"
-    )
