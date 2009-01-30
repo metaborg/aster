@@ -9,13 +9,7 @@ imports
   libstratego-lib
   aster/lang/-
 
-attributes
-  
-  def plain disable-warnings all-parents =
-    all-parents
-  
-  def plain disable-warnings global-cache =
-    global-cache
+attributes // Term initialization/uninitialization
 
   def plain disable-warnings uninit = 
     aster-remove-annos
@@ -25,3 +19,19 @@ attributes
   
   def plain disable-warnings ensure-init =
     aster-init-node-ensure(|<all-parents>, <global-cache>)
+
+attributes // Internal tables
+  
+  def plain disable-warnings all-parents =
+    all-parents
+  
+  def plain disable-warnings global-cache =
+    global-cache
+
+attributes // Caching
+
+  def plain set-cached(|sig, value) =
+    set-cached-attribute(|<global-cache>, id, sig, value)
+
+  def plain get-cached(|sig) =
+    get-cached-attribute(|<global-cache>, id, sig)

@@ -2,8 +2,8 @@
  * Gathering of foreign operations in equations,
  * i.e., operations that may require caching or term initialization.
  *
- * This pessimistic heuristic affects caching and term initialization behavior, which
- * can be manually overridden using the plain/uninit/uncached decorators.
+ * This pessimistic heuristic affects caching and term initialization behavior,
+ * which can be manually overridden using the plain/uninit/uncached decorators.
  *
  * @see add-cached-rule-logic
  */

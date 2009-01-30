@@ -22,12 +22,10 @@ rules
          + s_rewrite => x_node;
            (s_body <+ !EVAL_FAILED());
            
-           if EVAL_FAILED then
-             s_cache-write
-           else
-             aster-init-node-ensure(|x_all-parents, x_global-cache);
-             s_cache-write
-           end
+           if not(EVAL_FAILED) then
+             aster-init-node-ensure(|x_all-parents, x_global-cache)
+           end;
+           s_cache-write
     ]|
     where
       ([], a*) := <RuleParams> def; // no strategy args
@@ -88,9 +86,11 @@ strategies
       t_key           := <make-cache-key(|targs)> def
 
   make-cache-key(|targs):
-    Attribute(name, sarity, tarity) -> Term |[ Attribute(~str:name, t_s, t_t) ]|
+    def @ Attribute(name, sarity, tarity) ->
+    <try(apply-alter-signature-decorator(|def))> Term |[
+      Attribute(~str:name, t_s, t_t)
+    ]|
     with
       t_s    := NoAnnoList(List(<copy> (sarity, Term |[ Anonymous() ]|)));
       targs' := <drop(|DEFAULT_ARG_COUNT())> targs;
       t_t    := NoAnnoList(List(targs'))
-      

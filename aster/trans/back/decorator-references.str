@@ -14,7 +14,16 @@ imports
   
 rules // Decorator references
       
-  assimilate-decorator-ref:
+  /**
+   * Assimilate a decorator reference expression.
+   * Note that this is handled differently from
+   * decorators that appear in an attribute declaration,
+   * as the signature is taken from the argument expression,
+   * and caching is not applied.
+   *
+   * @param
+   */
+  assimilate-decorator-ref(assimilate-expr):
     Strategy |[ t.x_name(s_decorated, s*|t*) ]| ->
     |[ { ~x_scoped*:
          let x_cached =
@@ -31,13 +40,18 @@ rules // Decorator references
       <is-decorator> attr
     with
       {| AttributeArgValues:
-        if (s_decorated-renamed, s_decorated') := <assimilate-decorator-call-arg> s_decorated then
-          // Body is an attribute call; arguments are stored in local variables
+        if (s_decorated-renamed, s_decorated') :=
+           <assimilate-decorator-call-arg(
+             assimilate-expr, <find-signature-attribute-use> attr
+           )> s_decorated
+        then
+          // Body is an attribute call
+          // any arguments may be stored in local variables used for the signature
           t_decorated := <to-attribute-signature-term> s_decorated-renamed;
           x_scoped*   := <AttributeArgValues>
         else
           s_decorated' := s_decorated;
-          t_decorated  := <to-attribute-signature-term <+ !Term |[ Anonymous() ]|>;
+          t_decorated  := <to-attribute-signature-term>;
           x_scoped*    := []
         end;
   
@@ -57,25 +71,29 @@ strategies // Wrapping helpers: directly invoked decorators (e.g., id.down(id.x)
   /**
    * Replace attribute arguments with variables,
    * and assimilate the attribute call without an EVAL_FAILED check.
-   * The argument values are stored in the AttributeArgValue rule.
+   * The argument names are stored in the AttributeArgValue rule
+   * if they can be reused in the signature term.
    *
    * Returns the attribute with renamed arguments,
    * and a desugared version forming a regular strategy.
-   *
-   * Defines AttributeArgValues.
    */
-  assimilate-decorator-call-arg:
+  assimilate-decorator-call-arg(assimilate-expr, is-signature-used):
     Strategy |[ t.x_name(s*|t*) ]| -> (s_ref-sugar, s_ref)
     with
-      x_var* := <map(<newname> "arg")> t*;
-      t'*    := <zip(attribute-arg-to-var)> (t*, x_var*);
-      
-      rules(AttributeArgValues := x_var*);
-      
-      s_ref-sugar := Strategy |[ t.x_name(s*|t'*) ]|;
-      s_ref       := <assimilate-expr; try(remove-eval-failed)>
+      if is-signature-used then
+        // Reuse argument variables from signature term
+        x_var*      := <map(<newname> "arg")> t*;
+        t'*         := <zip(attribute-arg-to-var)> (t*, x_var*);
+        s_ref-sugar := Strategy |[ t.x_name(s*|t'*) ]|;
+        rules(AttributeArgValues := x_var*)
+      else
+        s_ref-sugar := <id>;
+        rules(AttributeArgValues := [])
+      end;
+
+      s_ref := <assimilate-expr; try(remove-eval-failed)> s_ref-sugar
  
-   assimilate-decorator-call-arg:
+   assimilate-decorator-call-arg(assimilate-expr, signature-used):
      |[ x_decorated(|) ]| -> (<id>, s)
      where
        CurrentDecoratorArgument => x_decorated

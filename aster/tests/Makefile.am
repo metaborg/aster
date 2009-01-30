@@ -10,8 +10,10 @@ STRCFLAGS = \
 
 ASTRS=$(wildcard *.astr)
 METAS=$(wildcard *.meta)
+FAILASTRS=$(wildcard fail/*.astr)
 
-RUNTESTS = $(ASTRS:.astr=)
+RUNTESTS  = $(ASTRS:.astr=)
+FAILTESTS = $(FAILASTRS:.astr=)
 
 EXTRA_DIST =\
   $(ASTRS) \
@@ -19,19 +21,13 @@ EXTRA_DIST =\
   Stratego-Attributes.testsuite
 
 check : Stratego-Attributes.runtestsuite \
-        $(RUNTESTS:=.str) $(RUNTESTS) \
-        $(RUNTESTS:=.run)
+        $(RUNTESTS:=.str) $(RUNTESTS) $(RUNTESTS:=.run) \
+        $(FAILTESTS:=.rtree) $(FAILTESTS:=.fail)
 
-# check-prepare : $(RUNTESTS:=.str)
-#	$(MAKE) -j3 $(RUNTESTS)
-
-CLEANFILES = $(tests) $(ASTRS:.astr=.str)
-
-clean :
-	rm -f $(RUNTESTS) $(RUNTESTS:=.str) test-attributes.str
+CLEANFILES = $(RUNTESTS) $(RUNTESTS:=.str) $(FAILTESTS:=.rtree)
 
 %.str : %.astr $(top_srcdir)/trans/aster
-	$(top_srcdir)/trans/aster -i $< -o $@ --trace --verbose 2
+	$(top_srcdir)/trans/aster -i $< -o $@ --verbose 2
 
 %$(EXEEXT) : %.str
 	strc -i $< -m main-`basename $*` $(STRCFLAGS) >/dev/null
@@ -46,6 +42,18 @@ test-attributes.str : test-attributes.astr $(top_srcdir)/trans/aster
 	@echo
 	@echo ==== `basename $@ .run` ====
 	@./$* --verbose 2
+
+FAILTESTS :
+	@echo
+	@echo ==== failure tests ====
+
+# HACK: these should be called atrees or something
+%.rtree : %.astr
+	sglri -p $(top_srcdir)/syntax/Stratego-Attributes.tbl -i $< -o $@
+
+%.fail : %.rtree FAILTESTS
+	@echo fail/`basename $@ .fail`
+	@$(top_srcdir)/trans/aster -i $< 2>/dev/null && echo "TEST FAILED: No error reported."; [ ] || [ 1 ]
 
 %.runtestsuite : %.testsuite
 	parse-unit --no-heuristic-filters -i $< -p ../syntax/Stratego-Attributes.tbl

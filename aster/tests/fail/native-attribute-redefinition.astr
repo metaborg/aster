@@ -1,0 +1,5 @@
+module native-attribute-redefinition
+
+attributes
+
+  def parent = id

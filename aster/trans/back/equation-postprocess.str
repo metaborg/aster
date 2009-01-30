@@ -14,8 +14,6 @@ imports
 strategies
 
   // TODO2: Optimize - argument pattern matching is currently a pain
-  // TODO2: Optimize - don't build signatures unless needed
-  //        (analyze all strategies that have a <SignatureVar> argument, see if its used)
 
   equation-postprocess-def =
     if equation-postprocess-allowed then

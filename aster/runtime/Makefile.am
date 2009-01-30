@@ -12,9 +12,9 @@ $(PACKED) : $(RTREES) $(ARTREES)
 
 # To pack them using strc, astr files must be provided as rtree files
 %.rtree : %.astr
-	sglri -p ../syntax/Stratego-Attributes.tbl -i $< -o $@
+	sglri -p $(top_srcdir)/syntax/Stratego-Attributes.tbl -i $< -o $@
 
 pkgdata_DATA = $(PACKED) $(STRS) $(ASTRS)
 EXTRA_DIST   = $(PACKED) $(STRS) $(ASTRS)
-CLEANFILES   = $(PACKED) $(RTREES) $(ARTREES) $(ASTRS:.astr=.str)
+CLEANFILES   = $(PACKED) $(RTREES) $(ARTREES) $(ASTRS:.astr=.str) $(wildcard *.dep)
 

@@ -12,9 +12,6 @@ imports
 
 decorators
   
-  decorator test(a) =
-    where(a)
-  
   decorator before(a, s) =
     s; a
   
@@ -24,10 +21,6 @@ decorators
   decorator in(a, s : t * s -> s) =
     s(a)
   
-  /* TODO: Should `soft-try` be factored out again?
-           What does that mean for decorator definitions,
-           they are then basically the same as their strategy equivalents?
-  
-  decorator stry(a) =
-    id.eval(a, id)
-  */
+  decorator test(a) =
+    where(a)
+

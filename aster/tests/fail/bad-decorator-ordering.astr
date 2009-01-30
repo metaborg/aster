@@ -1,0 +1,11 @@
+module bad-decorator-ordering
+
+attributes
+
+  decorator foo(a) = a
+  
+  decorator bar(a) = a
+
+  def foo bar x = id
+  
+  def bar foo x = id

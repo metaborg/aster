@@ -47,7 +47,7 @@ strategies
     , t_pattern
     , ADefStrategy(child, attr @ Attribute(x_name, sa*, a*), s_body)
     ) ->
-    <make-merged-def(|sig-term, t_pattern, child)>
+    <make-merged-def(|t_pattern, child)>
     Def |[
       x_eval(sa* |x_parent, x_all-parents, x_global-cache, x_rewrite-mode, a'*) =
         ?x_node;
@@ -64,16 +64,10 @@ strategies
       x_eval             := <attribute-accessor-name> attr;
       (a'*, s_arg-init*) := <extract-arg-patterns> a*;
       sig-term           := <to-attribute-signature-term> Attribute(x_name, sa*, a'*);
-     
-      s_parent         := |[ ?x_node; !x_parent; not(UnknownParent)
-                             <+ get-parent(|x_all-parents) ]|;
-      s_parent-desired := |[ ?x_node < !x_parent + !UnknownParent() ]|;
       
       attribute-signature-wrap(
         !s_body;
-        topdown(try(
-          assimilate-expr-inside-ag(|s_parent, s_parent-desired)
-        ));
+        topdown(try(assimilate-expr-inside-ag));
         add-eval-failed => s_body'
       | sig-term
       )

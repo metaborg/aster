@@ -32,7 +32,7 @@ strategies
     ));
     
     topdown(try(
-      assimilate-expr
+      assimilate-expr-outside-ag
     ));
     
     one(

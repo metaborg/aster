@@ -84,28 +84,44 @@ attributes
     where
       <is-native-attribute> attr;
       not(is-decoration-native-attr)
-
-    AttributeRef(not-Id, Attribute("attribute-name", [], [])) -> "native attribute 'attribute-name' can only be referenced as 'id.attribute-name' in attributes, or on a decorated argument"
+    
+    ADefStrategy(_, attr, _) -> ["Context-free attribute illegally references parent from '", ref.pp-sig, "'"]
     where
-      not(
-        Var(v) := not-Id;
-        id.is-decorated-arg(|v)
-      );
-      not(
-        id.in-attribute-def;
-        <RootApp(Id())> not-Id
-      )
+      <has-marker-decorator(|CONTEXT_FREE_DECORATOR())> attr;
+      ref := <find-parent-attribute-use> attr
 
-    AttributeRef(not-Id, Attribute("signature", [], [])) -> "native attribute 'signature' can only be referenced as 'id.signature' in attributes, or on a decorator argument"
+    AttributeRef(not-Id, Attribute("attribute-name", [], [])) -> "Native attribute 'attribute-name' can only be referenced as 'id.attribute-name' in attributes, or on a decorated argument"
     where
-      not(
-        Var(v) := not-Id;
-        id.is-decorated-arg(|v)
-      );
-      not(
-        id.in-attribute-def;
-        <RootApp(Id())> not-Id
-      )
+      if id.in-decorator-def then
+        not(
+          Var(v) := not-Id;
+          id.is-decorated-arg(|v)
+        )
+      else
+        not(
+          id.in-attribute-def;
+          <RootApp(Id())> not-Id
+        )
+      end
+
+    AttributeRef(not-Id, Attribute("signature", [], [])) -> "Native attribute 'signature' can only be referenced as 'id.signature' in attributes, or on a decorator argument"
+    where
+      if id.in-decorator-def then
+        not(
+          Var(v) := not-Id;
+          id.is-decorated-arg(|v)
+        )
+      else
+        not(
+          id.in-attribute-def;
+          <RootApp(Id())> not-Id
+        )
+      end
+    
+    AttributeRef(_, attr) -> ["Built-in marker decorator '", sig.pp-sig, "' cannot be used in-line"]
+    where
+      <is-native-decorator> attr;
+      sig := <attribute-signature> attr
 
   def warning:
     Var(x) -> "Performing match using annotated term - use 'id.eq' instead"
@@ -144,6 +160,12 @@ attributes
       decs.has-duplicates;
       not(<id.eq> (decs, id.def-type))
     
+    id.error := "The relative ordering of decorators this definition contradicts that of another"
+    where
+      type   := id.def-type;
+      merged := <id.uninit; ordered-union> (decs, type);
+      not(<id.eq> (type, merged))
+    
   // TODO: confirm attribute applicability based on pattern, where possible
   
   // TODO: more checks
@@ -164,7 +186,7 @@ strategies
 
 attributes
   
-  def test down in-match:
+  def Test down in-match:
     Match(t).t         -> t
     Assign(t, _).t     -> t
     AM(_, t).t         -> t
@@ -177,28 +199,32 @@ attributes
     AnonymousRewriteRule(s, _, _).s -> s
     ADefStrategy(_, Attribute(_, _, t), _).t -> t
   
-  def test down in-pattern:
+  def Test down in-pattern:
     ADef(_, pattern, _).pattern -> pattern
   
-  def test down in-attribute-def:
+  def Test down in-attribute-def:
     ADef(_, _, _) -> id
     ADecl(_, _)   -> id
   
-  def test down in-anno-pattern:
+  def Test down in-decorator-def:
+    ADecl(Type(Decorator(), _, _), _)   -> id
+    ADef(Type(Decorator(), _, _), _, _) -> id
+  
+  def Test down in-anno-pattern:
     AnnoList(_, annos).annos -> annos
   
-  def test down is-pattern-var(|var):
+  def Test down is-pattern-var(|var):
     ADef(_, pattern, _) -> id 
     where
       <oncetd(id.eq(|Var(var)); not(id.in-anno-pattern))> pattern
   
-  def test down is-def-arg(|x):
+  def Test down is-def-arg(|x):
     ADef(_, _, ADefStrategy(_, attr, _)) -> <oncetd(try(param-to-var); id.eq(|Var(x)))> attr
 
-  def test down in-def-param:
+  def Test down in-def-param:
     ADefStrategy(_, Attribute(_, _, t), _).t -> id
   
-  def test down is-decorated-arg(|x):
+  def Test down is-decorated-arg(|x):
     ADef(Type(Decorator(), _, _), _, ADefStrategy(_, Attribute(_, [p | _], _), _)) -> id
     where
       x.eq(|<param-to-string> p)
@@ -207,19 +233,26 @@ attributes
   def uninit pp:
     _ -> id
   
+  def String pp-sig:
+    Attribute(name, s*, t*) -> <conc-strings> (name, arity)
+    with
+      if is-decorator; ?Attribute(_, 1, 0) then
+        arity := ""
+      else
+        arity := <arity-to-string> (s*, t*)
+      end
+  
   def String pp-context =
     id.ancestor(?ADef(Type(Decorator(), _, _), _, <id>));
     ?ADefStrategy(_, <attribute-signature>, _);
-    ?Attribute(name, s*, t*);
-    <conc-strings> (" in decorator '", name, <arity-to-string> (s*, t*), "'")
+    <conc-strings> (" in decorator '", id.pp-sig, "'")
   <+
     id.ancestor(?ADef(_, _, <id>));
     ?ADefStrategy(_, <attribute-signature>, _);
-    ?Attribute(name, s*, t*);
-    <conc-strings> (" in attribute '", name, <arity-to-string> (s*, t*), "'")
+    <conc-strings> (" in attribute '", id.pp-sig, "'")
   
   def down def-type:
-    ADef(_, _, ADefStrategy(_, attr, _)) ->  <get-attribute-decorators> attr
+    ADef(_, _, ADefStrategy(_, attr, _)) ->  <get-attribute-decorators> attr.uninit
   
   def list.has-duplicates =
     not(<id.eq> (list, <id.make-set> list))

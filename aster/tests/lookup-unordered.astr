@@ -15,12 +15,12 @@ strategies
          )
        ].init;
 
-      id.lookup-1(|"x").debug => Decl("x", 1);
+      /*id.lookup-1(|"x").debug => Decl("x", 1);
       id.lookup-2(|"x").debug => Decl("x", 1);
       id.lookup-1(|"y").debug => Decl("y", 3);
       where(
         id.lookup-all(|"x").debug => [Decl("x", 1), Decl("x", 2)]
-      );
+      );*/
       where(
         id.all-declarations.debug => [Decl("x", 1), Decl("x", 2), Decl("y", 3)]
       );

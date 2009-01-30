@@ -34,6 +34,7 @@ rules // Adding decoration logic to decorated rules
     with
       (s*, t*)    := <params-to-vars> (sa*, a*);
       s_init-args := <decorator-init-args; fold-seq> a*;
+      t_decorated := <decorated-signature(|s*, t*)> def;
       
       let is-caching-disabled =
         ?once;                            // only affect the inner attribute evaluation;
@@ -43,7 +44,7 @@ rules // Adding decoration logic to decorated rules
             s_body' :=
               <try(add-ensure-init(|def));
                fold-decorated-with-caching(is-caching-disabled|ds, def, s*, t*)> s_body
-          | <SignatureTerm> def
+          | t_decorated
           )
       end
   
@@ -90,7 +91,7 @@ rules // Adding decoration logic to decorated rules
         set-caching-disabled
       <+
         make-decorated-with-caching(set-caching-disabled, is-caching-disabled' |def, s*, t*);
-        assimilate-all-inside-decorator;
+        topdown(try(assimilate-expr-inside-ag));
         rename-cached-var
       end
     )
@@ -101,7 +102,7 @@ rules // Adding decoration logic to decorated rules
   make-decorated-ignore-markers:
     (marker, s_decorated) -> s_decorated
     where
-      <is-marker-decorator> marker
+      <is-native-decorator> marker
    
   /**
    * Creates a decorated attribute body, taking caching into consideration.
@@ -156,19 +157,6 @@ rules // Adding decoration logic to decorated rules
     )
   
   /**
-   * Determines the signature argument of a decorator call,
-   * for use with the id.signature attribute.
-   */
-  decorated-signature(|s*, t*):
-    Attribute(x_decorated, _, _) -> t_decorated
-    with
-      if <IsDecoratorAccessorName> x_decorated then
-        t_decorated := Var(<SignatureVar>)
-      else
-        t_decorated := <to-attribute-signature-term> Attribute(x_decorated, s*, <drop(|DEFAULT_ARG_COUNT())> t*)
-      end
-  
-  /**
    * Creates a decorated attribute body.
    *
    * @see make-decorated-with-caching
@@ -176,11 +164,17 @@ rules // Adding decoration logic to decorated rules
   make-decorated(|t_decorated-signature):
     (Decorator(x_decorator, s*, t*), s_decorated) ->
     Strat |[
-      <id>.x_decorator'(x_cached, s_decorated, s* |t_decorated-signature, t*)
+      <id>.x_decorator'(x_cached, s_decorated, s* |t_decorated-signature', t*)
     ]|
     with
+      sig          := <Fst; attribute-signature>;
       x_cached     := <CachedVar>;
-      x_decorator' := <DecoratorAccessorName> x_decorator
+      x_decorator' := <DecoratorAccessorName> x_decorator;
+      if <find-signature-attribute-use> sig then
+        t_decorated-signature' := t_decorated-signature
+      else
+        t_decorated-signature' := Term |[ Anonymous() ]|
+      end
 
 strategies // Reflective data helpers
  
@@ -192,19 +186,62 @@ strategies // Reflective data helpers
     DecoratedAttributeSignature
   <+
     Var(id)
+  <+
+    !Term |[ Anonymous() ]|
   
   /** @internal */
   attribute-to-attribute-signature-term:
     Attribute(x_name, sa*, a*) ->
-    Term |[ Attribute(~str:x_name, [~*sargs], [~*targs]) ]|
+    <try(apply-alter-signature-decorator(|def))> Term |[
+      Attribute(~str:x_name, [~*sargs], [~*targs])
+    ]|
     with
+      def := <attribute-signature>
+    where
       // Formal parameters
       targs := <params-to-vars> a*;
       sargs := <params-to-string-terms> sa*
     <+
-      // Arguments
+      // Arguments (these appear as local variables, set first to construct the signature)
       targs := <map(attribute-var-to-arg <+ Var(id))> a*;
       sargs := <map(!Term |[ Anonymous() ]|)> sa*
+
+  /**
+   * Determines the signature argument of a decorator call,
+   * for use with the id.signature attribute.
+   */
+  decorated-signature(|s*, t*):
+    Attribute(x_decorated, _, _) -> t_decorated
+    with
+      def := <attribute-signature>;
+      if <IsDecoratorAccessorName> x_decorated then
+        !Var(<SignatureVar>);
+        try(apply-alter-signature-decorator(|def))
+      else
+        <to-attribute-signature-term> Attribute(x_decorated, s*, <drop(|DEFAULT_ARG_COUNT())> t*)
+      end;
+      ?t_decorated
+
+  /**
+   * Applies the built-in alter-signature decorator to a term
+   * representing an attribute signature. The resulting
+   * term is locally cached, while allowing its uses to be
+   * evaluated as desired and in any order.
+   */
+  apply-alter-signature-decorator(|def):
+    t_signature ->
+    |[ < (id < id + ?x_altered);
+         !x_altered
+       <+
+         !t_signature; s_alter => x_altered>
+    ]|
+    where
+      <get-marker-decorator(
+         ALTER_SIGNATURE_DECORATOR(?s_alter)
+       | ALTER_SIGNATURE_DECORATOR(())
+       )> def
+    with
+      x_altered := <AlteredSignatureVar>
 
 strategies // General helpers
   
@@ -220,14 +257,3 @@ strategies // General helpers
       new-name := <newname>
     );
     alltd((old-name -> new-name))
-
-  assimilate-all-inside-decorator =
-    topdown(try(assimilate-expr-inside-decorator))
-  
-  assimilate-expr-inside-decorator =
-    with(
-      x_parent := <ParentVar>;
-      x_node   := <NodeVar>;
-      s_parent := |[ ?x_node < !x_parent + !UnknownParent() ]|
-    );
-    assimilate-expr-inside-ag(|s_parent, s_parent)

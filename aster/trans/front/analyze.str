@@ -13,15 +13,11 @@ imports
   front/analyze-foreign-ops
 
 overlays
-  PLAIN_DECORATOR            = Decorator("plain", [], [])
-  DISABLE_TRACE_DECORATOR    = Decorator("disable-trace", [], [])
-  DISABLE_WARNINGS_DECORATOR = Decorator("disable-warnings", [], [])
-
-strategies
-
-  // TODO2: Inspect decorators to tell if they are "marker" decorators?
-  is-marker-decorator =
-    PLAIN_DECORATOR + DISABLE_TRACE_DECORATOR + DISABLE_WARNINGS_DECORATOR
+  PLAIN_DECORATOR              = Decorator("plain", [], [])
+  DISABLE_TRACE_DECORATOR      = Decorator("disable-trace", [], [])
+  DISABLE_WARNINGS_DECORATOR   = Decorator("disable-warnings", [], [])
+  ALTER_SIGNATURE_DECORATOR(s) = Decorator("alter-signature", [s], [])
+  CONTEXT_FREE_DECORATOR       = Decorator("context-free", [], [])
   
 strategies // Information gathering
   
@@ -46,6 +42,9 @@ strategies // Information gathering
       rules(
         AttributeDecorators: sig -> decorators'
       )
+    );
+    with(
+      analyze-attribute-references(|sig, <!child <+ !None()>)
     )
   
   analyze =
@@ -54,6 +53,34 @@ strategies // Information gathering
       UsesAnonymousRewriteRules: _
     )
   
+  analyze-attribute-references(|sig, child) =
+    with(
+      sig' := <try(DecoratorSignature)> sig
+    );
+
+    topdown(try({ref :
+      (Attribute(id, id, id) + Decorator(id, id, id));
+      ?ref;
+      rules(
+        ReferencedAttributes :+ sig  -> ref
+        ReferencedAttributes :+ sig' -> ref
+      )
+    }));
+    
+    if !child => Child(_) <+ oncetd(Attribute("parent", [], [])) then
+      rules(
+        ParentAttributeUse: sig  -> sig
+        ParentAttributeUse: sig' -> sig
+      )
+    end;
+    
+    if oncetd(Attribute("signature" + "attribute-name", [], [])) then
+      rules(
+        SignatureAttributeUse: sig  -> sig
+        SignatureAttributeUse: sig' -> sig
+      )
+    end
+  
   record-equation-properties(|type, sig) =
     switch !type
       case Decorator():
@@ -61,6 +88,7 @@ strategies // Information gathering
         rules(
           IsDecorator: sig
           HasDeclaration: sig
+          DecoratorSignature: sig -> sig'
           AttributeDecorators: sig' -> <AttributeDecorators> sig
         )
       case Def():
@@ -95,27 +123,83 @@ strategies // Information providing
       HasForeignOperations
     )
   
+  /**
+   * Find the signature of the first referenced attribute that uses id.parent.
+   */
+  find-parent-attribute-use:
+    attr -> result
+    where
+      attribute-signature => sig;
+      if ParentAttributeUse => cached then
+        result := <not(None)> cached
+      else
+        rules(
+          ParentAttributeUse: sig -> None()
+        );
+        bagof-ReferencedAttributes;
+        one(
+          where(find-parent-attribute-use);
+          attribute-signature => result
+        );
+        rules(
+          ParentAttributeUse: sig -> result
+        )
+      end 
+  
+  /**
+   * Find the signature of the first referenced attribute that uses id.signature.
+   */
+  find-signature-attribute-use:
+    attr -> result
+    where
+      attribute-signature => sig;
+      if SignatureAttributeUse => cached then
+        result := <not(None)> cached
+      else
+        rules(
+          SignatureAttributeUse: sig -> None()
+        );
+        bagof-ReferencedAttributes;
+        one(
+          where(find-signature-attribute-use);
+          attribute-signature => result
+        );
+        rules(
+          SignatureAttributeUse: sig -> result
+        )
+      end 
+  
   has-plain-decorator =
     has-marker-decorator(|PLAIN_DECORATOR())
-
-  has-marker-decorator(|decorator) =
-    where(
-      ?decorator
-    <+
-      if <HasMarkerDecorator> (decorator, <id>) => cached then
-        1 := cached
-      else
-        ?node;
-        rules(HasMarkerDecorator: (decorator, node) -> 0);
-        
-        get-attribute-decorators;
-        fetch(has-marker-decorator(|decorator));
-        
-        rules(HasMarkerDecorator: (decorator, node) -> 1)
-      end
-    )
   
-  // TODO: Explicit constructors / tuples for attribute signatures
+  has-marker-decorator(|decorator) =
+    where(get-marker-decorator(?decorator|decorator))
+
+  get-marker-decorator(match|decorator) =
+    match
+  <+
+    ?node;
+    if <HasMarkerDecorator> (decorator, node) => cached then
+      <match> cached
+    else
+      rules(HasMarkerDecorator: (decorator, node) -> None());
+      
+      get-attribute-decorators;
+      getfirst(get-marker-decorator(match|decorator)) => result;
+      
+      rules(HasMarkerDecorator: (decorator, node) -> result)
+    end
+
+  is-native-decorator =
+    PLAIN_DECORATOR + DISABLE_TRACE_DECORATOR + DISABLE_WARNINGS_DECORATOR
+  + ALTER_SIGNATURE_DECORATOR(id)
+    // (context-free is not a built-in)
+  
+  is-native-decorator =
+    \Attribute(x, [a | s*], t*) -> Decorator(x, s*, t*)\;
+    is-native-decorator
+  
+strategies
   
   attribute-signature:
     Attribute(name, s*, a*) ->

@@ -55,6 +55,10 @@ strategies
   <+
     add-uncached-rule-logic
   
+  /**
+   * Create a basic strategy that invokes all constituent rule definitions
+   * of an attribute or decorator in a particular order.
+   */
   make-merged-rule:
     def @ Attribute(_, sarity, tarity) ->
     <add-merged-rule-logic(|def)> |[
@@ -106,9 +110,9 @@ strategies
 
 strategies
 
-  make-merged-def(|sig-term, pattern, child) =
+  make-merged-def(|pattern, child) =
     with(
-      record-def(|sig-term)
+      record-def
     );
     if Root() := pattern then
       make-merged-def-root
@@ -145,7 +149,7 @@ strategies
   <+
     !""
   
-  record-def(|sig-term) =
+  record-def =
     ?|[ x_eval(sa*|a*) = s ]|;
     sig := <attribute-signature>;
     
@@ -155,7 +159,6 @@ strategies
         IsKnownRule      :   sig
         RuleAccessorName :   sig -> x_eval
         RuleParams       :   sig -> (sa*, a*)
-        SignatureTerm    :   sig -> sig-term
       )
     end
   

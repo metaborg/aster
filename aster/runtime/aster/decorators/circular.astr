@@ -21,7 +21,7 @@ decorators
     if ?CIRCULAR_FINISHED(value) + ?CIRCULAR_BUSY(value) then
       !value
     else
-      <circular-fixpoint(id.plain(a) |a.signature, stored)> node
+      <circular-fixpoint(a |a.signature, stored)> node
     end;
     not(EVAL_FAILED)
 
@@ -54,7 +54,7 @@ strategies
       // verbose-msg(!"  [circ.]", !sig => Attribute(<id>, _, _), !"CHANGED @", !node, !"with", strip-annos, !"was", <strip-annos> old-value);
       // UNDONE: was only done here - aster-init-node-ensure(|<all-parents>, global-cache);
       circular-set-has-changed(|global-cache);
-      set-cached-attribute(|global-cache, node, sig, <id>)
+      set-cached-attribute(|global-cache, node, sig, id)
     end
   
   circular-fixpoint(s|sig, old-value) =

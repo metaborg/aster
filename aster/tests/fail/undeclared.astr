@@ -1,0 +1,7 @@
+module undeclared
+
+attributes
+
+  eq undeclared = !1
+  
+  def use = id.undeclared

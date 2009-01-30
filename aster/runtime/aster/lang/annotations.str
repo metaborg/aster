@@ -155,7 +155,7 @@ strategies // Adding/removing node annotations
       if [] := a* then
         b* := [<newname> "@"] // adding annos is expensive, but newname is as cheap as a counter or new
       else
-        b* := [<newname> "@"| <filter(not(aster-is-annotation))> a*]
+        b* := [<newname> "@"| <filter(not(aster-is-anno))> a*]
       end
   
   aster-remove-annos =
@@ -165,19 +165,19 @@ strategies // Adding/removing node annotations
   
   aster-remove-anno =
     try(
-      \t {<aster-is-annotation>} -> t {}\
-    <+
       ?_{}
+    <+
+      \t {<aster-is-anno>} -> t {}\
     <+
       \t {a*} -> t {b*}
        where
-         b* := <filter(not(aster-is-annotation))> a*\
+         b* := <filter(not(aster-is-anno))> a*\
     )
   
   /**
    * @see aster-is-initialized
    */
-  aster-is-annotation =
+  aster-is-anno =
     is-string
     // TODO: Is this a sensible optimization?
     // ; explode-string => ['@' | _]

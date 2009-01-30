@@ -1,5 +1,5 @@
 /**
- * Aster native attribute definitions.
+ * Aster built-in attribute definitions.
  *
  * @author Lennart Kats <lennart add lclnet.nl>
  */
@@ -12,10 +12,6 @@ imports
 
 rules // Native attribute definitions
 
-  // Native attributes may work on non-annotated terms, or perform
-  // special or optimized operations not directly supported by regular
-  // attributes.
-  
   is-native-attribute =
     Attribute("signature", [], [])
   <+
@@ -33,9 +29,6 @@ rules // Native attribute definitions
     |[ get-parent(|<all-parents>); not(NoParent) ]| // optimized in equation-postprocess
   
   assimilate-native-attr:
-    Attribute("eval", [s, s-default], []) -> |[ fatal-err(|"id.eval() not fully implemented yet") ]|
-  
-  assimilate-native-attr:
     Attribute("signature", [], []) -> |[ !t_signature => Attribute(_, [], _) ]|
     with
       t_signature := <CurrentSignatureTerm>
@@ -50,7 +43,6 @@ rules // Native attributes on decorated evaluation functions
   is-native-attribute =
     is-decoration-native-attr
 
-  // TODO2: Proper native attr checks for decoration attrs  
   is-decoration-native-attr =
     where(assimilate-decoration-native-attr(|"d"))
 

@@ -60,7 +60,7 @@ rules // Assimilation of decorator definitions
           <+
             assimilate-native-decoration-ref(|x_decorated)
           <+
-            assimilate-expr-inside-decorator
+            assimilate-expr-inside-ag
           )) => s_body'
         | x_decorated
         )

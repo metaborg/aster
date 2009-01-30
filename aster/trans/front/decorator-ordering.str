@@ -1,5 +1,5 @@
 /**
- * Aster stacked decorator declaration ordering.
+ * Aster stacked decorator declaration union and ordering.
  *
  * For example, unifies the following declarations:
  * 
@@ -8,7 +8,7 @@
  *
  * into:
  *
- *   def foo bar bax x
+ *   def foo bar baz x
  *
  * (respecting the relative ordering; see test-ordered-union).
  *
