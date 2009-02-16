@@ -39,7 +39,7 @@ attributes // Term initialization/uninitialization
    * @internal
    */
   def plain disable-warnings uninit-lazy =
-    aster-remove-annos-from-leaves
+    aster-remove-annos-from-leaves(|<all-parents>)
   
   def plain disable-warnings is-inited =
     aster-is-initialized(|<all-parents>)
