@@ -17,7 +17,7 @@ signature constructors
 decorators
   
   decorator plain node.circular(a|initial-value) =
-    stored := <get-cached-attribute(|id.global-cache, id, a.signature) <+ initial-value.ensure-init <+ !EVAL_FAILED()>;
+    stored := <id.get-cached(|a.signature) <+ initial-value.ensure-init <+ !EVAL_FAILED()>;
     if ?CIRCULAR_FINISHED(value) + ?CIRCULAR_BUSY(value) then
       !value
     else
@@ -41,7 +41,7 @@ strategies
       global-cache := <global-cache>
     );
     
-    set-cached-attribute(|global-cache, node, sig, CIRCULAR_BUSY(old-value));
+    node.set-cached(|sig, CIRCULAR_BUSY(old-value));
     
     (s; id.ensure-init <+ !EVAL_FAILED());
     
@@ -49,12 +49,17 @@ strategies
       // verbose-msg(!"  [circ.]", !sig => Attribute(<id>, _, _), !"no change @", <strip-annos> node, !"with", strip-annos);
       circular-add-participant(|global-cache, node, sig, old-value);
       // NOTE: this sets old-value as the result value, as it is already initialized, but this may not always be desirable
-      set-cached-attribute(|global-cache, node, sig, old-value) // remove CIRCULAR_BUSY
+      with(
+        node.set-cached(|sig, old-value) // remove CIRCULAR_BUSY
+      )
     else
       // verbose-msg(!"  [circ.]", !sig => Attribute(<id>, _, _), !"CHANGED @", !node, !"with", strip-annos, !"was", <strip-annos> old-value);
       // UNDONE: was only done here - aster-init-node-ensure(|<all-parents>, global-cache);
       circular-set-has-changed(|global-cache);
-      set-cached-attribute(|global-cache, node, sig, id)
+      with(
+        ?result;
+        node.set-cached(|sig, result)
+      )
     end
   
   circular-fixpoint(s|sig, old-value) =

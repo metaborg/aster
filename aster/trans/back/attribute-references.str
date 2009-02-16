@@ -46,9 +46,8 @@ rules // Evaluate attributes outside of AG context
     assimilate-decorator-ref(assimilate-expr-outside-ag)
 
   /**
-   * Assimilate an expression inside AG context,
-   * doing an initialization sanity check before
-   * evaluating the attribute.
+   * Assimilate an attribute reference inside AG context, doing an
+   * initialization sanity check before evaluating the attribute.
    */
   assimilate-attr-ref-outside-ag:
     AttributeRef(t, attr @ Attribute(name, s*, t*)) ->
@@ -69,17 +68,46 @@ rules // Evaluate attributes outside of AG context
       not(EVAL_FAILED)
     ]|
     where
-      not(<is-decorator> attr)
+      not(<is-decorator> attr);
+      not(<has-marker-decorator(|CONTEXT_FREE_DECORATOR())> attr)
     with
       x_eval         := <attribute-accessor-name> attr;
       x_all-parents  := <AllParentsVar>;
       x_global-cache := <GlobalCacheVar>;
       x_rewrite-mode := <RewriteModeVar>;
-      name'          := name;
       
       if <has-marker-decorator(|DISABLE_WARNINGS_DECORATOR())> attr then
         s_warning := Id()
       else
+        name'     := <conc-strings> (name, <arity-to-string> (s*, t*));
         s_warning := |[ aster-initialize-node-warning(|x_all-parents, ~str:name') ]|
       end
+
+  /**
+   * Assimilate an context-free attribute reference inside AG context,
+   * skipping the initialization step before evaluating the attribute.
+   */
+  assimilate-attr-ref-outside-ag:
+    AttributeRef(t, attr @ Attribute(name, s*, t*)) ->
+    |[
+      (id < id + ?x_all-parents; ?x_global-cache; ?x_rewrite-mode); // never consider these unbound
+      !t;
+      x_eval(
+        s*
+      | UnknownParent()
+      , <!x_all-parents <+ all-parents => x_all-parents>
+      , <!x_global-cache <+ global-cache => x_global-cache>
+      , <!x_rewrite-mode <+ get-rewrite-mode(|x_global-cache) => x_rewrite-mode>
+      , t*
+      );
+      not(EVAL_FAILED)
+    ]|
+    where
+      not(<is-decorator> attr);
+      <has-marker-decorator(|CONTEXT_FREE_DECORATOR())> attr
+    with
+      x_eval         := <attribute-accessor-name> attr;
+      x_all-parents  := <AllParentsVar>;
+      x_global-cache := <GlobalCacheVar>;
+      x_rewrite-mode := <RewriteModeVar>
 

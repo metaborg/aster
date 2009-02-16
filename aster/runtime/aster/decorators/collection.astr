@@ -1,9 +1,9 @@
 /**
- * Collection attributes.
+ * Collection decorators.
  *
  * @author Lennart Kats <lennart add lclnet.nl>
  */
-module aster/attributes/collection
+module aster/decorators/collection
 
 imports
   libstratego-lib

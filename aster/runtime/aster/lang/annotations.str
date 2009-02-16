@@ -60,6 +60,8 @@ strategies // Util
 
 strategies // Node initialization
 
+  // TODO: Consistent naming for init and initialize functions
+
   // There is a bit of duplication here, since
   // this is a particularly performance-sensitive part of the code
 
@@ -162,6 +164,11 @@ strategies // Adding/removing node annotations
     // leaves-consnil should suffice in most cases, but this
     // should handle more at about the same overhead
     topdown-consnil(aster-remove-anno)
+  
+  aster-remove-annos-from-leaves(|all-parents) =
+    if aster-is-initialized(|all-parents) then
+      leaves-consnil(aster-remove-anno)
+    end
   
   aster-remove-anno =
     try(

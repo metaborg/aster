@@ -30,7 +30,7 @@ attributes
   def plain all(a) =
     ?before;
     all(a);
-    (?before <+ id.init)
+    (?before <+ id.reinit)
   
   /**
    * Rewrite some subterms using <a>, and reinitialize the result as necessary.
@@ -38,7 +38,7 @@ attributes
   def plain some(a) =
     ?before;
     some(a);
-    (?before <+ id.init)
+    (?before <+ id.reinit)
   
   /**
    * Rewrite one subterm using <a>, and reinitialize the result as necessary.
@@ -46,7 +46,7 @@ attributes
   def plain one(a) =
     ?before;
     one(a);
-    (?before <+ id.init)
+    (?before <+ id.reinit)
 
 attributes
   

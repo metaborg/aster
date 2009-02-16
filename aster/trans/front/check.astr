@@ -234,12 +234,12 @@ attributes
     _ -> id
   
   def String pp-sig:
-    Attribute(name, s*, t*) -> <conc-strings> (name, arity)
+    Attribute(name, sarity, tarity) -> <conc-strings> (name, arity)
     with
       if is-decorator; ?Attribute(_, 1, 0) then
         arity := ""
       else
-        arity := <arity-to-string> (s*, t*)
+        arity := <arity-to-string> (sarity, tarity)
       end
   
   def String pp-context =

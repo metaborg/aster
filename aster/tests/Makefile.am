@@ -38,7 +38,7 @@ $(top_srcdir)/trans/aster$(EXEEXT) :
 test-attributes.str : test-attributes.astr $(top_srcdir)/trans/aster
 	$(top_srcdir)/trans/aster -i $< -o $@ --verbose 2
 
-%.run : %
+%.run : %$(EXEEXT)
 	@echo
 	@echo ==== `basename $@ .run` ====
 	@./$* --verbose 2

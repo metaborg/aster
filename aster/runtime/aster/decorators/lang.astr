@@ -39,36 +39,3 @@ decorators // Internally defined marker decorators
   decorator alter-signature(alter) alter-signature(a, alter) =
     a
 
-decorators // Derived decorators
-
-  /**
-   * Marks an attribute as context-free. Context-free attributes may
-   * be evaluated and cached without regard to the particular location
-   * of the node in the tree. For example, a node A in Fork(A, A) is
-   * considered identical in this respect.
-   *
-   * This decorator might be applied to an attribute of the form:
-   *
-   *   def String context-free rename:
-   *     name -> <newname> <conc-strings> (name, "_renamed")
-   *
-   * This attribute would rename strings in the tree, giving the same
-   * name to identical strings regardless of their position in the tree.
-   *
-   * @note context-free attributes cannot use the 'parent' attribute; if this
-   *       is used directly or indirectly, a compile-time error is reported.
-   */
-  decorator disable-warnings alter-signature(Attribute(id, id, map(id.uninit))) context-free(a) =
-    id.uninit;
-    a
-
-  /**
-   * Marks a the term arguments of an attribute as context-free.
-   *
-   * This decorator might be applied to an attribute of the form:
-   *
-   *   def context-free-args lookup-global lookup-by-name(|name):
-   *     Decl(x, y) -> y
-   */
-  decorator disable-warnings alter-signature(Attribute(id, id, map(id.uninit))) context-free-args(a) =
-    a

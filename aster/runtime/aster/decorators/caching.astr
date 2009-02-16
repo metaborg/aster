@@ -29,7 +29,7 @@ decorators // Enabling, disabling, and customized caching
       !cached
     else
       (a <+ !EVAL_FAILED());
-      id.uninit;
+      id.uninit-lazy;
       set-cached-attribute(|id.global-cache, t, a.signature, id)
     end
 
@@ -82,8 +82,8 @@ decorators // Tree-structure independent attributes
    * @note context-free attributes cannot use the 'parent' attribute; if this
    *       is used directly or indirectly, a compile-time error is reported.
    */
-  decorator disable-warnings alter-signature(Attribute(id, id, map(id.uninit))) context-free(a) =
-    id.uninit;
+  decorator disable-warnings alter-signature(Attribute(id, id, map(id.uninit-lazy))) context-free(a) =
+    id.uninit-lazy;
     a
 
   /**
@@ -94,5 +94,5 @@ decorators // Tree-structure independent attributes
    *   def context-free-args lookup-global lookup-by-name(|name):
    *     Decl(x, y) -> y
    */
-  decorator disable-warnings alter-signature(Attribute(id, id, map(id.uninit))) context-free-args(a) =
+  decorator disable-warnings alter-signature(Attribute(id, id, map(id.uninit-lazy))) context-free-args(a) =
     a

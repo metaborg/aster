@@ -11,14 +11,38 @@ imports
 
 attributes // Term initialization/uninitialization
 
-  def plain disable-warnings uninit = 
-    aster-remove-annos
-
+  /**
+   * Initialize a term for attribution, even if it was initialized before.
+   */
   def plain disable-warnings init =
     aster-initialize-node(|<all-parents>, <global-cache>)
-  
+
+  /**
+   * (Re-)initialize a term for attribution, even if it was initialized before.
+   */
+  def plain disable-warnings reinit =
+    id.init
+
+  /**
+   * Ensure a term is initialized for attribution.
+   */
   def plain disable-warnings ensure-init =
     aster-init-node-ensure(|<all-parents>, <global-cache>)
+
+  /**
+   * Unititialize an term, removing any initialization annotations.
+   */
+  def plain disable-warnings uninit =
+    aster-remove-annos
+  
+  /**
+   * @internal
+   */
+  def plain disable-warnings uninit-lazy =
+    aster-remove-annos-from-leaves
+  
+  def plain disable-warnings is-inited =
+    aster-is-initialized(|<all-parents>)
 
 attributes // Internal tables
   
