@@ -14,10 +14,17 @@ decorators
   
   /**
    * Collects all nodes in the tree where the attribute can be applied,
-   * including subnodes of the results.
+   * including subnodes of the results (using a conc union operator).
    */
   decorator at-root collect-all(a) =
     collect-all(a, conc)
+  
+  /**
+   * Collects all nodes in the tree where the attribute can be applied,
+   * including subnodes of the results, using a custom union operator.
+   */
+  decorator at-root collect-all(a, un) =
+    collect-all(a, un)
   
   /**
    * Maps over a list.
