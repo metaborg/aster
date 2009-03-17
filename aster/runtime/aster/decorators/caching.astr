@@ -25,12 +25,12 @@ decorators // Enabling, disabling, and customized caching
    * Indicates that an attribute should be cached but not initialized.
    */
   decorator plain t.uninit(a) =
-    if get-cached-attribute(|id.global-cache, t, a.signature) => cached then
+    if id.get-cached(a) => cached then
       !cached
     else
       (a <+ !EVAL_FAILED());
       id.uninit-lazy;
-      set-cached-attribute(|id.global-cache, t, a.signature, id)
+      t.set-cached-for(a|t)
     end
 
   /**
@@ -40,12 +40,12 @@ decorators // Enabling, disabling, and customized caching
    * normally not cached.
    */
   decorator plain t.cached(a|sig) =
-    if get-cached-attribute(|id.global-cache, t, sig) => cached then
+    if id.get-cached(|sig) => cached then
       !cached
     else
       (a <+ !EVAL_FAILED());
       id.ensure-init;
-      set-cached-attribute(|id.global-cache, t, sig, id)
+      id.set-cached-for(|sig, t)
     end
 
   /**

@@ -54,8 +54,47 @@ attributes // Internal tables
 
 attributes // Caching
 
-  def plain set-cached(|sig, value) =
+  /**
+   * Retrieves the cached value for a given attribute signature,
+   * or EVAL_FAILED() if it failed before.
+   */
+  def plain disable-trace get-cached(|sig) =
+    get-cached-attribute(|<global-cache>, id, sig)
+
+  /**
+   * Assigns the cached value for a given attribute signature.
+   */
+  def plain disable-trace set-cached(|sig, value) =
     set-cached-attribute(|<global-cache>, id, sig, value)
 
-  def plain get-cached(|sig) =
-    get-cached-attribute(|<global-cache>, id, sig)
+  /**
+   * Assigns the current term as the cached value for a given attribute signature.
+   */
+  def plain disable-trace set-cached-for(|sig, node) =
+    set-cached-attribute(|<global-cache>, node, sig, id)
+    
+  /**
+   * Retrieves the cached value for a given attribute,
+   * or EVAL_FAILED() if it failed before.
+   *
+   * @note Intended to be used as a regular attribute, not for decoration.
+   */
+  decorator plain disable-trace get-cached(a) =
+    get-cached-attribute(|<global-cache>, id, a.signature)
+  
+  /**
+   * Assigns the cached value for a given attribute.
+   *
+   * @note Intended to be used as a regular attribute, not for decoration.
+   */
+  decorator plain disable-trace set-cached(a|value) =
+    set-cached-attribute(|<global-cache>, id, a.signature, value)
+  
+  /**
+   * Assigns the current term as the cached value for a given attribute.
+   *
+   * @note Intended to be used as a regular attribute, not for decoration.
+   */
+  decorator plain disable-trace set-cached-for(a|node) =
+    set-cached-attribute(|<global-cache>, node, a.signature, id)
+

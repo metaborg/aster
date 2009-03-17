@@ -29,11 +29,11 @@ decorators
   decorator assert-output(a, condition) =
     id.assert-output(a, condition | "Assertion failed")
 
-  decorator assert-output(a, condition |message) =
+  decorator input.assert-output(a, condition |message) =
     a;
     if not(condition) then
       prim("SSL_stacktrace_get_all_frame_names") => trace;
-      log(|Critical(), [message, " at attribute ", a.attribute-name, " for ", id.path, ":"], id.uninit);
+      log(|Critical(), [message, " at attribute ", a.attribute-name, " for ", input.path, ":"], id.uninit);
       <report-failure> trace
     end
 

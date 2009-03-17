@@ -17,7 +17,7 @@ signature constructors
 decorators
   
   decorator plain node.circular(a|initial-value) =
-    stored := <id.get-cached(|a.signature) <+ initial-value.ensure-init <+ !EVAL_FAILED()>;
+    stored := <id.get-cached(a) <+ initial-value.ensure-init <+ !EVAL_FAILED()>;
     if ?CIRCULAR_FINISHED(value) + ?CIRCULAR_BUSY(value) then
       !value
     else
@@ -38,10 +38,9 @@ strategies
   recompute-circular-def(s|sig, old-value) =
     with(
       ?node;
-      global-cache := <global-cache>
+      global-cache := <global-cache>;
+      node.set-cached(|sig, CIRCULAR_BUSY(old-value))
     );
-    
-    node.set-cached(|sig, CIRCULAR_BUSY(old-value));
     
     (s; id.ensure-init <+ !EVAL_FAILED());
     
@@ -114,7 +113,7 @@ strategies // Maintain a list of attributes participating in the latest fixpoint
       list-loop(
         { node, sig, value:
           ?(node, sig, value);
-          set-cached-attribute(|global-cache, node, sig, CIRCULAR_FINISHED(value))
+          node.set-cached(|sig, CIRCULAR_FINISHED(value))
         }
       );
       
