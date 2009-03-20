@@ -27,7 +27,7 @@ decorators
     a
 
   decorator assert-output(a, condition) =
-    id.assert-output(a, condition | "Assertion failed")
+    id.assert-output(a, condition |"Assertion failed")
 
   decorator input.assert-output(a, condition |message) =
     a;
@@ -36,6 +36,21 @@ decorators
       log(|Critical(), [message, " at attribute ", a.attribute-name, " for ", input.path, ":"], id.uninit);
       <report-failure> trace
     end
+
+  /*
+  decorator input.assert-after(a, condition) =
+    id.assert-after(a, condition |"Assertion failed")
+
+  decorator input.assert-after(a, condition |message) =
+    a;
+    id.set-cached-for(a|input);
+    if not(<condition> input) then
+      prim("SSL_stacktrace_get_all_frame_names") => trace;
+      log(|Critical(), [message, " at attribute ", a.attribute-name, " for ", input.path, ":"], id.uninit);
+      <report-failure> trace
+    end;
+    id.set-uncached-for(a|input)
+  */
 
 decorators // Type annotations and assertions
 
