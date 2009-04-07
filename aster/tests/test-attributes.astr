@@ -31,25 +31,25 @@ strategies
   test-default-attributes =
     apply-and-check(
       !"id.parent (1)"
-    , fetchtd(1; id.parent)
+    , collect-one(1; id.parent)
     , !Leaf(1).init
     , ?Leaf(1)
     );
     apply-and-check(
       !"id.parent (2)"
-    , fetchtd(1; id.parent)
+    , collect-one(1; id.parent)
     , ![1].init
     , ?[1]
     );
     apply-and-check(
       !"id.ancestor (1)"
-    , fetchtd(?1; id.ancestor(?Leaf(_)))
+    , collect-one(?1; id.ancestor(?Leaf(_)))
     , !Fork(Leaf(1), 2).init
     , ?Leaf(1)
     );
     apply-and-check(
       !"id.ancestor (2)"
-    , fetchtd(1; id.ancestor(?Fork(_, _)))
+    , collect-one(1; id.ancestor(?Fork(_, _)))
     , !Fork(Leaf(1), 2).init
     , ?Fork(_, _)
     );
@@ -61,14 +61,12 @@ strategies
     );
     apply-and-check(
       !"id.prev-sibling"
-    , fetchtd(2; id.prev-sibling(id))
+    , collect-one(2; id.prev-sibling(id))
     , !Fork(Leaf(1), 2).init
     , ?Leaf(_)
     )
 
 strategies // Helpers
-  
-  fetchtd(s) = oncetd(s; ?x); !x
 
   test-set-operations =
     apply-and-check(
@@ -142,7 +140,7 @@ strategies
     );
     apply-and-check(
       !"id refers to the whole pattern, not the pattern child"
-    , fetchtd(1; id.child-def)
+    , collect-one(1; id.child-def)
     , !Fork(1, 2).init
     , ?Fork(1, 2)
     );
@@ -172,7 +170,7 @@ strategies
     );
     apply-and-check(
       !"id.attribute does not refer to specified child"
-    , fetchtd(2; id.parent-first-kid)
+    , collect-one(2; id.parent-first-kid)
     , !Fork(1, 2).init
     , 1
     );
@@ -236,7 +234,7 @@ strategies
   test-standard-library =
       apply-and-check(
       !"down copy rule"
-    , fetchtd(1; id.test-root)
+    , collect-one(1; id.test-root)
     , !Fork(Leaf(1), 2).init
     , ?Fork(_, _)
     );
@@ -248,7 +246,7 @@ strategies
     );
     apply-and-check(
       !"down copy rule"
-    , fetchtd(3; id.test-copy-root)
+    , collect-one(3; id.test-copy-root)
     , !Fork(1, 3).init
     , ?Fork(1, 3)
     );
