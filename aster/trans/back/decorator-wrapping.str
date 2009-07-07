@@ -114,14 +114,14 @@ rules // Adding decoration logic to decorated rules
     (decorator, s_decorated) ->
     |[ let x_cached =
          s_cache-read // note: this could be EVAL_FAILED
-       <+
-         { x_cached-node: ?x_cached-node;
+       < not(EVAL_FAILED)
+       + { x_cached-node: ?x_cached-node;
            s_ref;
-           s_cache-write
+           s_cache-write;
+           not(EVAL_FAILED)
          }
        in
-         x_cached;
-         not(EVAL_FAILED)
+         x_cached
        end
     ]|
     with
@@ -143,7 +143,8 @@ rules // Adding decoration logic to decorated rules
         s_decorated'  := <avoid-caching-undecorated-values> s_decorated
       end;
       
-      s_ref := <make-decorated(|t_decorated)> (decorator, s_decorated')
+      s_ref-sugar  := <make-decorated(|t_decorated)> (decorator, s_decorated');
+      s_ref        := <try(remove-eval-failed)> <assimilate-expr-inside-ag> s_ref-sugar
 
   /**
    * Removes global cache-writes from inner decorator applications.

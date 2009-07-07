@@ -1,5 +1,5 @@
 /**
- * Language primitives as attributes.
+ * Aster language primitives as attributes.
  *
  * @author Lennart Kats <lennart add lclnet.nl>
  */
@@ -36,6 +36,9 @@ attributes // Term initialization/uninitialization
     aster-remove-annos
   
   /**
+   * Unititialize an term, removing any initialization annotations.
+   * May only consider annotations in leaf nodes.
+   *
    * @internal
    */
   def plain disable-warnings uninit-lazy =
@@ -56,7 +59,7 @@ attributes // Caching
 
   /**
    * Retrieves the cached value for a given attribute signature,
-   * or EVAL_FAILED() if it failed before.
+   * or fails if it failed before.
    */
   def plain disable-trace get-cached(|sig) =
     get-cached-attribute(|<global-cache>, id, sig)
@@ -66,6 +69,12 @@ attributes // Caching
    */
   def plain disable-trace set-cached(|sig, value) =
     set-cached-attribute(|<global-cache>, id, sig, value)
+  
+  /**
+   * Tests if there exists a cached value for a given attribute signature.
+   */
+  def plain disable-trace is-cached(|sig) =
+    where(get-cached-attribute(|<global-cache>, id, sig))
 
   /**
    * Assigns the current term as the cached value for a given attribute signature.
@@ -75,12 +84,20 @@ attributes // Caching
     
   /**
    * Retrieves the cached value for a given attribute,
-   * or EVAL_FAILED() if it failed before.
+   * or fails if it failed before.
    *
    * @note Intended to be used as a regular attribute, not for decoration.
    */
   decorator plain disable-trace get-cached(a) =
     get-cached-attribute(|<global-cache>, id, a.signature)
+    
+  /**
+   * Tests if there exists a cached value for a given attribute.
+   *
+   * @note Intended to be used as a regular attribute, not for decoration.
+   */
+  decorator plain disable-trace is-cached(a) =
+    where(get-cached-attribute(|<global-cache>, id, a.signature))
   
   /**
    * Assigns the cached value for a given attribute.

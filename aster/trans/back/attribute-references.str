@@ -79,7 +79,7 @@ rules // Evaluate attributes outside of AG context
       if <has-marker-decorator(|DISABLE_WARNINGS_DECORATOR())> attr then
         s_warning := Id()
       else
-        name'     := <conc-strings> (name, <arity-to-string> (s*, t*));
+        name'     := <conc-strings> (name, <arity-to-string> (<length> s*, <length> t*));
         s_warning := |[ aster-initialize-node-warning(|x_all-parents, ~str:name') ]|
       end
 

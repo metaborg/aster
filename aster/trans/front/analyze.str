@@ -36,7 +36,7 @@ strategies // Information gathering
         rules(
           HasEquations: sig
         );
-        record-equation-operations(|body, pattern, child, attribute, sig)
+        record-equation-operations(|body, decorators, pattern, child, attribute, sig)
       end;
       
       rules(

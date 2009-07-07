@@ -13,14 +13,19 @@ imports
   libstrc
 
 strategies // Gathering information
+
+  // TODO: Inspect decorators for foreign operators
+  //       rather than assuming any decorator is a foreign one?
   
-  record-equation-operations(|body, pattern, child, attribute, sig) =
+  record-equation-operations(|body, decorators, pattern, child, attribute, sig) =
     <HasForeignOperations> sig // we already know this one's foreign
   <+
     safe-variables := <collect-term-arguments(|pattern, attribute)>;
     decorated      := <decorated-variable> attribute;
+    decorator-refs := <map(!AttributeRef(Id(), <id>))> decorators;
     
-    if has-parent-referencing-pattern(|pattern, child) 
+    if !decorators => [_ | _]
+       <+ has-parent-referencing-pattern(|pattern, child)
        <+ <has-foreign-operations(|decorated, safe-variables)> body
     then
       sig' := <decorator-signature> sig;
@@ -103,8 +108,8 @@ strategies // Gathering information
   
   /**
    * Determines that a strategy call is to be considered a foreign operation.
-   * Internally, this maintains a "while list" of strategies that
-   * should be O(1) operations and may not produce a new term, such as <add> or <subt>.
+   * Internally, we maintain a "white list" of strategies that
+   * should be O(1) operations and may not produce a new term, such as <add> and <subt>.
    *
    * @see add-cached-rule-logic
    */
@@ -124,6 +129,8 @@ strategies // Gathering information
     ?(_, [_ | _], _); // attributes with strategy args are uncacheable
     not(
       ("child", [id], [])
+    + ("set-cached", [], [id, id]) // set-cached may not provide full caching
+    + ("set-cached", [id], [id])   // and is still a side effect...
     )
   
 strategies

@@ -57,7 +57,7 @@ decorators // Enabling, disabling, and customized caching
     id.cached(a|a.signature)
   
   /**
-   * Strip the argument values from an attribute signature.
+   * Strip the argument values from a given attribute signature.
    */
   def disable-warnings plain strip-arg-values:
     Attribute(name, sargs, targs) ->
@@ -93,6 +93,12 @@ decorators // Tree-structure independent attributes
    *
    *   def context-free-args lookup-global lookup-by-name(|name):
    *     Decl(x, y) -> y
+   *
+   * Or, for a graph-based search operation that potentially contains cycles:
+   *
+   *   def context-free-args non-circular lookup-in-graph(|name):
+   *     Redecl(x, y) -> id.lookup-in-graph(|y)
+   *     Decl(x, y)   -> y
    */
   decorator disable-warnings alter-signature(Attribute(id, id, map(id.uninit-lazy))) context-free-args(a) =
     a

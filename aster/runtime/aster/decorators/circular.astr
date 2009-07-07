@@ -16,7 +16,11 @@ signature constructors
 
 decorators
   
-  decorator plain node.circular(a|initial-value) =
+  /**
+   * Indicates an attribute uses fixpoint-based, circular attribute evaluation.
+   */
+  decorator plain circular(a|initial-value) =
+    node   := id;
     stored := <id.get-cached(a) <+ initial-value.ensure-init <+ !EVAL_FAILED()>;
     if ?CIRCULAR_FINISHED(value) + ?CIRCULAR_BUSY(value) then
       !value
@@ -25,6 +29,39 @@ decorators
     end;
     not(EVAL_FAILED)
 
+  /**
+   * Enables fail-fast behavior for non-circular attributes:
+   * the attribute will fail if recursively evaluated twice
+   * for the same node.
+   * 
+   * Fail-fast non-circular attributes are typically used for
+   * graph search operations, where any cyclic edges should be ignored
+   * during a search.
+   *
+   * @see context-free-args
+   */
+  decorator non-circular(a) =
+    id.set-cached(a|EVAL_FAILED());
+    a
+
+  /**
+   * Enables fail-fast behavior for non-circular attributes:
+   * the attribute will return a term 't' if recursively evaluated twice
+   * for the same node.
+   * 
+   * Fail-fast non-circular attributes are typically used for
+   * graph search operations, where any cyclic edges should be ignored
+   * during a search.
+   *
+   * @see context-free-args
+   */
+  decorator non-circular(a|t) =
+    id.set-cached(a|t);
+    a
+
+/**
+ * @internal
+ */
 strategies
 
   // TODO: Start a new fixpoint for a new strongly connected component? (helps performance and prevents premature caching)
@@ -83,6 +120,9 @@ strategies
       unset-fixpoint-running(|global-cache)
     end
 
+/**
+ * @internal
+ */
 strategies // Helpers
   
   is-fixpoint-running(|global-cache) = hashtable-get(|global-cache, "$circular-lock")
@@ -91,6 +131,9 @@ strategies // Helpers
   
   unset-fixpoint-running(|global-cache) = hashtable-remove(|global-cache, "$circular-lock")
 
+/**
+ * @internal
+ */
 strategies // Maintain a list of attributes participating in the latest fixpoint network
 
   // We maintain a set of all unchanged attributes in the last evaluation;
@@ -126,6 +169,9 @@ strategies // Maintain a list of attributes participating in the latest fixpoint
       iset-clear
     ))
 
+/**
+ * @internal
+ */
 strategies // Fixpoint keeps running while something changed
   
   circular-set-has-changed(|global-cache) =

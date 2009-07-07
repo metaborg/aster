@@ -33,8 +33,10 @@ decorators // Internally defined marker decorators
     a
 
   /**
-   * Alters the signature of an attribute. For example,
-   * may be used in combination with customized caching.
+   * Alters the signature of an attribute.
+   * It may for example be used in combination with customized caching.
+   *
+   * This decorator is typically only used to define other decorators.
    */
   decorator alter-signature(alter) alter-signature(a, alter) =
     a

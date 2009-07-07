@@ -19,7 +19,7 @@ rules
     id.init;
     collect-all(where(id.error + id.warning));
     list-loop(log-error);
-    
+   
     if one(id.error) then
       <xtc-exit> 1
     end
@@ -165,6 +165,9 @@ attributes
       type   := id.def-type;
       merged := <id.uninit; ordered-union> (decs, type);
       not(<id.eq> (type, merged))
+   
+  def warning:
+    AttributeRef(_, Attribute("cached", [_], [])) -> "Decorator 'cached' should not be used in-line"
     
   // TODO: confirm attribute applicability based on pattern, where possible
   
@@ -230,8 +233,8 @@ attributes
       x.eq(|<param-to-string> p)
   
   // TODO: Proper error pp
-  def uninit pp:
-    _ -> id
+  def plain pp:
+    _ -> id.uninit
   
   def String pp-sig:
     Attribute(name, sarity, tarity) -> <conc-strings> (name, arity)

@@ -13,6 +13,16 @@ signature constructors
 
   List : Term -> List
 
+strategies
+
+  String = is-string
+  
+  Int = is-int
+  
+  Real = is-real
+  
+  List = is-list
+
 decorators
 
   decorator assert-input(a, condition) =
@@ -54,9 +64,30 @@ decorators
 
 decorators // Type annotations and assertions
 
+  /**
+   * Decorates an attribute with its output type.
+   * An error will be reported if the attribute is not of this type.
+   *
+   * Example:
+   *
+   * def Type(String) add-suffix :
+   *   s -> <concat-strings> (s, "_", s.suffix)
+   */
   decorator Type(a, tout) =
     id.assert-output(a, id.has-Type(tout) |"Attribute result is not of the indicated type")
 
+  /**
+   * Decorates an attribute with its input and output type.
+   * An error will be reported if the attribute is not of these types.
+   *
+   * Examples:
+   *
+   * def Type(String, String) add-suffix :
+   *   s -> <concat-strings> (s, "_", s.suffix)
+   *
+   * def Type(id,     String) add-suffix :
+   *   s -> <concat-strings> (s, "_", s.suffix)
+   */
   decorator Type(a, tin, tout) =
     id.assert-input(
       id.assert-output(
@@ -68,11 +99,20 @@ decorators // Type annotations and assertions
     | "Attribute input is not of the indicated type"
     )
   
-  decorator uninit String(a) =
-    id.assert-output(a, is-string |"Result must be a string")
+  /**
+   * Decorates an attribute with the String output type.
+   * An error will be reported if the attribute is not of this type.
+   *
+   * Example:
+   *
+   * def String add-suffix :
+   *   s -> <concat-strings> (s, "_", s.suffix)
+   */
+  decorator String(a) =
+    id.assert-output(a, String |"Result must be a string")
 
   decorator List(a) =
-    id.assert-output(a, is-list |"Result must be a list")
+    id.assert-output(a, List |"Result must be a list")
 
   decorator List(a, t) =
     id.assert-output(a, list-loop(id.has-Type(t)) |"Result must be a list of the indicated type")
@@ -80,6 +120,9 @@ decorators // Type annotations and assertions
   decorator Int(a) =
     id.assert-output(a, is-int |"Result must be an int")
 
+  /**
+   * Indicates that an attribute is only used to test for a certain property.
+   */
   decorator Test(a) =
     where(a)
   
