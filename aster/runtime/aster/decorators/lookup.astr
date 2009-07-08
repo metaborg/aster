@@ -63,13 +63,16 @@ decorators
   /**
    * Unscoped lookup for identifiers.
    *
+   * Uses a global symbol table for lookup,
+   * and by default uses caching.
+   *
    * @param fetch-decl A local declaration fetching attribute that succeeds
    *                   if a given declares the requested identifier.
    */
   decorator lookup-global(fetch-decl) =
     id.lookup-unordered(fetch-decl, fail)
   
-attributes
+decorators
     
   /**
    * Lexically ordered scoping lookup for multiply declared identifiers.
@@ -112,7 +115,7 @@ attributes
   decorator plain lookup-multiple-global(fetch-decl) =
     id.lookup-multiple-unordered(fetch-decl, fail)
   
-attributes // Collecting declarations for lookup attributes
+decorators // Collecting declarations for lookup attributes
 
   /**
    * Lookup all declarations in scope for a given lookup attribute.
