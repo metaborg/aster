@@ -11,6 +11,8 @@ imports
   aster/decorators/flow
 
 decorators
+
+  TODO: 'all' decorator for collect-all
   
   /**
    * Collects all nodes in the tree where the attribute can be applied,
