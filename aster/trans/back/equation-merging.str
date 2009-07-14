@@ -25,19 +25,6 @@ strategies
   
   // TODO: Runtime circularity detection using counter argument?
 
-  // TODO: Fallthrough to alternatives on hard failure
-  //
-  // We now have: alt1 <+ alt2 <+ ... <+ default
-  //
-  // We want:
-  //  
-  //   alt1 // = alt1 <+ !EVAL_FAILED);
-  //   (not(EVAL_FAILED); ?success <+ try(?hard-failure));
-  //   (!success
-  //    <+ alt2
-  //       ...
-  //       not(!hard-failure); default
-  //   
   
   add-merged-rules:
     Module(x, decl*) -> Module(x, [decl*, merged])
@@ -79,10 +66,60 @@ strategies
       x_node         := <NodeVar>;
       x_eval         := <RuleAccessorName> def;
       defs           := <sort-ordered-defs> <make-set> <bagof-OrderedRuleDefs> def;
-      s              := <fold-lchoice> <map(def-call(|s*, t*))> defs;
+      s              := <fold-merged-def-calls(|def)> <map(make-def-call(|s*, t*))> defs;
       s_trace        := <trace-rule> def;
       s_trace-failed := <trace-failed-rule> def;
       s_rewrite      := <add-rewrite(|x_all-parents, x_global-cache)>
+  
+  // TODO: Fallthrough to alternatives on hard failure
+  //
+  // We now have: alt1 <+ alt2 <+ ... <+ default
+  //
+  // We want:
+  //  
+  //   alt1 // = alt1 <+ !EVAL_FAILED);
+  //   (not(EVAL_FAILED); ?success <+ try(?hard-failure));
+  //   (!success
+  //    <+ alt2
+  //       ...
+  //       not(!hard-failure); default
+  //   
+  fold-merged-def-calls(|def):
+    s_call* -> s
+    where
+      not(<has-marker-decorator(|BAGOF_DECORATOR())> def)
+    <+
+      <IsDecoratorDef> def
+    with
+      s := <fold-lchoice> s_call*
+  
+  fold-merged-def-calls(|def):
+    s_call* -> |[
+      { x_input: 
+        ?x_input;
+        ![];
+        s
+      }
+    ]|
+    where
+      <has-marker-decorator(|BAGOF_DECORATOR())> def;
+      not(<IsDecoratorDef> def)
+    with
+      x_input  := <InputVar>;
+      s_call'* := <map(make-bagof-def-call)> s_call*;
+      s        := <fold-seq> s_call'*
+
+  make-def-call(|s*, t*):
+    Attribute(x_eval, _, _) -> |[ x_eval(s*|t*) ]|
+  
+  make-bagof-def-call:
+    s -> |[
+      ![<s; not(EVAL_FAILED())> x_input | <id>]
+    <+
+      id
+    ]|
+    with
+      x_input := <InputVar>
 
   // TODO2: Move this
   add-rewrite(|x_all-parents, x_global-cache) =
@@ -96,9 +133,6 @@ strategies
     else
       !Strat |[ id ]|
     end
-
-  def-call(|s*, t*):
-    Attribute(x_eval, _, _) -> |[ x_eval(s*|t*) ]|
 
   sort-ordered-defs =
     map(!(<OrderedRuleIndex>, <id>));

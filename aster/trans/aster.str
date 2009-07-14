@@ -41,6 +41,7 @@ strategies
     rules(
       ParentVar           := <newname> "parent"
       NodeVar             := <newname> "node"
+      InputVar            := <newname> "input"
       AllParentsVar       := <newname> "all-parents"
       GlobalCacheVar      := <newname> "global-cache"
       RewriteModeVar      := <newname> "rewrite-mode"

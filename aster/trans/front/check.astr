@@ -35,6 +35,8 @@ rules
     )
 
 attributes
+  
+  // TODO: use collect-bagof decorator
 
   def after(try(concat-strings)) error:
     Attribute(name, _, _) -> "Undefined attribute referenced"
@@ -168,6 +170,12 @@ attributes
    
   def warning:
     AttributeRef(_, Attribute("cached", [_], [])) -> "Decorator 'cached' should not be used in-line"
+    
+    // TODO: Support in-line 'bagof' usage
+    AttributeRef(_, attr) -> "'bagof' functionality not implemented for in-line decorator call"
+    where
+      <is-decorator> attr;
+      <has-marker-decorator(|BAGOF_DECORATOR())> attr
     
   // TODO: confirm attribute applicability based on pattern, where possible
   

@@ -11,22 +11,45 @@ imports
   aster/decorators/flow
 
 decorators
-
-  TODO: 'all' decorator for collect-all
+  
+  // TODO: Use bagof for contributes-to
+  
+  // TODO2: Optimize - avoid dynamic rules in contributes-to decorator?
   
   /**
-   * Collects all nodes in the tree where the attribute can be applied,
-   * including subnodes of the results (using a conc union operator).
+   * For all nodes in the tree, collects a list of values for each of the
+   * equations that can be applied to the node.
+   * The values are combined using the 'conc' operator.
+   *
+   * If no equations can be applied to the tree,
+   * an empty list is returned.
+   */
+  decorator at-root bagof collect-bagof(a) =
+    collect-all-lists(a, conc)
+  
+  /**
+   * For all nodes in the tree, collects a list of values for each of the
+   * equations that can be applied to the node.
+   * The values can be combined using the a custom union operator 'un'.
+   *
+   * If no equations can be applied to the tree,
+   * an empty list is returned.
+   */
+  decorator at-root bagof collect-bagof(a, un) =
+    collect-all-lists(a, un)
+  
+  /**
+   * @deprecated
    */
   decorator at-root collect-all(a) =
     collect-all(a, conc)
   
   /**
-   * Collects all nodes in the tree where the attribute can be applied,
-   * including subnodes of the results, using a custom union operator.
+   * Makes a set from the result of an attribute.
    */
-  decorator at-root collect-all(a, un) =
-    collect-all(a, un)
+  decorator make-set(a) =
+    a;
+    make-set
   
   /**
    * Maps over a list.
@@ -35,8 +58,6 @@ decorators
    */
   decorator map(a) =
     map(a)
-  
-  // TODO2: Optimize - avoid dynamic rules in contributes-to decorator?
   
   /**
    * Create collections by adding the attribute value to each of the nodes
@@ -59,7 +80,9 @@ decorators
    *                       For example, 'id.uninit' disregards the unique
    *                       identity of a node in the tree.
    */
-  decorator node.contributes-to(a, targets, target-to-key) =
+  decorator contributes-to(a, targets, target-to-key) =
+    node := id;
+    
     if not(<CompletedSurvey> a.signature) then
       <contributes-to-survey(targets, target-to-key |a.signature)> id.root
     end;
@@ -98,3 +121,13 @@ strategies
         })
       }
     )))
+  
+  /**
+   * A collect-all variant for a strategy <s> that returns a list of results.
+   */
+  collect-all-lists(s, un) =
+    rec x(
+      <conc> (<s>, <crush(![], un,x)>)
+      <+ crush(![], un,x)
+    )
+

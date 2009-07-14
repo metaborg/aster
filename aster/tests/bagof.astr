@@ -1,0 +1,40 @@
+module bagof
+
+strategies
+
+  main-bagof =
+    option-wrap(
+      verbose-option
+    ,
+      pair := (1,2).init;
+      pair.math-op.debug => [2, 3, 0, -1];
+      pair.no-op.debug => [];
+      pair.find-stuff.debug => [(1,2),(1,0),(2,0),(2,1)]
+    )
+
+attributes
+  
+  def bagof math-op:
+    (i, j) -> <mul> (i,j)
+    (i, j) -> <add> (i,j)
+    (i, j) -> <div> (i,j)
+    (i, j) -> <subt> (i,j)
+
+  def bagof no-op = fail
+  
+  def collect-bagof find-stuff:
+    id -> <gt> (id, 0)
+    id -> <gt> (id, 1)
+    id -> <is-tuple>
+  
+  decorator at-root bagof collect-all'(a) =
+    rec x(
+      <id.debug(!"conc"); conc; id.debug(!" =>")> (<a>, <crush(![], debug(!"uno "); conc,x)>)
+      <+ crush(![], debug(!"deux "); conc,x)
+    )
+    
+    /*
+    id.debug(!" ? ");
+    collect-all(a; id.debug(!" + "), id.debug(!" 1 "); (concat, id); conc; id.debug(!" 2 "));
+    id.debug(!" ! ")
+    */

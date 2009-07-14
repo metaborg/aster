@@ -41,3 +41,10 @@ decorators // Internally defined marker decorators
   decorator alter-signature(alter) alter-signature(a, alter) =
     a
 
+  /**
+   * Indicates that all non-failing equations of an attribute should be used
+   * to form a list of results of an attribute. If no equations are
+   * successful, an empty list is returned.
+   */
+  decorator bagof bagof(a) =
+    a

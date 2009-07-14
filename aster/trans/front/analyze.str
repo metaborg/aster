@@ -13,11 +13,13 @@ imports
   front/analyze-foreign-ops
 
 overlays
+
   PLAIN_DECORATOR              = Decorator("plain", [], [])
   DISABLE_TRACE_DECORATOR      = Decorator("disable-trace", [], [])
   DISABLE_WARNINGS_DECORATOR   = Decorator("disable-warnings", [], [])
   ALTER_SIGNATURE_DECORATOR(s) = Decorator("alter-signature", [s], [])
   CONTEXT_FREE_DECORATOR       = Decorator("context-free", [], [])
+  BAGOF_DECORATOR              = Decorator("bagof", [], [])
   
 strategies // Information gathering
   
@@ -87,6 +89,7 @@ strategies // Information gathering
         sig' := <decorator-signature> sig;
         rules(
           IsDecorator: sig
+          IsDecoratorDef: sig'
           HasDeclaration: sig
           DecoratorSignature: sig -> sig'
           AttributeDecorators: sig' -> <AttributeDecorators> sig
@@ -192,7 +195,7 @@ strategies // Information providing
 
   is-native-decorator =
     PLAIN_DECORATOR + DISABLE_TRACE_DECORATOR + DISABLE_WARNINGS_DECORATOR
-  + ALTER_SIGNATURE_DECORATOR(id)
+  + ALTER_SIGNATURE_DECORATOR(id) + BAGOF_DECORATOR
     // (context-free is not a built-in)
   
   is-native-decorator =
