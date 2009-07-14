@@ -13,6 +13,7 @@ imports
 signature constructors
   CIRCULAR_FINISHED : Term -> Term
   CIRCULAR_BUSY     : Term -> Term
+  EVAL_CIRCULAR     : Term
 
 decorators
   
@@ -43,6 +44,14 @@ decorators
   decorator non-circular(a) =
     id.set-cached(a|EVAL_FAILED());
     a
+
+  decorator if-circular(a, default) =
+    t := id;
+    set-cached-attribute(|id.global-cache, id, a.signature, EVAL_CIRCULAR());
+    a;
+    if EVAL_CIRCULAR then
+      <default> t <+ !EVAL_FAILED()
+    end
 
   /**
    * Enables fail-fast behavior for non-circular attributes:

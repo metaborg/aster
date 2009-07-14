@@ -24,7 +24,8 @@ decorators // Enabling, disabling, and customized caching
   /**
    * Indicates that an attribute should be cached but not initialized.
    */
-  decorator plain t.uninit(a) =
+  decorator plain uninit(a) =
+    t := id;
     if id.get-cached(a) => cached then
       !cached
     else
@@ -39,7 +40,8 @@ decorators // Enabling, disabling, and customized caching
    * a.signature, or attributes that take strategy arguments and are
    * normally not cached.
    */
-  decorator plain t.cached(a|sig) =
+  decorator plain cached(a|sig) =
+    t := id;
     if id.get-cached(|sig) => cached then
       !cached
     else
