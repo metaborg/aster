@@ -127,7 +127,7 @@ strategies
    */
   collect-all-lists(s, un) =
     rec x(
-      <conc> (<s>, <crush(![], un,x)>)
+      <un> (<s>, <crush(![], un,x)>)
       <+ crush(![], un,x)
     )
 

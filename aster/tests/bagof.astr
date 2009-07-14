@@ -9,7 +9,10 @@ strategies
       pair := (1,2).init;
       pair.math-op.debug => [2, 3, 0, -1];
       pair.no-op.debug => [];
-      pair.find-stuff.debug => [(1,2),(1,0),(2,0),(2,1)]
+      pair.find-stuff.debug => [(1,2),(1,0),(2,0),(2,1)];
+      !(1,1,1).init.find-no-dupes.debug => [2];
+      !(1,1,1).init.find-some-dupes.debug => [2,2];
+      !(1,1,1).init.find-no-dupes2.debug => [2]
     )
 
 attributes
@@ -27,14 +30,14 @@ attributes
     id -> <gt> (id, 1)
     id -> <is-tuple>
   
-  decorator at-root bagof collect-all'(a) =
-    rec x(
-      <id.debug(!"conc"); conc; id.debug(!" =>")> (<a>, <crush(![], debug(!"uno "); conc,x)>)
-      <+ crush(![], debug(!"deux "); conc,x)
-    )
-    
-    /*
-    id.debug(!" ? ");
-    collect-all(a; id.debug(!" + "), id.debug(!" 1 "); (concat, id); conc; id.debug(!" 2 "));
-    id.debug(!" ! ")
-    */
+  def collect-bagof(union) find-no-dupes:
+    id -> <inc>
+  
+  def collect-bagof(union) find-some-dupes:
+    id -> <inc>
+    id -> <inc>
+  
+  def after(id.make-set) collect-bagof find-no-dupes2:
+    id -> <inc>
+    id -> <inc>
+
