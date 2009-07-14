@@ -7,6 +7,7 @@ module aster
 
 imports
   libstratego-lib
+  libstratego-tool-doc
   
   lib/xtc-multi-options
 
@@ -58,6 +59,8 @@ strategies // I/O
     ?args;
     xtc-multi-io-wrap(
       aster-options
+    , aster-usage
+    , aster-about
     ,
       log-timed-main(
         with(<infer-output-option> args);
@@ -82,3 +85,23 @@ strategies // I/O
      with(
        <set-config> ("--statistics", 0) // already displayed success and time
      )
+
+  aster-usage =
+    <tool-doc>
+     [ Usage("aster [OPTIONS]")
+     , Summary("Compiles Aster specifications.")
+     , OptionUsage()
+     , AutoReportBugs()
+     ]
+
+  aster-about =
+    <tool-doc>
+     [ AutoProgram()
+     , Author(Person("Lennart C. L. Kats", "lennart add lclnet.nl"))
+     , GNU_LGPL("2009", "Lennart C. L. Kats <lennart add lclnet.nl>")
+     , Config([
+         DefaultXTCRepository()
+       , CurrentXTCRepository()
+       ])
+     ]
+

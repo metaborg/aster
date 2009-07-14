@@ -14,10 +14,13 @@ SCFLAGS = \
 	-la stratego-lib \
 	-la stratego-sglr \
 	-la stratego-xtc \
+	-la stratego-tool-doc \
 	-la strc \
 	# `pkg-config --variable=strcxtcflags strategoxt`
 
-LDADD += $(STRATEGO_XTC_LIBS) $(STRATEGOXT)/lib/libstrc.la
+LDADD += $(STRATEGO_XTC_LIBS) \
+         $(STRATEGOXT)/lib/libstrc.la \
+         $(STRATEGO_TOOL_DOC_LIBS)
 
 STRINCLUDES = \
 	-I $(top_srcdir)/syntax \
