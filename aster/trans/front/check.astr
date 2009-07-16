@@ -186,14 +186,10 @@ attributes
   // - warn for rules(...id... -> foo); id does not bind to the current term but acts as a wild card
   
   // TODO: bug patterns?? maybe optional?
-  // - def down is-foo - should not use 'down' without 'test' for testing attribute
+  // - def down is-foo - should not use 'down' without 'Test' for testing attribute
   
   
   // TODO: error if an input module is never imported
-
-strategies
-
-  is-recursive-definition = id // TODO2: is-recursive-definition
 
 attributes
   

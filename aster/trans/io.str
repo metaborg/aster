@@ -3,7 +3,7 @@ module io
 imports
   libstratego-lib
   libstratego-sglr
-  libstratego-xtc // TODO2: XTC detox
+  libstratego-xtc  // TODO2: XTC detox
   libstrc
 
 strategies
@@ -18,7 +18,7 @@ strategies
     | [ "-i", file
       , "--default-syntax", "Stratego-Attributes"
       , "-I", <xtc-find; dirname <+ !"../syntax"> "Stratego-Attributes.tbl"
-      , "-I", <xtc-find; dirname <+ !"../runtime"> "aster-runtime.str"
+      , "-I", <xtc-find; dirname <+ !"../runtime"> "aster-runtime.rtree"
       | <get-config <+ ![]> "-I"
       ]
     )

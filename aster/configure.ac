@@ -1,5 +1,5 @@
 AC_PREREQ([2.58])
-AC_INIT([ASTER],[0.1],[stratego-bugs@cs.uu.nl])
+AC_INIT([ASTER],[0.2],[users@strategoxt.org])
 AM_INIT_AUTOMAKE
 
 test "x$prefix" = xNONE && prefix=$ac_default_prefix

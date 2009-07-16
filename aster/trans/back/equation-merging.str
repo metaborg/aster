@@ -23,9 +23,6 @@ overlays
 
 strategies
   
-  // TODO: Runtime circularity detection using counter argument?
-
-  
   add-merged-rules:
     Module(x, decl*) -> Module(x, [decl*, merged])
     with
