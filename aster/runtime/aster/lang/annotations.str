@@ -29,22 +29,29 @@ strategies // Util
     prim("SSL_stacktrace_get_all_frame_names");
     report-failure
   
-  // TODO2: Optimize - eq-ignore-annos is expensive
-  
   eq-ignore-annos(|term) =
-    ?term
-  <+
-    where( // cheapish base check, must at least pass this
-      input-ctor := <get-constructor>{};
-      term-ctor  := <get-constructor> term{};
-      ?input-ctor
+    if-java-platform(
+      SRTS-EXT-eq-ignore-annos(|term)
     );
-    where(
-      term' := <aster-remove-annos> term
-    );
-    where(
-      ?term' <+ aster-remove-annos => term'
+    if-c-platform( // TODO2: Optimize - c-based eq-ignore-annos is expensive
+      ?term
+    <+
+      where( // cheapish base check, must at least pass this
+        is-string
+      < <is-string> term
+      + input-ctor := <get-constructor>{};
+        term-ctor  := <get-constructor> term{};
+        ?input-ctor
+      );
+      where(
+        term' := <aster-remove-annos> term
+      );
+      where(
+        ?term' <+ aster-remove-annos => term'
+      )
     )
+  
+  external SRTS-EXT-eq-ignore-annos(|term)
   
   aster-is-initialized(|all-parents) = where(get-parent(|all-parents))
   

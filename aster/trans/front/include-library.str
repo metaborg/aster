@@ -18,8 +18,11 @@ strategies
     AsterRuntimeLibrary
   <+
     import-term(aster-runtime.packed-rtree) => Specification(<id>);
-    map(all(filter(not(is-external-def))));
+    map(all(filter(is-library-excluded)));
     rules(AsterRuntimeLibrary := <id>)
+  
+  is-library-excluded =
+    not(is-external-def) <+ ExtSDef("SRTS-EXT-eq-ignore-annos", [], [id])
   
   aster-include-library:
     Module(name, decl*) -> Module(name, [decl*, lib*])
