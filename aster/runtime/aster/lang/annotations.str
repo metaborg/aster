@@ -192,6 +192,11 @@ strategies // Adding/removing node annotations
    * @see aster-is-initialized
    */
   aster-is-anno =
-    is-string
     // TODO: Is this a sensible optimization?
+    if-java-platform(
+      is-int
+    );
+    if-c-platform(
+      is-string
     // ; explode-string => ['@' | _]
+    )
