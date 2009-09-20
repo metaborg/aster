@@ -1,5 +1,5 @@
 /**
- * Assertion runtime: lists.
+ * Aster runtime: lists.
  *
  * @author Lennart Kats <lennart add lclnet.nl>
  */
@@ -8,15 +8,15 @@ module aster/lang/lists
 strategies
 
   all-consnil(s) =
-    if ?[_ | _] then
-      [s | s]
+    if ?[x | y] then
+      ![<s> x | <s> y]
     else
       all(s)
     end
 
   one-consnil(s) = 
-    if ?[_ | _] then
-       [s | id] <+ [id | s]
+    if ?[x | y] then
+      ![<s> x | y] <+ ![x | <s> y]
     else
       one(s)
     end
@@ -28,10 +28,12 @@ strategies
     rec rec(all-consnil(rec); s)
 
   innermost-consnil(s) =
-    bottomup-consnil(try(s; innermost-consnil(s)))
+    rec rec(bottomup-consnil(s; rec <+ id))
 
   leaves-consnil(s) =
-    all-consnil(try(?has-children); leaves-consnil(s));
+    all-consnil(
+      (?has-children <+ id); leaves-consnil(s)
+    );
     if not(!has-children) then
       s
     end

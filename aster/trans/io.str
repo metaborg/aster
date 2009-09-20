@@ -14,7 +14,7 @@ strategies
   
   input-stratego-file =
     xtc-ensure-file => FILE(file);
-    parse-stratego-trm(
+    parse-stratego-trm( // TODO: if-java-platform(import-term)
     | [ "-i", file
       , "--default-syntax", "Stratego-Attributes"
       , "-I", <xtc-find; dirname <+ !"../syntax"> "Stratego-Attributes.tbl"

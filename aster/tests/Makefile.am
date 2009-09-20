@@ -15,6 +15,10 @@ FAILASTRS=$(wildcard fail/*.astr)
 RUNTESTS  = $(ASTRS:.astr=)
 FAILTESTS = $(FAILASTRS:.astr=)
 
+JAVACFLAGS=-J-Xmx256m -J-Xms100m -J-server -J-XX:+UseParallelGC -cp .:`strj-jar -p` -source 5 -nowarn
+JAVAC=`if which ecj >/dev/null; then echo ecj; else echo javac; fi`
+STRJ=`if which strj >/dev/null; then echo strj; elif [ -e strategoxt.jar ]; then echo java -server -Xss4m -jar strategoxt.jar; else echo Please install strj or put strategoxt.jar into the current directory. >&2; exit 1; fi`
+
 EXTRA_DIST =\
   $(ASTRS) \
   $(METAS) \
@@ -32,6 +36,15 @@ CLEANFILES = $(RUNTESTS) $(RUNTESTS:=.str) $(FAILTESTS:=.rtree)
 %$(EXEEXT) : %.str
 	strc -i $< -m main-`basename $*` $(STRCFLAGS) >/dev/null
 
+%.java : %.str
+	strj -i $< -m main-`basename $*` $(STRCFLAGS) >/dev/null
+
+test_attributes.java : test-attributes.str
+	strj -i $< -m main-test-attributes $(STRCFLAGS) >/dev/null
+
+%.class : %.java
+	$(JAVAC) $(JAVACFLAGS) $<
+
 $(top_srcdir)/trans/aster$(EXEEXT) :
 	$(MAKE) -C $(top_srcdir)/trans aster$(EXEEXT)
 
@@ -42,6 +55,11 @@ test-attributes.str : test-attributes.astr $(top_srcdir)/trans/aster
 	@echo
 	@echo ==== `basename $@ .run` ====
 	@./$* --verbose 2
+
+%.jrun : %.class
+	@echo
+	@echo ==== `basename $@ .run` ====
+	java -cp .:`strj-jar -p` $* --verbose 2
 
 FAILTESTS :
 	@echo

@@ -205,13 +205,13 @@ strategies
     , ?2{_}
     );
     apply-and-check(
-      !"attribute result is an initialized term (4)"
+      !"attribute result is an initialized term (5)"
     , id.init(|2)
     , !1.init
     , ?2{_}
     );
     apply-and-check(
-      !"attribute result is an initialized term (4)"
+      !"attribute result is an initialized term (6)"
     , not(id.fails)
     , !1.init
     , ?1
