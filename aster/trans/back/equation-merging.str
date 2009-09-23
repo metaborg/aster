@@ -95,7 +95,8 @@ strategies
       { x_input: 
         ?x_input;
         ![];
-        s
+        s;
+        not([])
       }
     ]|
     where

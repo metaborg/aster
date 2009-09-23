@@ -122,6 +122,21 @@ decorators // Type annotations and assertions
   decorator fail-fatal(a) =
     id.assert-input(a, a.defined |"No attribute equation matches for input")
 
+decorators
+
+  decorator Obsolete(a) =
+    id.Obsolete(a|["Uses obsolete attribute or decorator in definition of ", a.attribute-name])
+
+  decorator Obsolete(a|message) =
+    if not(<ObsoleteWarned> a.signature) then
+      with(
+        warn-msg(|message);
+        sig := a.signature;
+        rules(ObsoleteWarned: sig)
+      )
+    end;
+    a
+
 attributes // Type test helper
 
   /**

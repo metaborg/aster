@@ -23,6 +23,12 @@ decorators
    *
    * If no equations can be applied to the tree,
    * an empty list is returned.
+   *
+   * To return multiple terms from a single equation, one may use the
+   * after decorator as follows:
+   *
+   *   def collect-bagof after(flatten-list) all-definitions:
+   *     Definitions(d*) -> d*
    */
   decorator at-root bagof collect-bagof(a) =
     collect-all-lists(a, conc)
@@ -39,9 +45,9 @@ decorators
     collect-all-lists(a, un)
   
   /**
-   * @deprecated
+   * @obsolete
    */
-  decorator at-root collect-all(a) =
+  decorator Obsolete at-root collect-all(a) =
     collect-all(a, conc)
   
   /**

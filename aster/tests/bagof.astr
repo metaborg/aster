@@ -8,7 +8,8 @@ strategies
     ,
       pair := (1,2).init;
       pair.math-op.debug => [2, 3, 0, -1];
-      pair.no-op.debug => [];
+      not(pair.no-op.debug);
+      pair.no-op-collection.debug => [];
       pair.find-stuff.debug => [(1,2),(1,0),(2,0),(2,1)];
       !(1,1,1).init.find-no-dupes.debug => [2];
       !(1,1,1).init.find-some-dupes.debug => [2,2];
@@ -24,6 +25,8 @@ attributes
     (i, j) -> <subt> (i,j)
 
   def bagof no-op = fail
+
+  def collect-bagof no-op-collection = fail
   
   def collect-bagof find-stuff:
     id -> <gt> (id, 0)
