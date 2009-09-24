@@ -125,7 +125,7 @@ decorators // Type annotations and assertions
 decorators
 
   decorator Obsolete(a) =
-    id.Obsolete(a|["Uses obsolete attribute or decorator in definition of ", a.attribute-name])
+    id.Obsolete(a|["Uses obsolete attribute or decorator in definition of '", a.attribute-name, "'"])
 
   decorator Obsolete(a|message) =
     if not(<ObsoleteWarned> a.signature) then

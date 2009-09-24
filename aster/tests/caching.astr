@@ -6,7 +6,8 @@ strategies
     option-wrap(
       verbose-option
     ,
-      root := "root".init;
+      root  := (1, 2).init;
+      (l,r) := root;
       
       <debug(!1); eq>      (root.get-cached-1, root.get-cached-1);
       <debug(!2); eq>      (root.get-cached-2, root.get-cached-2);
@@ -20,6 +21,8 @@ strategies
       <debug(!10); eq>     (root.get-cached-10, root.get-cached-10);
       <debug(!11); eq>     (root.get-cached-11, root.get-cached-11);
       <debug(!12); eq>     (root.get-cached-12, root.get-cached-12);
+      <debug(!13); eq>     (l.get-cached-13,    l.get-cached-13);
+      <debug(!14); eq>     (l.get-cached-13,    r.get-cached-13);
       
       root.no-premature-caching
     )
@@ -50,6 +53,8 @@ attributes
   def cached(|id.signature(id.get-cached-11)) get-cached-11 = new
   
   def cached(|id.signature) get-cached-12 = new
+  
+  def collect-bagof get-cached-13 = new
   
 decorators
 

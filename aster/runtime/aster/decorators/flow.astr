@@ -29,6 +29,13 @@ decorators
   
   /**
    * Applies the attribute semantic rule at the root of the tree.
+   *
+   * This decorator is often combined with the cached(a) decorator
+   * to apply caching at the root of the tree, rather than at
+   * each subnode. For example:
+   *
+   *   def cached at-root top-level-functions =
+   *     filter(?Function(_))
    */
   decorator down at-root(a) =
     if id.is-root then
