@@ -161,11 +161,14 @@ strategies // Adding/removing node annotations
   aster-add-anno:
     t {a*} -> t {b*}
     where
+      x := <if-c-platform(<newname> "@"); if-java-platform(SRTS-EXT-newint)>;
       if [] := a* then
-        b* := [<newname> "@"] // adding annos is expensive, but newname is as cheap as a counter or new
+        b* := [x] // adding annos is expensive, but newname is as cheap as a counter or new
       else
-        b* := [<newname> "@"| <filter(not(aster-is-anno))> a*]
+        b* := [x| <filter(not(aster-is-anno))> a*]
       end
+
+  external SRTS-EXT-newint(|)
   
   aster-remove-annos =
     // leaves-consnil should suffice in most cases, but this
