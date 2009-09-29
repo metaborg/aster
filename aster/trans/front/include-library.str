@@ -22,7 +22,7 @@ strategies
     rules(AsterRuntimeLibrary := <id>)
   
   is-library-excluded =
-    not(is-external-def) <+ ExtSDef("SRTS-EXT-eq-ignore-annos", [], [id])
+    not(is-external-def) <+ ExtSDef(string-starts-with(|"SRTS-EXT"), id, id)
   
   aster-include-library:
     Module(name, decl*) -> Module(name, [decl*, lib*])
