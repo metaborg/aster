@@ -35,7 +35,16 @@ cleanstrap :
 
 aster.c : $(RTREES) ../runtime/aster-runtime.packed-rtree front/check.rtree
 	$(SCOMPILE) -c -i $< -o $@ $(SCFLAGS) $(STRINCLUDES) -m main-aster
-	
+
+# TODO: $(STRC_JAVA)/bin/strj?
+
+java/org/strategoxt/aster/Main.java : $(RTREES) ../runtime/aster-runtime.packed-rtree front/check.rtree
+	[ -e java/org/strategoxt/aster ] || mkdir -p java/org/strategoxt/aster
+	strj -clean -i $< -o $@ $(SCFLAGS) $(STRINCLUDES) -m main-aster
+
+java/aster.jar : java/org/strategoxt/aster/Main.java
+	strj-jar -i $< -o $@
+
 aster.copy : aster
 	cp aster aster.copy
 
