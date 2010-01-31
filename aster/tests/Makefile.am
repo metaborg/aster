@@ -31,7 +31,9 @@ check : Stratego-Attributes.runtestsuite \
 CLEANFILES = $(RUNTESTS) $(RUNTESTS:=.str) $(FAILTESTS:=.rtree)
 
 %.str : %.astr $(top_srcdir)/trans/aster
-	java -jar $(top_srcdir)/trans/java/aster.jar -i $< -o $@ --verbose 2  # $(top_srcdir)/trans/aster -i $< -o $@ --verbose 2
+	$(top_srcdir)/trans/aster -i $< -o $@ --verbose 2  # $(top_srcdir)/trans/aster -i $< -o $@ --verbose 2
+
+# java -Xss8m -Xmx512m -jar $(top_srcdir)/trans/java/aster.jar -i $< -o $@ --verbose 2  # $(top_srcdir)/trans/aster -i $< -o $@ --verbose 2
 
 %$(EXEEXT) : %.str
 	strc -i $< -m main-`basename $*` $(STRCFLAGS) >/dev/null
