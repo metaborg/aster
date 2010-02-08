@@ -1,0 +1,10 @@
+module example
+
+attributes
+
+  def foo:
+    Bar() -> Baz()
+  
+  def Bar():
+    id.baz  := Qux()
+    id.quux := Quuux()
