@@ -12,7 +12,7 @@ references
 references
                         
   completion proposer : editor-complete
-  completion lexical  : [a-zA-Z\_][a-zA-Z0-9\'\-\_]*[\*]
+  completion lexical  : [a-zA-Z\_][a-zA-Z0-9\'\-\_]*\*?
   completion trigger  : "."
                         
   // reference _         : editor-resolve
