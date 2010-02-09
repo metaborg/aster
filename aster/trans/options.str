@@ -27,15 +27,18 @@ strategies
     )
   
   infer-output-option =
-    <get-config> "--multi-output"
+    <get-config> "--multi-output";
+    if all(has-extension(|"rtree")) then
+      rules(OutputAST: _)
+    else
+      if not(all(has-extension(|"str"))) then
+        fatal-err(|"Please specify output files with a .str or .rtree extension")
+      end
+    end
   <+
-    // one(multi-input-option)
     <get-config> "--multi-input";
-    map(
-      has-extension(|"str")
-      < guarantee-extension(|"astr.str")
-      + guarantee-extension(|"str")
-    );
-    <set-config> ("--multi-output", <id>)
+    map(guarantee-extension(|"rtree"));
+    <set-config> ("--multi-output", <id>);
+    rules(OutputAST: _)
   <+
     ![stdout()]

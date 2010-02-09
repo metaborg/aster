@@ -3,7 +3,7 @@ module io
 imports
   libstratego-lib
   libstratego-sglr
-  libstratego-xtc  // TODO2: XTC detox
+  libstratego-xtc
   libstrc
 
 strategies
@@ -14,7 +14,7 @@ strategies
   
   input-stratego-file =
     xtc-ensure-file => FILE(file);
-    parse-stratego-trm( // TODO: if-java-platform(import-term)
+    parse-stratego-trm(
     | [ "-i", file
       , "--default-syntax", "Stratego-Attributes"
       , "-I", <stratego-attributes-table-path>
@@ -65,13 +65,18 @@ strategies
     )
 
   output-stratego-file =
-    with(
-      file   := <xtc-new-file>
-    ; stream := <open-stream> (file, "w")
-    );
-    finally(
-      pp-stratego-stream(|stream), <fclose> stream
-    )
+    if OutputAST then
+      write-to
+    else
+      with(
+        file   := <xtc-new-file>
+      ; stream := <open-stream> (file, "w")
+      );
+      finally(
+        pp-stratego-stream(|stream), <fclose> stream
+      );
+      !FILE(file)
+    end
   <+
     pp-format-checker-error(|"Internal error: generated AST is malformed", "Stratego-Sugar.rtg")
 
