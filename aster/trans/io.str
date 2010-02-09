@@ -65,8 +65,13 @@ strategies
     )
 
   output-stratego-file =
-    write-to;
-    xtc-transform(!"pp-stratego", !["--abstract" | <pass-verbose>])
+    with(
+      file   := <xtc-new-file>
+    ; stream := <open-stream> (file, "w")
+    );
+    finally(
+      pp-stratego-stream(|stream), <fclose> stream
+    )
   <+
     pp-format-checker-error(|"Internal error: generated AST is malformed", "Stratego-Sugar.rtg")
 
