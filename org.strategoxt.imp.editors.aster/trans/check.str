@@ -3,7 +3,7 @@ module check
 imports
   libstratego-lib
   include/Stratego-Attributes
-  lib/editor-common
+  lib/editor-common.generated
 
 rules
 
