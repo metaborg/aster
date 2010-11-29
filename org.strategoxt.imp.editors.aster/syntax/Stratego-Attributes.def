@@ -4,6 +4,10 @@ module ResultTerms
 imports
   Stratego-Sugar
 
+exports %% RECOVERY RULES START HERE
+  lexical syntax
+      -> ";" {recover, cons("INSERTION")}
+
 exports
 
   sorts
@@ -746,7 +750,8 @@ exports
     [A-Z] [a-zA-Z0-9\'\-\_]*  -> UCID
 
   lexical restrictions
-    Id   -/- [a-zA-Z0-9\'\-\_\*]
+    Id   -/- [a-zA-Z0-9\'\_\*]
+    Id   -/- [\-].~[\>]
     LId  -/- [a-zA-Z0-9\'\-\_]
     LCID -/- [a-zA-Z0-9\'\-\_]
     UCID -/- [a-zA-Z0-9\'\-\_]
