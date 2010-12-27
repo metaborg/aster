@@ -1,8 +1,0 @@
-module inline-marker-decorator
-
-attributes
-
-  decorator the-plains(a) =
-    id.plain(
-      a
-    )

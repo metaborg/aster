@@ -1,5 +1,0 @@
-module context-free
-
-attributes
-
-  def context-free down foo = id
