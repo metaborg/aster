@@ -26,6 +26,10 @@ colorer Extension
   _.StringEscape3 : gray  
   _.StringEscape4 : gray
   
+  _.DecoratorNoTerms: 110 110 150
+  _.DecoratorNoArgs:  110 110 150
+  _.Decorator:        110 110 150
+  
   _.Str     : blue
   _.QStr    : blue
   _.QDollar : blue
