@@ -26,6 +26,21 @@ decorators
       id.parent;
       id.down(a)
     end
+
+  decorator one-up(a) =
+    if a.defined then
+      a
+    else
+      id.child(a)
+    end
+
+  decorator one-down(a) =
+    if a.defined then
+      a
+    else
+      id.parent;
+      a
+    end
   
   /**
    * Applies the attribute semantic rule at the root of the tree.

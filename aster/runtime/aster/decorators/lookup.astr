@@ -127,7 +127,7 @@ decorators // Collecting declarations for lookup attributes
    * Example:
    *
    *   def all-declarations =
-   *     id.decl(id.lookup(|"ignored"))
+   *     id.all-decls(id.lookup(|"(argument ignored)"))
    */
   decorator plain all-decls(a) =
     where(try(a)); // initialize declaration list if required

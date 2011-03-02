@@ -161,7 +161,7 @@ strategies // Adding/removing node annotations
   aster-add-anno:
     t {a*} -> t {b*}
     where
-      x := <if-c-platform(<newname> "@"); if-java-platform(SRTS-EXT-newint)>;
+      x := <if-c-platform(<newname> "@"); if-java-platform(newterm)>;
       if [] := a* then
         b* := [x] // adding annos is expensive, but newname is as cheap as a counter or new
       else

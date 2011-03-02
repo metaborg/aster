@@ -25,7 +25,16 @@ strategies
    * Fails for non-AG-annotated terms.
    */
   get-parent(|all-parents) =
-    hashtable-get(|all-parents, <id>)
+    /*
+    if-java-platform(
+      prim("SSL_EXT_get_parent", <id>)
+    <+
+      hashtable-get(|all-parents, <id>)
+    );
+    if-c-platform(
+    */
+      hashtable-get(|all-parents, <id>)
+    //)
   
   set-parent(|all-parents, value) =
     hashtable-put(|all-parents, <id>, value)
