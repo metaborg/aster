@@ -1,6 +1,0 @@
-module bad-signature-use-2
-
-attributes
-
-  def foo(a) =
-    a.signature

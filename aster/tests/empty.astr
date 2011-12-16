@@ -1,5 +1,0 @@
-module empty
-
-strategies
-
-  main-empty = id
