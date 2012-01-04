@@ -1,6 +1,0 @@
-module bad-signature-use-1
-
-attributes
-
-  decorator foo(a, b) =
-    b.signature
