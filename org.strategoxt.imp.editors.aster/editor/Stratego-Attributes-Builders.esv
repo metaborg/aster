@@ -1,16 +1,9 @@
 
 module Stratego-Attributes-Builders
 
-imports Stratego-Attributes-Builders.generated
-
-builders
-                                                                      
-  // This file can be used for custom analysis and builder rules.     
-  // See the imported file for a brief introduction and examples.     
+imports Stratego-Attributes-Builders.generated 
 
 builders
                                                                                                 
-  provider : include/stratego_attributes.ctree                                                  
-  // observer : editor-analyze                                                                     
-  // builder  : "Generate Java code"              = generate-java (openeditor) (realtime)          
-  builder  : "Show ATerm"                      = generate-aterm (openeditor) (realtime) (meta)  
+  provider : include/stratego_attributes.ctree
+  builder  : "Show ATerm" = generate-aterm (openeditor) (realtime) (meta)
