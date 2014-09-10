@@ -10,3 +10,4 @@ editor/java/trans
 editor/*generated*
 syntax/*generated*
 test/*.rtree
+src-gen
