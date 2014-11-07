@@ -1,0 +1,5 @@
+module Stratego-Attributes-Completions
+
+imports Stratego-Attributes-Completions.generated
+
+completions
