@@ -1,11 +1,11 @@
-module editor/Stratego-Attributes-Outliner
+module Stratego-Attributes-Outliner
 
 imports
   
-  include/Stratego-Attributes
-  lib/runtime/editor/outline-library
-  lib/runtime/editor/origins
-  editor/Stratego-Attributes-Outliner.generated
+  Stratego-Attributes
+  runtime/editor/outline-library
+  runtime/editor/origins
+  Stratego-Attributes-Outliner.generated
 
 rules
   

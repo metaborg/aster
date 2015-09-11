@@ -4,8 +4,8 @@ imports
   libstratego-lib
   libstratego-gpp
   libstratego-aterm
-  include/Stratego-Attributes
-  lib/editor-common.generated
+  Stratego-Attributes
+  editor-common.generated
   
 rules
   
